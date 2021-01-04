@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_vertical"
+    android:background="@color/mid"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <Button
+        android:id="@+id/task_all"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/key_chat_emojiPanelStickerSetNameHighlight"
+        android:padding="5dp"
+        android:text="All"
+        android:textColor="@color/white" />
+
+    <Button
+        android:id="@+id/task_todo"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/btn_click"
+        android:padding="5dp"
+        android:text="To do"
+        android:textColor="@color/white" />
+
+    <Button
+        android:id="@+id/task_doing"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/btn_click"
+        android:padding="5dp"
+        android:text="Doing"
+        android:textColor="@color/white" />
+
+    <Button
+        android:id="@+id/task_done"
+
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/btn_click"
+        android:padding="5dp"
+        android:text="Done"
+        android:textColor="@color/white" />
+</LinearLayout>
