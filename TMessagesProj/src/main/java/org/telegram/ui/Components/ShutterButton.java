@@ -22,7 +22,7 @@ import android.view.animation.DecelerateInterpolator;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 
 import androidx.annotation.Keep;
 

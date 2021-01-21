@@ -33,7 +33,7 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.ConnectionsManager;
@@ -269,7 +269,7 @@ public class ExternalActionActivity extends Activity implements ActionBarLayout.
                     }
 
                     AlertDialog.Builder builder = new AlertDialog.Builder(ExternalActionActivity.this);
-                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                     builder.setMessage(LocaleController.getString("PleaseLoginPassport", R.string.PleaseLoginPassport));
                     builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
                     builder.show();

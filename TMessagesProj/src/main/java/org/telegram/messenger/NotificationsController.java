@@ -13,6 +13,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
+import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -50,7 +51,11 @@ import androidx.core.content.FileProvider;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
+
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
@@ -58,6 +63,9 @@ import android.util.SparseIntArray;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+ import org.rooms.messenger.R;
+import org.telegram.irooms.database.Task;
+import org.telegram.irooms.task.TaskRepository;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -3238,7 +3246,7 @@ public class NotificationsController extends BaseController {
                         name = LocaleController.getString("NotificationHiddenName", R.string.NotificationHiddenName);
                     }
                 } else {
-                    name = LocaleController.getString("AppName", R.string.AppName);
+                    name = LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms");
                 }
                 replace = false;
             } else {
@@ -3588,7 +3596,7 @@ public class NotificationsController extends BaseController {
                         } else {
                             if (Build.VERSION.SDK_INT >= 24 && soundPath.startsWith("file://") && !AndroidUtilities.isInternalUri(Uri.parse(soundPath))) {
                                 try {
-                                    Uri uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext, BuildConfig.APPLICATION_ID + ".provider", new File(soundPath.replace("file://", "")));
+                                    Uri uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext,ApplicationLoader.applicationContext.getPackageName() + ".provider", new File(soundPath.replace("file://", "")));
                                     ApplicationLoader.applicationContext.grantUriPermission("com.android.systemui", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                     mBuilder.setSound(uri, AudioManager.STREAM_NOTIFICATION);
                                 } catch (Exception e) {
@@ -3657,6 +3665,111 @@ public class NotificationsController extends BaseController {
             scheduleNotificationRepeat();
         } catch (Exception e) {
             FileLog.e(e);
+        }
+    }
+    public void showTaskNotification(int taskId, String title, String body) {
+        Task task = null;
+        try {
+
+            TaskRepository repository = TaskRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext());
+            task = repository.getTask(taskId);
+        } catch (Exception x) {
+        }
+
+        Intent intent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
+        intent.setAction("com.tmessages.openchat" + Math.random() + Integer.MAX_VALUE);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        if ((int) dialog_id != 0) {
+//            if (pushDialogs.size() == 1) {
+//                if (chat_id != 0) {
+//                    intent.putExtra("chatId", chat_id);
+//                } else if (user_id != 0) {
+//                    intent.putExtra("userId", user_id);
+//                }
+//            }
+//            if (AndroidUtilities.needShowPasscode() || SharedConfig.isWaitingForPasscodeEnter) {
+//                photoPath = null;
+//            } else {
+//                if (pushDialogs.size() == 1 && Build.VERSION.SDK_INT < 28) {
+//                    if (chat != null) {
+//                        if (chat.photo != null && chat.photo.photo_small != null && chat.photo.photo_small.volume_id != 0 && chat.photo.photo_small.local_id != 0) {
+//                            photoPath = chat.photo.photo_small;
+//                        }
+//                    } else if (user != null) {
+//                        if (user.photo != null && user.photo.photo_small != null && user.photo.photo_small.volume_id != 0 && user.photo.photo_small.local_id != 0) {
+//                            photoPath = user.photo.photo_small;
+//                        }
+//                    }
+//                }
+//            }
+//        } else {
+//            if (pushDialogs.size() == 1 && dialog_id != globalSecretChatId) {
+//                intent.putExtra("encId", (int) (dialog_id >> 32));
+//            }
+//        }
+        intent.putExtra("currentAccount", currentAccount);
+        if (task != null) {
+            intent.putExtra("chatId", task.getChatId());
+            intent.putExtra("userId", task.getCreator_id());
+        }
+        intent.putExtra("currentAccount", currentAccount);
+
+        PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+
+        SpannableStringBuilder builder = new SpannableStringBuilder();
+
+        if (title.contains("overdue")) {
+            title = title.replace("overdue", "");
+            String red = "OVERDUE";
+            SpannableString redSpannable = new SpannableString(red);
+            redSpannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffe25050")), 0, red.length(), 0);
+            builder.append(title).append(redSpannable);
+        } else {
+            builder.append(title);
+        }
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ApplicationLoader.applicationContext, channel)
+                .setContentTitle(builder)
+                .setSmallIcon(R.drawable.notification)
+                .setAutoCancel(true)
+                .setContentText(body)
+                .setNumber(total_unread_count)
+                .setStyle(new NotificationCompat.BigTextStyle()
+                        .bigText(body))
+                .setContentIntent(contentIntent)
+                .setGroup(notificationGroup)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setGroupSummary(true)
+                .setShowWhen(true)
+                .setColor(0xff11acfa);
+
+        mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+        mBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(body));
+
+        Intent dismissIntent = new Intent(ApplicationLoader.applicationContext, NotificationDismissReceiver.class);
+        dismissIntent.putExtra("currentAccount", currentAccount);
+        mBuilder.setDeleteIntent(PendingIntent.getBroadcast(ApplicationLoader.applicationContext, 1, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        createNotificationChannel();
+        NotificationManagerCompat compat = NotificationManagerCompat.from(ApplicationLoader.applicationContext);
+        compat.notify(taskId, mBuilder.build());
+
+    }
+
+    String channel = "rooms_channel";
+
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = channel;
+            String description = "Rooms channel";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(name.toString(), name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = ApplicationLoader.applicationContext.getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 
@@ -4050,7 +4163,7 @@ public class NotificationsController extends BaseController {
                             Uri uri;
                             if (attach.exists()) {
                                 try {
-                                    uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext, BuildConfig.APPLICATION_ID + ".provider", attach);
+                                    uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext, ApplicationLoader.applicationContext.getPackageName() + ".provider", attach);
                                 } catch (Exception e) {
                                     FileLog.e(e);
                                     uri = null;
@@ -4091,7 +4204,7 @@ public class NotificationsController extends BaseController {
                             Uri uri;
                             if (Build.VERSION.SDK_INT >= 24) {
                                 try {
-                                    uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext, BuildConfig.APPLICATION_ID + ".provider", f);
+                                    uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext, ApplicationLoader.applicationContext.getPackageName() + ".provider", f);
                                 } catch (Exception ignore) {
                                     uri = null;
                                 }

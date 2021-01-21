@@ -61,7 +61,7 @@ import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
@@ -1266,7 +1266,7 @@ public class ChatAttachAlert extends BottomSheet implements NotificationCenter.N
                     return false;
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                 builder.setMessage(LocaleController.formatString("ChatHintsDelete", R.string.ChatHintsDelete, ContactsController.formatName(button.currentUser.first_name, button.currentUser.last_name)));
                 builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), (dialogInterface, i) -> MediaDataController.getInstance(currentAccount).removeInline(button.currentUser.id));
                 builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);

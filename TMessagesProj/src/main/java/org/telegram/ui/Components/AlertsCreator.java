@@ -10,6 +10,8 @@ package org.telegram.ui.Components;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Application;
+import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,6 +29,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.text.Html;
 import android.text.InputType;
@@ -36,10 +39,12 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.util.Base64;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.inputmethod.EditorInfo;
@@ -49,6 +54,17 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
+import org.rooms.messenger.databinding.AddTaskBottomSheetBinding;
+import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.Utils;
+import org.telegram.irooms.database.Task;
+import org.telegram.irooms.task.TaskManagerListener;
+import org.telegram.irooms.task.TaskRepository;
+import org.telegram.irooms.task.TaskUtil;
+import org.telegram.irooms.ui.spinner.MemberState;
+import org.telegram.irooms.ui.spinner.State;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -63,7 +79,7 @@ import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.NotificationsController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SecretChatHelper;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.SvgHelper;
@@ -97,17 +113,438 @@ import org.telegram.ui.ThemePreviewActivity;
 import org.telegram.ui.TooManyCommunitiesActivity;
 
 import java.net.IDN;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import androidx.annotation.RequiresApi;
+import io.socket.client.Socket;
 
 public class AlertsCreator {
+
+    public static BottomSheet.Builder createTaskEditorDialogBySocket(Context context,  TLRPC.User selectedUser, CharSequence text, ArrayList<TLRPC.User> userList,
+                                                                     ArrayList<State> statusList, int chatId, TaskManagerListener callback) {
+        if (context == null) {
+            return null;
+        }
+
+        final String[] deadline = {TaskUtil.getMaxDate()};
+        ArrayList<Long> selectedMembers = new ArrayList<>();
+        final int[] selectedState = {0};
+        //  selectedMembers.add(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);//todo will we add task owner as members of task
+
+
+        final int[] selectedDeadLineView = {-1};
+
+        BottomSheet.Builder builder = new BottomSheet.Builder(context, false);
+        builder.setApplyBottomPadding(false);
+
+        AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
+
+        bottomSheet.etTaskDescription.setOnClickListener(click -> {
+            bottomSheet.etTaskDescription.requestFocus();
+            AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
+        });
+        bottomSheet.etTaskDescription.setText(text);
+        bottomSheet.etTaskDescription.requestFocus();
+
+        bottomSheet.btnTaskDeadlineToday.setOnClickListener(today -> {
+            boolean todaySelected = selectedDeadLineView[0] == 1;
+            if (todaySelected) {
+                selectedDeadLineView[0] = -1;
+                deadline[0] = TaskUtil.getMaxDate();
+                bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            } else {
+                bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                selectedDeadLineView[0] = 1;
+                deadline[0] = TaskUtil.getEndOfTheDay();
+            }
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+        });
+
+        bottomSheet.etTaskStatus.setText(statusList.get(0).getName());
+        bottomSheet.etTaskStatus.setOnClickListener(view -> {
+            AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+            builder1.setTitle("Select status");
+
+            // add a list
+            String[] statuses = new String[statusList.size()];
+            int i = 0;
+
+            for (State status : statusList) {
+                statuses[i] = status.getName();
+                i++;
+            }
+
+            builder1.setItems(statuses, (dialog, which) -> {
+                selectedState[0] = which;
+                bottomSheet.etTaskStatus.setText(statusList.get(which).getName());
+                dialog.dismiss();
+            });
+
+            // create and show the alert dialog
+            AlertDialog dialog = builder1.create();
+            dialog.show();
+        });
+
+        ArrayList<MemberState> members = new ArrayList<>();
+        for (TLRPC.User user : userList) {
+            if (user != null) {
+                MemberState state = new MemberState(user);
+                members.add(state);
+            }
+        }
+
+        bottomSheet.tvSelectMembers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setTitle("Select member");
+
+                // add a list
+                String[] people = new String[members.size()];
+                int i = 0;
+
+                for (MemberState member : members) {
+                    String userName = "";
+                    TLRPC.User user = member.getUser();
+                    if (user != null) {
+                        userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                    }
+                    people[i] = userName;
+                    i++;
+                }
+
+                builder.setItems(people, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        selectedMembers.clear();//todo later we should add multiple members
+                        MemberState memberState = members.get(which);
+
+                        selectedMembers.add((long) memberState.getUser().id);
+                        dialog.dismiss();
+                        TLRPC.User user = memberState.getUser();
+                        String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+
+                        bottomSheet.tvSelectMembers.setText(userName);
+                    }
+                });
+
+                // create and show the alert dialog
+                AlertDialog dialog = builder.create();
+                dialog.show();
+            }
+        });
+        if (selectedUser != null) {
+            selectedMembers.clear();
+            selectedMembers.add((long) selectedUser.id);
+            String userName = ((selectedUser.first_name == null ? "" : selectedUser.first_name) + " " + (selectedUser.last_name == null ? "" : selectedUser.last_name));
+            bottomSheet.tvSelectMembers.setText(userName);
+        }
+        bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
+            boolean tomorrowSelected = selectedDeadLineView[0] == 2;
+            if (tomorrowSelected) {
+                selectedDeadLineView[0] = -1;
+                deadline[0] = TaskUtil.getMaxDate();
+                bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            } else {
+                bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                selectedDeadLineView[0] = 2;
+                deadline[0] = TaskUtil.getEndOfTomorrow();
+            }
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+
+            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+        });
+
+        bottomSheet.btnTaskCalendar.setOnClickListener(select -> {
+            final Calendar cldr = Calendar.getInstance();
+            int day = cldr.get(Calendar.DAY_OF_MONTH);
+            int month = cldr.get(Calendar.MONTH);
+
+            int year = cldr.get(Calendar.YEAR);
+            new DatePickerDialog(context,
+                    (view1, year1, monthOfYear, dayOfMonth) -> {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.set(year1, monthOfYear, dayOfMonth, 23, 59);
+                        deadline[0] = TaskUtil.getISODate(calendar.getTime());
+                        bottomSheet.btnTaskCalendar.setText(year1 + "/" + monthOfYear + "/" + dayOfMonth);
+                        bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                        bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                        bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                    }, year, month, day).show();
+        });
+
+        bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
+            bottomSheet.btnTaskSave.setEnabled(false);
+            Task task = new Task(-1, PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", -1));
+            task.setDescription(bottomSheet.etTaskDescription.getText().toString());
+            task.setMembers(selectedMembers);
+            task.setCreatorId(UserConfig.getInstance(0).clientUserId);
+            task.setExpiresAt(deadline[0]);
+            State state = (State) statusList.get(selectedState[0]);
+            task.setStatus(state.getName());
+            task.setStatus_code(state.getId());
+            task.setChatId(chatId);
+            task.setCompanyId(PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", 0));
+            task.setLocal_id(Utils.generateLocalId());
+            task.setLocalStatus(1);
+
+            callback.onCreate(task);
+            TaskRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
+
+            builder.getDismissRunnable().run();
+//            IRoomsManager.getInstance().createTaskBySocket(context, socket, task, new IRoomsManager.IRoomsCallback() {
+//                @Override
+//                public void onSuccess(String success) {
+//                    callback.onSuccess(success);
+//                    builder.getDismissRunnable().run();
+//                }
+//
+//                @Override
+//                public void onError(String error) {
+//                    Log.e("createTaskBySocket", error);
+//                }
+//            });
+        });
+
+        builder.setCustomView(bottomSheet.getRoot());
+
+        return builder;
+    }
+
+    public static BottomSheet.Builder editTaskDialogBySocket(Context context, Task task, CharSequence text, ArrayList<TLRPC.User> userList,
+                                                             ArrayList<State> statusList, int chatId, TaskManagerListener callback) {
+        if (context == null) {
+            return null;
+        }
+
+        final String[] deadline = {TaskUtil.getMaxDate()};
+        ArrayList<Long> selectedMembers = new ArrayList<>();
+        final int[] selectedState = {0};
+
+        //  selectedMembers.add(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);//todo will we add task owner as members of task
+
+        final int[] selectedDeadLineView = {-1};
+
+        BottomSheet.Builder builder = new BottomSheet.Builder(context, false);
+        builder.setApplyBottomPadding(false);
+
+        AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
+
+        bottomSheet.etTaskDescription.setOnClickListener(click -> {
+            bottomSheet.etTaskDescription.requestFocus();
+            AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
+        });
+        bottomSheet.etTaskDescription.setText(text);
+        bottomSheet.etTaskDescription.requestFocus();
+
+        bottomSheet.btnTaskDeadlineToday.setOnClickListener(today -> {
+            boolean todaySelected = selectedDeadLineView[0] == 1;
+            if (todaySelected) {
+                selectedDeadLineView[0] = -1;
+
+                deadline[0] = TaskUtil.getMaxDate();
+                bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            } else {
+                bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                selectedDeadLineView[0] = 1;
+                deadline[0] = TaskUtil.getEndOfTheDay();
+            }
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+        });
+        if (task.getExpires_at().equals(TaskUtil.getEndOfTheDay())) {
+            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+            selectedDeadLineView[0] = 1;
+            deadline[0] = TaskUtil.getEndOfTheDay();
+        } else if (task.getExpires_at().equals(TaskUtil.getEndOfTomorrow())) {
+            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+            selectedDeadLineView[0] = 2;
+            deadline[0] = TaskUtil.getEndOfTomorrow();
+        } else if (task.getExpires_at() != null && !task.getExpires_at().equals("")) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(TaskUtil.getDateFromISO(task.getExpires_at())==null?new Date():TaskUtil.getDateFromISO(task.getExpires_at()));
+            deadline[0] = task.getExpires_at();
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+        }
+        bottomSheet.etTaskStatus.setText(statusList.get(0).getName());
+
+        bottomSheet.etTaskStatus.setOnClickListener(view -> {
+            AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+            builder1.setTitle("Select status");
+
+            // add a list
+            String[] statuses = new String[statusList.size()];
+            int i = 0;
+
+            for (State status : statusList) {
+                statuses[i] = status.getName();
+                i++;
+            }
+
+            builder1.setItems(statuses, (dialog, which) -> {
+                selectedState[0] = which;
+                bottomSheet.etTaskStatus.setText(statusList.get(which).getName());
+                dialog.dismiss();
+            });
+
+            // create and show the alert dialog
+            AlertDialog dialog = builder1.create();
+            dialog.show();
+        });
+        bottomSheet.etTaskStatus.setText(task.getStatus());
+        selectedState[0] = task.getStatus_code();
+
+        ArrayList<MemberState> members = new ArrayList<>();
+        for (TLRPC.User user : userList) {
+            if (user != null) {
+                MemberState state = new MemberState(user);
+                members.add(state);
+            }
+        }
+        bottomSheet.tvSelectMembers.setOnClickListener(view -> {
+            AlertDialog.Builder builder12 = new AlertDialog.Builder(context);
+            builder12.setTitle("Select member");
+
+            // add a list
+            String[] memberList = new String[members.size()];
+            int i = 0;
+
+            for (MemberState member : members) {
+                String userName = "";
+                TLRPC.User user = member.getUser();
+                if (user != null) {
+                    userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                }
+                memberList[i] = userName;
+                i++;
+            }
+
+            builder12.setItems(memberList, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    selectedMembers.clear();//todo later we should add multiple members
+                    MemberState memberState = members.get(which);
+
+                    selectedMembers.add((long) memberState.getUser().id);
+                    dialog.dismiss();
+                    TLRPC.User user = memberState.getUser();
+                    String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+
+                    bottomSheet.tvSelectMembers.setText(userName);
+                }
+            });
+
+            // create and show the alert dialog
+            AlertDialog dialog = builder12.create();
+            dialog.show();
+        });
+        selectedMembers.clear();
+        if (task.getMembers().size() != 0) {
+            for (int i = 0; i < userList.size(); i++) {
+                if (task.getMembers().get(0).intValue() == userList.get(i).id) {
+                    TLRPC.User user = userList.get(i);
+                    if (user != null) {
+                        String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                        bottomSheet.tvSelectMembers.setText(userName);
+                        break;
+                    }
+                }
+            }
+        }
+
+        selectedMembers.addAll(task.getMembers());
+
+        bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
+            boolean tomorrowSelected = selectedDeadLineView[0] == 2;
+            if (tomorrowSelected) {
+                selectedDeadLineView[0] = -1;
+
+                deadline[0] = TaskUtil.getMaxDate();
+                bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            } else {
+                bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                selectedDeadLineView[0] = 2;
+                deadline[0] = TaskUtil.getEndOfTomorrow();
+            }
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+
+            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+        });
+
+        bottomSheet.btnTaskCalendar.setOnClickListener(select -> {
+            final Calendar cldr = Calendar.getInstance();
+            int day = cldr.get(Calendar.DAY_OF_MONTH);
+            int month = cldr.get(Calendar.MONTH);
+
+            int year = cldr.get(Calendar.YEAR);
+            new DatePickerDialog(context,
+                    (view1, year1, monthOfYear, dayOfMonth) -> {
+                        Calendar calendar = Calendar.getInstance();
+                        calendar.set(year1, monthOfYear, dayOfMonth, 23, 59);
+                        deadline[0] = TaskUtil.getISODate(calendar.getTime());
+                        bottomSheet.btnTaskCalendar.setText(year1 + "/" + monthOfYear + "/" + dayOfMonth);
+                        bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                        bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                        bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                    }, year, month, day).show();
+        });
+
+        bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
+            bottomSheet.btnTaskSave.setEnabled(false);
+            int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", -1);
+            task.setDescription(bottomSheet.etTaskDescription.getText().toString());
+            task.setMembers(selectedMembers);
+            task.setCreatorId(UserConfig.getInstance(0).clientUserId);
+            if (deadline[0] == null || deadline[0].equals("null")) {
+                deadline[0] = TaskUtil.getMaxDate();
+            }
+            task.setExpiresAt(deadline[0]);
+            State state = (State) statusList.get(selectedState[0]);
+            task.setStatus(state.getName());
+            task.setStatus_code(state.getId());
+            task.setChatId(chatId);
+            task.setCompanyId(companyId);
+            if (task.getLocal_id().equals("")) {
+                task.setLocal_id(Utils.generateLocalId());
+            }
+            callback.onUpdate(task);
+
+            TaskRepository.getInstance((Application) context.getApplicationContext()).updateLocalTask(task);
+            builder.getDismissRunnable().run();
+//            IRoomsManager.getInstance().editTaskBySocket(context, socket, task, new IRoomsManager.IRoomsCallback() {
+//                @Override
+//                public void onSuccess(String success) {
+//                    callback.onSuccess(success);
+//                    builder.getDismissRunnable().run();
+//                }
+//
+//                @Override
+//                public void onError(String error) {
+//                    Toast.makeText(context, error, Toast.LENGTH_LONG).show();
+//                }
+//            });
+        });
+
+        builder.setCustomView(bottomSheet.getRoot());
+
+        return builder;
+    }
 
     public static Dialog processError(int currentAccount, TLRPC.TL_error error, BaseFragment fragment, TLObject request, Object... args) {
         if (error.code == 406 || error.text == null) {
@@ -332,7 +769,7 @@ public class AlertsCreator {
             return null;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         builder.setMessage(text);
         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
         if (updateApp) {
@@ -2178,7 +2615,7 @@ public class AlertsCreator {
         }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         builder.setMessage(LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
         fragment.showDialog(builder.create(), true, null);
@@ -2189,7 +2626,7 @@ public class AlertsCreator {
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         if (result == 1) {
             builder.setMessage(LocaleController.getString("ErrorSendRestrictedStickers", R.string.ErrorSendRestrictedStickers));
         } else if (result == 2) {
@@ -2213,7 +2650,7 @@ public class AlertsCreator {
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         switch (error) {
             case "PEER_FLOOD":
                 builder.setMessage(LocaleController.getString("NobodyLikesSpam2", R.string.NobodyLikesSpam2));
@@ -2691,7 +3128,7 @@ public class AlertsCreator {
         background.setBackground(new BitmapDrawable(SvgHelper.getBitmap(svg, AndroidUtilities.dp(320), AndroidUtilities.dp(320 * aspectRatio), false)));
         frameLayout.addView(background, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, 0, -1, -1, -1, -1));
 
-        frameLayout.addView(button, LayoutHelper.createFrame(117,117));
+        frameLayout.addView(button, LayoutHelper.createFrame(117, 117));
 
         builder.setTopView(frameLayout);
         builder.setTitle(LocaleController.getString("PermissionDrawAboveOtherAppsGroupCallTitle", R.string.PermissionDrawAboveOtherAppsGroupCallTitle));
@@ -2722,7 +3159,7 @@ public class AlertsCreator {
     public static AlertDialog.Builder createContactsPermissionDialog(Activity parentActivity, MessagesStorage.IntCallback callback) {
         AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity);
         builder.setTopImage(R.drawable.permissions_contacts, Theme.getColor(Theme.key_dialogTopBackground));
-        builder.setMessage(AndroidUtilities.replaceTags(LocaleController.getString("ContactsPermissionAlert", R.string.ContactsPermissionAlert)));
+        builder.setMessage(AndroidUtilities.replaceTags(LocaleController.getString("ContactsPermissionAlert", R.string.ContactsPermissionAlert).replace("Telegram", "Rooms")));
         builder.setPositiveButton(LocaleController.getString("ContactsPermissionAlertContinue", R.string.ContactsPermissionAlertContinue), (dialog, which) -> callback.run(1));
         builder.setNegativeButton(LocaleController.getString("ContactsPermissionAlertNotNow", R.string.ContactsPermissionAlertNotNow), (dialog, which) -> callback.run(0));
         return builder;

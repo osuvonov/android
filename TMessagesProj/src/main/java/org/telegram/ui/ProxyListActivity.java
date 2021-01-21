@@ -30,7 +30,7 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.ActionBar.ActionBar;
@@ -365,7 +365,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
                 builder.setMessage(LocaleController.getString("DeleteProxy", R.string.DeleteProxy));
                 builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                 builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), (dialog, which) -> {
                     SharedConfig.deleteProxy(info);
                     if (SharedConfig.currentProxy == null) {

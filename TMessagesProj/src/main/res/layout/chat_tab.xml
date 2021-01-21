@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:orientation="horizontal">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/actionBarDefaultColor"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/chat_activity_chat"
+            android:layout_width="match_parent"
+            android:layout_height="37dp"
+            android:background="@drawable/btn_click2"
+            android:gravity="center"
+            android:padding="1dp"
+            android:text="Chat"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+
+        <View
+            android:id="@+id/chat_bottom_white"
+            android:layout_width="80dp"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@color/white" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@color/actionBarDefaultColor"
+        android:orientation="vertical">
+
+        <View
+            android:id="@+id/task_bottom_white"
+            android:layout_width="80dp"
+            android:layout_height="3dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@color/actionBarDefaultColor" />
+
+        <TextView
+            android:id="@+id/chat_activity_task"
+            android:layout_width="match_parent"
+            android:layout_height="37dp"
+            android:background="@drawable/btn_click2"
+            android:gravity="center"
+            android:padding="1dp"
+            android:text="Tasks"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
+
+    </FrameLayout>
+
+</LinearLayout>

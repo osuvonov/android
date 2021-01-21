@@ -11,6 +11,9 @@ package org.telegram.messenger;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
+
+import org.rooms.messenger.R;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -93,7 +96,7 @@ public class VideoEncodingService extends Service implements NotificationCenter.
             builder.setSmallIcon(android.R.drawable.stat_sys_upload);
             builder.setWhen(System.currentTimeMillis());
             builder.setChannelId(NotificationsController.OTHER_NOTIFICATIONS_CHANNEL);
-            builder.setContentTitle(LocaleController.getString("AppName", R.string.AppName));
+            builder.setContentTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
             if (isGif) {
                 builder.setTicker(LocaleController.getString("SendingGif", R.string.SendingGif));
                 builder.setContentText(LocaleController.getString("SendingGif", R.string.SendingGif));

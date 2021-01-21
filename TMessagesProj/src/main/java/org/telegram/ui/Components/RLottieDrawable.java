@@ -26,7 +26,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.DispatchQueuePool;
 import org.telegram.messenger.FileLog;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.Utilities;
 
 import java.io.File;

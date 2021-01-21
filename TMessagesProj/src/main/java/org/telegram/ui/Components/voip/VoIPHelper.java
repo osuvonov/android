@@ -31,7 +31,7 @@ import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.voip.Instance;
@@ -248,7 +248,7 @@ public class VoIPHelper {
 	public static void permissionDenied(final Activity activity, final Runnable onFinish, int code) {
 		if (!activity.shouldShowRequestPermissionRationale(Manifest.permission.RECORD_AUDIO) || code == 102 && !activity.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
 			AlertDialog dlg = new AlertDialog.Builder(activity)
-					.setTitle(LocaleController.getString("AppName", R.string.AppName))
+					.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"))
 					.setMessage(code == 102 ? LocaleController.getString("VoipNeedMicCameraPermission", R.string.VoipNeedMicCameraPermission) : LocaleController.getString("VoipNeedMicPermission", R.string.VoipNeedMicPermission))
 					.setPositiveButton(LocaleController.getString("OK", R.string.OK), null)
 					.setNegativeButton(LocaleController.getString("Settings", R.string.Settings), (dialog, which) -> {

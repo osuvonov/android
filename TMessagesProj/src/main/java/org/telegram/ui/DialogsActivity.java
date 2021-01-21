@@ -90,7 +90,7 @@ import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.NotificationsController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
@@ -1878,9 +1878,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 actionBar.setTitle(LocaleController.getString("ArchivedChats", R.string.ArchivedChats));
             } else {
                 if (BuildVars.DEBUG_VERSION) {
-                    actionBar.setTitle("Telegram Beta");
+                    actionBar.setTitle("Rooms");
                 } else {
-                    actionBar.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                    actionBar.setTitle("Rooms");
                 }
             }
             if (folderId == 0) {
@@ -3587,7 +3587,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         showDialog(permissionDialog = builder.create());
                     } else if (hasNotStoragePermission && activity.shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                         builder.setMessage(LocaleController.getString("PermissionStorage", R.string.PermissionStorage));
                         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
                         showDialog(permissionDialog = builder.create());
@@ -3604,7 +3604,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 return;
             }
             showDialog(new AlertDialog.Builder(getParentActivity())
-                    .setTitle(LocaleController.getString("AppName", R.string.AppName))
+                    .setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"))
                     .setMessage(LocaleController.getString("PermissionXiaomiLockscreen", R.string.PermissionXiaomiLockscreen))
                     .setPositiveButton(LocaleController.getString("PermissionOpenSettings", R.string.PermissionOpenSettings), (dialog, which) -> {
                         Intent intent = XiaomiUtilities.getPermissionManagerIntent();
@@ -4757,7 +4757,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     AlertsCreator.showSimpleAlert(DialogsActivity.this, LocaleController.formatString("PinFolderLimitReached", R.string.PinFolderLimitReached, LocaleController.formatPluralString("Chats", maxPinnedCount)));
                 } else {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                     builder.setMessage(LocaleController.formatString("PinToTopLimitReached2", R.string.PinToTopLimitReached2, LocaleController.formatPluralString("Chats", maxPinnedCount)));
                     builder.setNegativeButton(LocaleController.getString("FiltersSetupPinAlert", R.string.FiltersSetupPinAlert), (dialog, which) -> presentFragment(new FiltersSetupActivity()));
                     builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
@@ -5504,6 +5504,12 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
         ArrayList<String> permissons = new ArrayList<>();
         if (getUserConfig().syncContacts && askAboutContacts && activity.checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            try{
+                ((LaunchActivity)getParentActivity()).initFirstTimeSocket();
+              //  ((LaunchActivity)getParentActivity()).fillCompanyList(((LaunchActivity)getParentActivity()).getmSocket());
+                //((LaunchActivity)getParentActivity()).fillTaskList(companies);
+
+            }catch (Exception x){}
             if (alert) {
                 AlertDialog.Builder builder = AlertsCreator.createContactsPermissionDialog(activity, param -> {
                     askAboutContacts = param != 0;

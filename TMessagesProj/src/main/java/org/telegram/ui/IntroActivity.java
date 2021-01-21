@@ -44,7 +44,7 @@ import org.telegram.messenger.Intro;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -95,7 +95,7 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
         preferences.edit().putLong("intro_crashed_time", System.currentTimeMillis()).commit();
 
         titles = new String[]{
-                LocaleController.getString("Page1Title", R.string.Page1Title),
+                "Rooms",
                 LocaleController.getString("Page2Title", R.string.Page2Title),
                 LocaleController.getString("Page3Title", R.string.Page3Title),
                 LocaleController.getString("Page5Title", R.string.Page5Title),
@@ -587,7 +587,7 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
             loadTexture(R.drawable.intro_powerful_star, 18);
             loadTexture(R.drawable.intro_private_door, 19);
             loadTexture(R.drawable.intro_private_screw, 20);
-            loadTexture(R.drawable.intro_tg_plane, 21);
+            loadTexture(R.drawable.ic_ab_done, 21);
             loadTexture(R.drawable.intro_tg_sphere, 22);
 
             Intro.setTelegramTextures(textures[22], textures[21]);

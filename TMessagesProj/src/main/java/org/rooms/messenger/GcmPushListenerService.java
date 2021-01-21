@@ -6,9 +6,10 @@
  * Copyright Nikolai Kudashov, 2013-2018.
  */
 
-package org.telegram.messenger;
+package org.rooms.messenger;
 
 import android.os.SystemClock;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.SparseArray;
@@ -17,7 +18,24 @@ import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.rooms.messenger.R;
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.BuildVars;
+import org.telegram.messenger.FileLog;
+import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.LocationController;
+import org.telegram.messenger.MessageKeyData;
+import org.telegram.messenger.MessageObject;
+import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.MessagesStorage;
+import org.telegram.messenger.NotificationsController;
+import org.telegram.messenger.SharedConfig;
+import org.telegram.messenger.UserConfig;
+import org.telegram.messenger.UserObject;
+import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.TLRPC;
@@ -37,6 +55,23 @@ public class GcmPushListenerService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage message) {
         String from = message.getFrom();
         final Map data = message.getData();
+        if (data != null) {
+            if (data.keySet().contains("task")) {
+                try {
+                    String taskJson = (String) data.get("task");
+                    JSONObject jsonObject = new JSONObject(taskJson);
+
+                    int taskId = jsonObject.getInt("task_id");
+                    String title = jsonObject.getString("title");
+                    String body = jsonObject.getString("body");
+                    NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, title, body);
+                    return;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
         final long time = message.getSentTime();
         final long receiveTime = SystemClock.elapsedRealtime();
         if (BuildVars.LOGS_ENABLED) {
@@ -1099,6 +1134,8 @@ public class GcmPushListenerService extends FirebaseMessagingService {
                 FileLog.d("Refreshed token: " + token);
             }
             ApplicationLoader.postInitApplication();
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putString("subscription_token", token).commit();
+
             sendRegistrationToServer(token);
         });
     }

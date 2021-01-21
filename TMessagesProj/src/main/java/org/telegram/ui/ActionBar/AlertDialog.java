@@ -40,7 +40,7 @@ import android.widget.TextView;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.LineProgressView;
 import org.telegram.ui.Components.RLottieImageView;
@@ -847,7 +847,7 @@ public class AlertDialog extends Dialog implements Drawable.Callback {
             return;
         }
         Builder builder = new Builder(getContext());
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
         builder.setMessage(LocaleController.getString("StopLoading", R.string.StopLoading));
         builder.setPositiveButton(LocaleController.getString("WaitMore", R.string.WaitMore), null);
         builder.setNegativeButton(LocaleController.getString("Stop", R.string.Stop), (dialogInterface, i) -> {

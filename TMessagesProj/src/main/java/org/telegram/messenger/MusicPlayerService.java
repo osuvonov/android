@@ -37,6 +37,7 @@ import android.widget.RemoteViews;
 
 import com.google.android.exoplayer2.C;
 
+import org.rooms.messenger.R;
 import org.telegram.messenger.audioinfo.AudioInfo;
 import org.telegram.ui.LaunchActivity;
 

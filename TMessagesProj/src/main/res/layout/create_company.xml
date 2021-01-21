@@ -1,0 +1,43 @@
+<!-- fragment_edit_name.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+
+    <EditText
+        android:id="@+id/txt_company_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Company name"
+        android:imeOptions="actionDone"
+        android:inputType="text"
+        android:textColor="@color/black" />
+
+    <Button
+        android:id="@+id/btn_edit_name_ok"
+        android:textColor="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/holo_blue_bright"
+        android:text="Register a company" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_margin="5dp"
+        android:background="@color/lighter_gray" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:text="Companies" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_create_company"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="5dp" />
+</LinearLayout>

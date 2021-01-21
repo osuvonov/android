@@ -41,7 +41,7 @@ import android.widget.FrameLayout;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MessagesController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.GroupCallPip;
@@ -1167,6 +1167,7 @@ public class ActionBarLayout extends FrameLayout {
                                     return;
                                 }
                                 delayedOpenAnimationRunnable = null;
+                                
                                 fragment.onTransitionAnimationStart(true, false);
                                 startLayoutAnimation(true, true, preview);
                             }

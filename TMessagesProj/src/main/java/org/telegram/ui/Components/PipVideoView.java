@@ -37,7 +37,7 @@ import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.PhotoViewer;
 

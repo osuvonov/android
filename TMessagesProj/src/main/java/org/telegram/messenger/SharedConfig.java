@@ -874,10 +874,10 @@ public class SharedConfig {
 
     public static void checkSaveToGalleryFiles() {
         try {
-            File telegramPath = new File(Environment.getExternalStorageDirectory(), "Telegram");
-            File imagePath = new File(telegramPath, "Telegram Images");
+            File telegramPath = new File(Environment.getExternalStorageDirectory(), "Rooms");
+            File imagePath = new File(telegramPath, "Rooms Images");
             imagePath.mkdir();
-            File videoPath = new File(telegramPath, "Telegram Video");
+            File videoPath = new File(telegramPath, "Rooms Video");
             videoPath.mkdir();
 
             if (saveToGallery) {

@@ -59,7 +59,6 @@ import android.widget.LinearLayout;
 import android.widget.OverScroller;
 
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.BuildConfig;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLog;
 

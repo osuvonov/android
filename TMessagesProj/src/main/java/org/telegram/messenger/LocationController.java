@@ -482,7 +482,7 @@ public class LocationController extends BaseController implements NotificationCe
         return SystemClock.elapsedRealtime() > locationEndWatchTime;
     }
 
-    protected void setNewLocationEndWatchTime() {
+    public void setNewLocationEndWatchTime() {
         if (sharingLocations.isEmpty()) {
             return;
         }

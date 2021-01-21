@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.ui.Components.LayoutHelper;
 
 public class ActionBarMenuSubItem extends FrameLayout {
@@ -68,6 +68,7 @@ public class ActionBarMenuSubItem extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(48), View.MeasureSpec.EXACTLY));
+ 
     }
 
     public void setChecked(boolean checked) {

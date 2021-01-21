@@ -28,7 +28,7 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -454,7 +454,7 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 			return;
 		}
 		new AlertDialog.Builder(getParentActivity())
-				.setTitle(LocaleController.getString("AppName", R.string.AppName))
+				.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"))
 				.setMessage(LocaleController.getString("ConfirmDeleteCallLog", R.string.ConfirmDeleteCallLog))
 				.setPositiveButton(LocaleController.getString("Delete", R.string.Delete), (dialog, which) -> {
 					ArrayList<Integer> ids = new ArrayList<>();

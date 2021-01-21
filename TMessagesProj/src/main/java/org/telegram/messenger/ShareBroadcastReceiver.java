@@ -12,6 +12,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import org.rooms.messenger.R;
+
 public class ShareBroadcastReceiver extends BroadcastReceiver {
 
     @Override

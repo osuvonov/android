@@ -68,7 +68,7 @@ import org.json.JSONObject;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.BuildConfig;
+import org.rooms.messenger.BuildConfig;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.DownloadController;
 import org.telegram.messenger.FileLoader;
@@ -80,7 +80,7 @@ import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MrzRecognizer;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.SRPHelper;
 import org.telegram.messenger.SecureDocument;
 import org.telegram.messenger.SecureDocumentKey;
@@ -992,7 +992,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                                     int num = a;
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
                                     builder.setMessage(LocaleController.formatString("PassportNameCheckAlert", R.string.PassportNameCheckAlert, firstName, middleName, lastName));
-                                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                                     builder.setPositiveButton(LocaleController.getString("Done", R.string.Done), (dialogInterface, i) -> {
                                         inputFields[FIELD_NAME].setText(firstName);
                                         inputFields[FIELD_MIDNAME].setText(middleName);
@@ -3536,7 +3536,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
             finishFragment();
         });
         builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
         if (documentOnly && currentDocumentsType == null && currentType.type instanceof TLRPC.TL_secureValueTypeAddress) {
             builder.setMessage(LocaleController.getString("PassportDeleteAddressAlert", R.string.PassportDeleteAddressAlert));
         } else if (documentOnly && currentDocumentsType == null && currentType.type instanceof TLRPC.TL_secureValueTypePersonalDetails) {
@@ -4887,7 +4887,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                 builder.setMessage(LocaleController.getString("PassportDeleteScan", R.string.PassportDeleteScan));
             }
             builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-            builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+            builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
             builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), (dialog, which) -> {
                 documentsCells.remove(document);
                 if (type == UPLOADING_TYPE_SELFIE) {
@@ -5967,7 +5967,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                             deleteValueInternal(requiredType, null, null, true, this::needHideProgress, (error, text) -> needHideProgress(), documentOnly);
                         });
                         builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
-                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                         builder.setMessage(phoneField ? LocaleController.getString("PassportDeletePhoneAlert", R.string.PassportDeletePhoneAlert) : LocaleController.getString("PassportDeleteEmailAlert", R.string.PassportDeleteEmailAlert));
                         showDialog(builder.create());
                         return;
@@ -6265,9 +6265,9 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                 if (!permissionsItems.isEmpty()) {
                     if (getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
-                        builder.setMessage(LocaleController.getString("AllowReadCall", R.string.AllowReadCall));
+                        builder.setMessage(LocaleController.getString("AllowReadCall", R.string.AllowReadCall).replace("Telegram","Rooms"));
                         permissionsDialog = showDialog(builder.create());
                     } else {
                         getParentActivity().requestPermissions(permissionsItems.toArray(new String[0]), 6);
@@ -6625,7 +6625,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                 }
                 if (grantResults != null && grantResults.length != 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                     builder.setMessage(LocaleController.getString("PermissionNoAudioVideo", R.string.PermissionNoAudioVideo));
                     builder.setNegativeButton(LocaleController.getString("PermissionOpenSettings", R.string.PermissionOpenSettings), (dialog, which) -> {
                         try {
@@ -7301,7 +7301,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                     blueImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionBackground), PorterDuff.Mode.MULTIPLY));
                     frameLayout.addView(blueImageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
 
-                    titleTextView.setText(LocaleController.getString("SentAppCodeTitle", R.string.SentAppCodeTitle));
+                    titleTextView.setText(LocaleController.getString("SentAppCodeTitle", R.string.SentAppCodeTitle).replace("Telegram","Rooms"));
                 } else {
                     blueImageView = new ImageView(context);
                     blueImageView.setImageResource(R.drawable.sms_code);
@@ -7835,7 +7835,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
         public boolean onBackPressed(boolean force) {
             if (!force) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
                 builder.setMessage(LocaleController.getString("StopVerification", R.string.StopVerification));
                 builder.setPositiveButton(LocaleController.getString("Continue", R.string.Continue), null);
                 builder.setNegativeButton(LocaleController.getString("Stop", R.string.Stop), (dialogInterface, i) -> {

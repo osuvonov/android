@@ -17,7 +17,7 @@ import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.ImageLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.tgnet.TLRPC;
 
 import java.io.File;

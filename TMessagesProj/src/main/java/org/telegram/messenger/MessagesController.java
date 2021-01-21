@@ -27,6 +27,8 @@ import android.widget.Toast;
 
 import androidx.core.app.NotificationManagerCompat;
 
+import org.rooms.messenger.GcmPushListenerService;
+import org.rooms.messenger.R;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.messenger.voip.VoIPService;
@@ -10191,7 +10193,7 @@ public class MessagesController extends BaseController implements NotificationCe
         });
     }
 
-    protected void deleteMessagesByPush(long dialogId, ArrayList<Integer> ids, int channelId) {
+    public void deleteMessagesByPush(long dialogId, ArrayList<Integer> ids, int channelId) {
         getMessagesStorage().getStorageQueue().postRunnable(() -> {
             AndroidUtilities.runOnUIThread(() -> {
                 getNotificationCenter().postNotificationName(NotificationCenter.messagesDeleted, ids, channelId, false);
@@ -13461,7 +13463,7 @@ public class MessagesController extends BaseController implements NotificationCe
             return;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
         builder.setMessage(reason);
         fragment.showDialog(builder.create());

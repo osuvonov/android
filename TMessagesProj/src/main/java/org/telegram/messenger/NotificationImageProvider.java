@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.rooms.messenger.BuildConfig;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;

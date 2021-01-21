@@ -26,6 +26,7 @@ import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
+import org.rooms.messenger.R;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;

@@ -36,6 +36,7 @@ import android.util.LongSparseArray;
 import android.util.SparseArray;
 import android.widget.Toast;
 
+import org.rooms.messenger.R;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteDatabase;
 import org.telegram.SQLite.SQLitePreparedStatement;

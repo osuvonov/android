@@ -10,6 +10,7 @@ package org.telegram.messenger;
 
 import android.text.TextUtils;
 
+import org.rooms.messenger.R;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.tgnet.TLRPC;
 

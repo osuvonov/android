@@ -10,14 +10,17 @@ package org.telegram.ui.Adapters;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.telegram.irooms.Constants;
+import org.telegram.irooms.IRoomsManager;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
-import org.telegram.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.DrawerActionCell;
@@ -237,6 +240,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             return;
         }
         int eventType = Theme.getEventType();
+        int companyIcon;
         int newGroupIcon;
         int newSecretIcon;
         int newChannelIcon;
@@ -292,6 +296,19 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             helpIcon = R.drawable.menu_help;
             peopleNearbyIcon = R.drawable.menu_nearby;
         }
+        companyIcon = R.drawable.outline_pack;
+
+        if (!PreferenceManager.getDefaultSharedPreferences(mContext).getString(Constants.SELECTED_COMPANY_NAME, "").equals("")) {
+            items.add(new Item(1, IRoomsManager.getInstance().getSelectedCompanyName(mContext), companyIcon));
+        }
+
+        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.IS_OWNER, false)) {
+            items.add(new Item(21, "Add members to the company", newGroupIcon));
+        }
+        if (!PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.HAS_COMPANY, false)) {
+            items.add(new Item(13, "Register a company", companyIcon));
+        }
+        items.add(new Item(11, "Saved Tasks/Messages", savedIcon));
         items.add(new Item(2, LocaleController.getString("NewGroup", R.string.NewGroup), newGroupIcon));
         //items.add(new Item(3, LocaleController.getString("NewSecretChat", R.string.NewSecretChat), newSecretIcon));
         //items.add(new Item(4, LocaleController.getString("NewChannel", R.string.NewChannel), newChannelIcon));
@@ -300,11 +317,11 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         if (hasGps) {
             items.add(new Item(12, LocaleController.getString("PeopleNearby", R.string.PeopleNearby), peopleNearbyIcon));
         }
-        items.add(new Item(11, LocaleController.getString("SavedMessages", R.string.SavedMessages), savedIcon));
+      //items.add(new Item(11, LocaleController.getString("SavedMessages", R.string.SavedMessages), savedIcon));
         items.add(new Item(8, LocaleController.getString("Settings", R.string.Settings), settingsIcon));
         items.add(null); // divider
         items.add(new Item(7, LocaleController.getString("InviteFriends", R.string.InviteFriends), inviteIcon));
-        items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), helpIcon));
+      //items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), helpIcon));
     }
 
     public int getId(int position) {

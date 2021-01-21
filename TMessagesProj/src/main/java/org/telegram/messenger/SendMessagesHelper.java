@@ -41,6 +41,7 @@ import android.widget.Toast;
 import androidx.annotation.UiThread;
 import androidx.core.view.inputmethod.InputContentInfoCompat;
 
+import org.rooms.messenger.R;
 import org.telegram.messenger.audioinfo.AudioInfo;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
@@ -125,6 +126,16 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         }
     });
 
+    private MessageSentListener messageSentListener;
+
+    public void setMessageSentListener(MessageSentListener ls) {
+        this.messageSentListener = ls;
+    }
+
+    public interface MessageSentListener {
+        void onMessageSent(int oldId, int newId, String message);
+    }
+
     public static class SendingMediaInfo {
         public Uri uri;
         public String path;
@@ -146,6 +157,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
         public interface LocationProviderDelegate {
             void onLocationAcquired(Location location);
+
             void onUnableLocationAcquire();
         }
 
@@ -296,7 +308,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         public boolean performMediaUpload;
 
         public boolean retriedToSend;
-        
+
         public int topMessageId;
 
         public TLRPC.InputMedia inputUploadMedia;
@@ -390,7 +402,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                     processSentMessage(obj.getId());
                     removeFromUploadingMessages(obj.getId(), scheduled);
                 }
-                delayedMessages.remove( "group_" + groupId);
+                delayedMessages.remove("group_" + groupId);
             } else {
                 getMessagesStorage().markMessageAsSendError(obj.messageOwner, obj.scheduled);
                 obj.messageOwner.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
@@ -403,6 +415,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
     }
 
     private static volatile SendMessagesHelper[] Instance = new SendMessagesHelper[UserConfig.MAX_ACCOUNT_COUNT];
+
     public static SendMessagesHelper getInstance(int num) {
         SendMessagesHelper localInstance = Instance[num];
         if (localInstance == null) {
@@ -811,7 +824,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         if (object.messageOwner.entities != null) {
             object.messageOwner.flags |= 128;
         } else {
-            object.messageOwner.flags &=~ 128;
+            object.messageOwner.flags &= ~128;
         }
 
         object.previousMedia = null;
@@ -1648,6 +1661,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                             });
                                         } else {
                                             getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                                                if (messageSentListener != null) {
+                                                    messageSentListener.onMessageSent(oldId, newMsgObj1.id,newMsgObj1.message);
+                                                }
                                                 getMessagesStorage().updateMessageStateAndId(newMsgObj1.random_id, (long) oldId, newMsgObj1.id, 0, false, peer_id.channel_id, scheduleDate != 0 ? 1 : 0);
                                                 getMessagesStorage().putMessages(sentMessages, true, false, false, 0, scheduleDate != 0);
                                                 AndroidUtilities.runOnUIThread(() -> {
@@ -1832,7 +1848,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             newMsg.entities = messageObject.editingMessageEntities;
                             newMsg.flags |= 128;
                         } else {
-                            newMsg.flags &=~ 128;
+                            newMsg.flags &= ~128;
                         }
                     } else {
                         if (messageObject.editingMessageEntities != null) {
@@ -1845,7 +1861,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                 newMsg.entities = entities;
                                 newMsg.flags |= 128;
                             } else {
-                                newMsg.flags &=~ 128;
+                                newMsg.flags &= ~128;
                             }
                         }
                         messageObject.generateCaption();
@@ -2506,7 +2522,8 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                 req.msg_id = messageObject.getId();
                 req.game = button instanceof TLRPC.TL_keyboardButtonGame;
                 if (button.requires_password) {
-                    req.password = req.password = srp != null ? srp : new TLRPC.TL_inputCheckPasswordEmpty();;
+                    req.password = req.password = srp != null ? srp : new TLRPC.TL_inputCheckPasswordEmpty();
+                    ;
                     req.flags |= 4;
                 }
                 if (button.data != null) {
@@ -4616,6 +4633,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
                             getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, grouped_id, existFlags, scheduled);
                             getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                                if (messageSentListener != null) {
+                                    messageSentListener.onMessageSent(oldId, newMsgObj.id,newMsgObj.message);
+                                }
                                 getMessagesStorage().updateMessageStateAndId(newMsgObj.random_id, (long) oldId, newMsgObj.id, 0, false, newMsgObj.peer_id.channel_id, scheduled ? 1 : 0);
                                 getMessagesStorage().putMessages(sentMessages, true, false, false, 0, scheduled);
                                 AndroidUtilities.runOnUIThread(() -> {
@@ -4918,6 +4938,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             } else {
                                 getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, 0L, existFlags, scheduled);
                                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
+                                    if (messageSentListener != null) {
+                                        messageSentListener.onMessageSent(oldId, newMsgObj.id,newMsgObj.message);
+                                    }
                                     getMessagesStorage().updateMessageStateAndId(newMsgObj.random_id, (long) oldId, newMsgObj.id, 0, false, newMsgObj.peer_id.channel_id, scheduled ? 1 : 0);
                                     getMessagesStorage().putMessages(sentMessages, true, false, false, 0, scheduled);
                                     AndroidUtilities.runOnUIThread(() -> {
@@ -6125,7 +6148,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                     bitmap = ImageLoader.loadBitmap(path, uri, 800, 800, true);
                 }
                 if (!bigExists) {
-                    TLRPC.PhotoSize size = ImageLoader.scaleAndSaveImage(bigSize, bitmap, Bitmap.CompressFormat.JPEG, true, AndroidUtilities.getPhotoSize(), AndroidUtilities.getPhotoSize(), 80, false, 101, 101,false);
+                    TLRPC.PhotoSize size = ImageLoader.scaleAndSaveImage(bigSize, bitmap, Bitmap.CompressFormat.JPEG, true, AndroidUtilities.getPhotoSize(), AndroidUtilities.getPhotoSize(), 80, false, 101, 101, false);
                     if (size != bigSize) {
                         photo.sizes.add(0, size);
                     }
@@ -6474,7 +6497,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             if (groupMediaFinal) {
                                 mediaCount++;
                                 params.put("groupId", "" + groupId);
-                                if (mediaCount == 10 || a == count -1) {
+                                if (mediaCount == 10 || a == count - 1) {
                                     params.put("final", "1");
                                     lastGroupId = 0;
                                 }
@@ -6637,7 +6660,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             if (!muted && groupMediaFinal) {
                                 mediaCount++;
                                 params.put("groupId", "" + groupId);
-                                if (mediaCount == 10 || a == count -1) {
+                                if (mediaCount == 10 || a == count - 1) {
                                     params.put("final", "1");
                                     lastGroupId = 0;
                                 }
@@ -6958,7 +6981,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
     public static Bitmap createVideoThumbnail(String filePath, int kind) {
         float size;
-        if (kind == MediaStore.Video.Thumbnails.FULL_SCREEN_KIND)  {
+        if (kind == MediaStore.Video.Thumbnails.FULL_SCREEN_KIND) {
             size = 1920;
         } else if (kind == MediaStore.Video.Thumbnails.MICRO_KIND) {
             size = 96;
