@@ -19489,21 +19489,18 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                 if (name == null || name.equals("")) {
                     try {
-                        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case DialogInterface.BUTTON_POSITIVE:
-                                        Bundle args = new Bundle();
-                                        args.putString("action", "add");
-                                        args.putBoolean("create_company", true);
-                                        presentFragment(new AddMembersToCompanyActivity(args));
-                                        break;
+                        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    Bundle args = new Bundle();
+                                    args.putString("action", "add");
+                                    args.putBoolean("create_company", true);
+                                    presentFragment(new AddMembersToCompanyActivity(args));
+                                    break;
 
-                                    case DialogInterface.BUTTON_NEGATIVE:
-                                        dialog.dismiss();
-                                        break;
-                                }
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    dialog.dismiss();
+                                    break;
                             }
                         };
 
@@ -19554,6 +19551,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         userList.add(user);
                                     }
                                 }
+
+                                final int messageId = selectedObject.getId();
+                                final int senderId = selectedObject.getSenderId();
                                 final BottomSheet bottomSheet = AlertsCreator.createTaskEditorDialogBySocket(getParentActivity(), null,
                                         selectedObject.messageText, userList, statusList, selectedObject.getChatId() == 0 ? (int) dialog_id : selectedObject.getChatId(), new TaskManagerListener() {
                                             @Override
@@ -19561,6 +19561,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                                 taskList.add(task);
                                                 String message = "Task #" + task.getLocal_id() + "\n" + task.getDescription();
                                                 SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
+
+                                                if (messageId != 0 && senderId == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
+                                                    ArrayList<Integer> messageIds;
+                                                    messageIds = new ArrayList<>();
+                                                    messageIds.add(messageId);
+                                                    MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+
+                                                }
                                             }
 
                                             @Override
@@ -19591,7 +19599,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         }
                     }
                 }
-
+                final int messageId = selectedObject.getId();
+                final int senderId = selectedObject.getSenderId();
                 final BottomSheet bottomSheet = AlertsCreator.createTaskEditorDialogBySocket(getParentActivity(), selectedUser,
                         selectedObject.messageText, userList, statusList, selectedObject.getChatId() == 0 ? (int) dialog_id : selectedObject.getChatId(), new TaskManagerListener() {
                             @Override
@@ -19599,11 +19608,17 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 taskList.add(task);
                                 String message = "Task #" + task.getLocal_id() + "\n" + task.getDescription();
                                 SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
+
+                                if (messageId != 0 && senderId == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
+                                    ArrayList<Integer> messageIds;
+                                    messageIds = new ArrayList<>();
+                                    messageIds.add(messageId);
+                                    MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+                                }
                             }
 
                             @Override
                             public void onUpdate(Task task) {
-
                             }
                         }).create();
                 bottomSheet.setFocusable(true);

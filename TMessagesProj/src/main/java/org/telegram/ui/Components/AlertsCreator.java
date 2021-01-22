@@ -48,9 +48,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AbsListView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -113,6 +116,7 @@ import org.telegram.ui.ThemePreviewActivity;
 import org.telegram.ui.TooManyCommunitiesActivity;
 
 import java.net.IDN;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,7 +132,7 @@ import io.socket.client.Socket;
 
 public class AlertsCreator {
 
-    public static BottomSheet.Builder createTaskEditorDialogBySocket(Context context,  TLRPC.User selectedUser, CharSequence text, ArrayList<TLRPC.User> userList,
+    public static BottomSheet.Builder createTaskEditorDialogBySocket(Context context, TLRPC.User selectedUser, CharSequence text, ArrayList<TLRPC.User> userList,
                                                                      ArrayList<State> statusList, int chatId, TaskManagerListener callback) {
         if (context == null) {
             return null;
@@ -165,7 +169,7 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 1;
                 deadline[0] = TaskUtil.getEndOfTheDay();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
@@ -204,45 +208,72 @@ public class AlertsCreator {
             }
         }
 
-        bottomSheet.tvSelectMembers.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Select member");
 
-                // add a list
-                String[] people = new String[members.size()];
-                int i = 0;
+        bottomSheet.tvSelectMembers.setOnClickListener(view -> {
+            android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
+            builder12.setTitle("Select members");
 
-                for (MemberState member : members) {
-                    String userName = "";
-                    TLRPC.User user = member.getUser();
-                    if (user != null) {
-                        userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-                    }
-                    people[i] = userName;
-                    i++;
+            // add a list
+            CharSequence[] memberList = new CharSequence[userList.size()];
+
+            boolean[] checkedItems = new boolean[userList.size()];
+
+            int i = 0;
+
+            for (TLRPC.User user : userList) {
+                String userName = "";
+                checkedItems[i] = false;
+                if (user != null) {
+                    userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
                 }
-
-                builder.setItems(people, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        selectedMembers.clear();//todo later we should add multiple members
-                        MemberState memberState = members.get(which);
-
-                        selectedMembers.add((long) memberState.getUser().id);
-                        dialog.dismiss();
-                        TLRPC.User user = memberState.getUser();
-                        String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-
-                        bottomSheet.tvSelectMembers.setText(userName);
-                    }
-                });
-
-                // create and show the alert dialog
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                if (selectedUser != null && selectedUser.id == user.id) {
+                    checkedItems[i] = true;
+                }
+                memberList[i] = userName;
+                i++;
             }
+            ListView listview = new ListView(context);
+            listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+            ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(context,
+                    android.R.layout.simple_list_item_multiple_choice, memberList);
+            listview.setAdapter(adapter);
+
+            builder12.setMultiChoiceItems(memberList, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i, boolean b) {
+                    checkedItems[i] = b;
+                }
+            });
+            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int j) {
+                    StringBuilder selectedUsers = new StringBuilder();
+                    selectedMembers.clear();
+                    for (int i1 = 0; i1 < userList.size(); i1++) {
+
+                        if (checkedItems[i1]) {
+                            TLRPC.User user = userList.get(i1);
+                            selectedMembers.add((long) user.id);
+                            if (selectedUsers.length() > 0) {
+                                selectedUsers.append(", ");
+                            }
+                            String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+
+                            selectedUsers.append(userName);
+                        }
+                    }
+                    if (selectedUsers.toString().length() == 0) {
+                        bottomSheet.tvSelectMembers.setText("Select members");
+                    } else {
+                        bottomSheet.tvSelectMembers.setText(selectedUsers);
+                    }
+                }
+            });
+
+
+            // create and show the alert dialog
+            android.app.AlertDialog dialog = builder12.create();
+            dialog.show();
         });
         if (selectedUser != null) {
             selectedMembers.clear();
@@ -261,7 +292,7 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 2;
                 deadline[0] = TaskUtil.getEndOfTomorrow();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
@@ -304,18 +335,7 @@ public class AlertsCreator {
             TaskRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
 
             builder.getDismissRunnable().run();
-//            IRoomsManager.getInstance().createTaskBySocket(context, socket, task, new IRoomsManager.IRoomsCallback() {
-//                @Override
-//                public void onSuccess(String success) {
-//                    callback.onSuccess(success);
-//                    builder.getDismissRunnable().run();
-//                }
-//
-//                @Override
-//                public void onError(String error) {
-//                    Log.e("createTaskBySocket", error);
-//                }
-//            });
+
         });
 
         builder.setCustomView(bottomSheet.getRoot());
@@ -332,8 +352,6 @@ public class AlertsCreator {
         final String[] deadline = {TaskUtil.getMaxDate()};
         ArrayList<Long> selectedMembers = new ArrayList<>();
         final int[] selectedState = {0};
-
-        //  selectedMembers.add(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);//todo will we add task owner as members of task
 
         final int[] selectedDeadLineView = {-1};
 
@@ -361,7 +379,7 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 1;
                 deadline[0] = TaskUtil.getEndOfTheDay();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
@@ -376,7 +394,7 @@ public class AlertsCreator {
             deadline[0] = TaskUtil.getEndOfTomorrow();
         } else if (task.getExpires_at() != null && !task.getExpires_at().equals("")) {
             Calendar calendar = Calendar.getInstance();
-            calendar.setTime(TaskUtil.getDateFromISO(task.getExpires_at())==null?new Date():TaskUtil.getDateFromISO(task.getExpires_at()));
+            calendar.setTime(TaskUtil.getDateFromISO(task.getExpires_at()) == null ? new Date() : TaskUtil.getDateFromISO(task.getExpires_at()));
             deadline[0] = task.getExpires_at();
             bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
@@ -409,62 +427,91 @@ public class AlertsCreator {
         bottomSheet.etTaskStatus.setText(task.getStatus());
         selectedState[0] = task.getStatus_code();
 
-        ArrayList<MemberState> members = new ArrayList<>();
-        for (TLRPC.User user : userList) {
-            if (user != null) {
-                MemberState state = new MemberState(user);
-                members.add(state);
-            }
-        }
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
-            AlertDialog.Builder builder12 = new AlertDialog.Builder(context);
-            builder12.setTitle("Select member");
+            android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
+            builder12.setTitle("Select members");
 
             // add a list
-            String[] memberList = new String[members.size()];
+            CharSequence[] memberList = new CharSequence[userList.size()];
+
+            boolean[] checkedItems = new boolean[userList.size()];
+
             int i = 0;
 
-            for (MemberState member : members) {
+            for (TLRPC.User user : userList) {
                 String userName = "";
-                TLRPC.User user = member.getUser();
+                checkedItems[i] = false;
                 if (user != null) {
                     userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                }
+                if (task.getMembers().contains((long) user.id)) {
+                    checkedItems[i] = true;
                 }
                 memberList[i] = userName;
                 i++;
             }
+            ListView listview = new ListView(context);
+            listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+            ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(context,
+                    android.R.layout.simple_list_item_multiple_choice, memberList);
+            listview.setAdapter(adapter);
 
-            builder12.setItems(memberList, new DialogInterface.OnClickListener() {
+            builder12.setMultiChoiceItems(memberList, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
                 @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    selectedMembers.clear();//todo later we should add multiple members
-                    MemberState memberState = members.get(which);
+                public void onClick(DialogInterface dialogInterface, int i, boolean b) {
+                    checkedItems[i] = b;
+                }
+            });
+            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int j) {
+                    StringBuilder selectedUsers = new StringBuilder();
+                    selectedMembers.clear();
+                    for (int i1 = 0; i1 < userList.size(); i1++) {
 
-                    selectedMembers.add((long) memberState.getUser().id);
-                    dialog.dismiss();
-                    TLRPC.User user = memberState.getUser();
-                    String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                        if (checkedItems[i1]) {
+                            TLRPC.User user = userList.get(i1);
+                            selectedMembers.add((long) user.id);
+                            if (selectedUsers.length() > 0) {
+                                selectedUsers.append(", ");
+                            }
+                            String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
 
-                    bottomSheet.tvSelectMembers.setText(userName);
+                            selectedUsers.append(userName);
+                        }
+                    }
+                    if (selectedUsers.toString().length() == 0) {
+                        bottomSheet.tvSelectMembers.setText("Select members");
+                    } else {
+                        bottomSheet.tvSelectMembers.setText(selectedUsers);
+                    }
                 }
             });
 
+
             // create and show the alert dialog
-            AlertDialog dialog = builder12.create();
+            android.app.AlertDialog dialog = builder12.create();
             dialog.show();
         });
         selectedMembers.clear();
-        if (task.getMembers().size() != 0) {
-            for (int i = 0; i < userList.size(); i++) {
-                if (task.getMembers().get(0).intValue() == userList.get(i).id) {
-                    TLRPC.User user = userList.get(i);
-                    if (user != null) {
-                        String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-                        bottomSheet.tvSelectMembers.setText(userName);
-                        break;
-                    }
+        StringBuilder selectedUsers = new StringBuilder();
+        for (int i1 = 0; i1 < userList.size(); i1++) {
+            TLRPC.User user = userList.get(i1);
+
+            if (user != null && task.getMembers().contains((long) user.id)) {
+                selectedMembers.add((long) user.id);
+                if (selectedUsers.length() > 0) {
+                    selectedUsers.append(", ");
                 }
+                String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+
+                selectedUsers.append(userName);
             }
+        }
+        if (selectedUsers.toString().length() == 0) {
+            bottomSheet.tvSelectMembers.setText("Select members");
+        } else {
+            bottomSheet.tvSelectMembers.setText(selectedUsers);
         }
 
         selectedMembers.addAll(task.getMembers());
@@ -481,7 +528,7 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 2;
                 deadline[0] = TaskUtil.getEndOfTomorrow();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0])==null?new Date():TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
@@ -515,7 +562,7 @@ public class AlertsCreator {
                 deadline[0] = TaskUtil.getMaxDate();
             }
             task.setExpiresAt(deadline[0]);
-            State state = (State) statusList.get(selectedState[0]);
+            State state = statusList.get(selectedState[0]);
             task.setStatus(state.getName());
             task.setStatus_code(state.getId());
             task.setChatId(chatId);
@@ -527,18 +574,7 @@ public class AlertsCreator {
 
             TaskRepository.getInstance((Application) context.getApplicationContext()).updateLocalTask(task);
             builder.getDismissRunnable().run();
-//            IRoomsManager.getInstance().editTaskBySocket(context, socket, task, new IRoomsManager.IRoomsCallback() {
-//                @Override
-//                public void onSuccess(String success) {
-//                    callback.onSuccess(success);
-//                    builder.getDismissRunnable().run();
-//                }
-//
-//                @Override
-//                public void onError(String error) {
-//                    Toast.makeText(context, error, Toast.LENGTH_LONG).show();
-//                }
-//            });
+
         });
 
         builder.setCustomView(bottomSheet.getRoot());

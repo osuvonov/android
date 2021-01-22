@@ -103,6 +103,7 @@
                     android:drawableEnd="@drawable/ic_select_member"
                     android:drawableRight="@drawable/ic_select_member"
                     android:gravity="center_vertical"
+                    android:ellipsize="end"
                     android:padding="8dp"
                     android:textAllCaps="false"
                     android:textSize="14sp"
