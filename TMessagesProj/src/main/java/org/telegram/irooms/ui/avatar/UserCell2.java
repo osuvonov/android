@@ -55,7 +55,7 @@ public class UserCell2 extends FrameLayout {
 
         avatarImageView = new BackupImageView(context);
         avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
-        addView(avatarImageView, LayoutHelper.createFrame(23, 23, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : 7 + padding, 6, LocaleController.isRTL ? 7 + padding : 0, 0));
+        addView(avatarImageView, LayoutHelper.createFrame(23, 23, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : padding, 2, LocaleController.isRTL ?  padding : 0, 0));
 
         setFocusable(true);
     }

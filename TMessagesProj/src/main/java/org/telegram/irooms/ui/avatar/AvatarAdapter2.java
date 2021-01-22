@@ -11,7 +11,10 @@ package org.telegram.irooms.ui.avatar;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
+import org.rooms.messenger.R;
 import org.telegram.tgnet.TLRPC;
 
 import java.util.ArrayList;
@@ -37,7 +40,10 @@ public class AvatarAdapter2 extends RecyclerView.Adapter<AvatarAdapter2.AvatarVi
     @NonNull
     @Override
     public AvatarViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        UserCell2 avatarCell = new UserCell2(mContext, 2, 0, false);
+        UserCell2 avatarCell = new UserCell2(mContext, 0, 0, false);
+//        return new AvatarViewHolder(avatarCell);
+//        ImageView avatarCell = new ImageView(mContext);
+        avatarCell.setLayoutParams(new LinearLayout.LayoutParams(62, 40));
         return new AvatarViewHolder(avatarCell);
     }
 
@@ -54,10 +60,12 @@ public class AvatarAdapter2 extends RecyclerView.Adapter<AvatarAdapter2.AvatarVi
     public class AvatarViewHolder extends RecyclerView.ViewHolder {
         UserCell2 userCell;
 
+        //
         AvatarViewHolder(View itemView) {
             super(itemView);
             userCell = (UserCell2) itemView;
         }
+
         public void bind(TLRPC.User user) {
             userCell.setData(user, null, null, 0);
         }

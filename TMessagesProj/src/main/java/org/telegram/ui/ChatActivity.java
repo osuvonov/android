@@ -21757,11 +21757,13 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
-                                        users.add(getMessagesController().getUser((int) i));
+                                        TLRPC.User user=getMessagesController().getUser((int) i);
+                                        if (user!=null)
+                                        users.add(user);
                                     }
                                     AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
                                     LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
-
+                                    manager.setOrientation(LinearLayoutManager.HORIZONTAL);
                                     layout.tlAvatars.setLayoutManager(manager);
                                     layout.tlAvatars.setAdapter(avatarAdapter);
                                     layout.tlStatus.setTextColor(Utils.getColor(taskItem.getStatus_code()));
@@ -21875,23 +21877,16 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
-                                        users.add(getMessagesController().getUser((int) i));
+                                        TLRPC.User user = getMessagesController().getUser((int)i);
+                                        if (user!=null)
+                                            users.add(user);
                                     }
-//                                TLRPC.User user = getMessagesController().getUser((int) taskItem.getCreatorId());
-//                                if (user != null) {
-//                                    users.add(user);
-//                                    UserCell2 avatarCell = new UserCell2(mContext, 2, 0, false);
-//                                    avatarCell.setData(user, null, null, 0);
-//                                    layout.tlAvatars.addView(avatarCell);
-//                                }
-                                    if (layout.tlAvatars.getChildCount() > 0) {
-                                        layout.tlAvatars.removeAllViews();
-                                    }
-                                    for (TLRPC.User user1 : users) {
-                                        UserCell2 avatarCell = new UserCell2(mContext, 2, 0, false);
-                                        avatarCell.setData(user1, null, null, 0);
-                                        layout.tlAvatars.addView(avatarCell);
-                                    }
+                                    AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
+                                    LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
+                                    manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                                    layout.tlAvatars.setLayoutManager(manager);
+                                    layout.tlAvatars.setAdapter(avatarAdapter);
+
                                     layout.tlStatus.setText(taskItem.getStatus());
                                     layout.tlStatus.setTextColor(Utils.getColor(taskItem.getStatus_code()));
                                     return;
@@ -21995,23 +21990,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
-                                        users.add(getMessagesController().getUser((int) i));
+                                        TLRPC.User user = getMessagesController().getUser((int)i);
+                                        if (user!=null)
+                                        users.add(user);
                                     }
-                                    TLRPC.User user = getMessagesController().getUser((int) taskItem.getCreatorId());
-//                                if (user != null) {
-//                                    users.add(user);
-//                                    UserCell2 avatarCell = new UserCell2(mContext, 2, 0, false);
-//                                    avatarCell.setData(user, null, null, 0);
-//                                    layout.tlAvatars.addView(avatarCell);
-//                                }
-                                    if (layout.tlAvatars.getChildCount() > 0) {
-                                        layout.tlAvatars.removeAllViews();
-                                    }
-                                    for (TLRPC.User user1 : users) {
-                                        UserCell2 avatarCell = new UserCell2(mContext, 2, 0, false);
-                                        avatarCell.setData(user1, null, null, 0);
-                                        layout.tlAvatars.addView(avatarCell);
-                                    }
+                                    AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
+                                    LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
+                                    manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                                    layout.tlAvatars.setLayoutManager(manager);
+                                    layout.tlAvatars.setAdapter(avatarAdapter);
 
                                     layout.tlStatus.setText(taskItem.getStatus());
                                     layout.tlStatus.setTextColor(Utils.getColor(taskItem.getStatus_code()));
@@ -22757,11 +22744,13 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 layout.tlDescription.setText(taskDescription);
                 ArrayList<TLRPC.User> users = new ArrayList<>();
                 for (long i : taskItem.getMembers()) {
-                    users.add(getMessagesController().getUser((int) i));
+                    TLRPC.User user=getMessagesController().getUser((int) i);
+                    if (user!=null)
+                        users.add(user);
                 }
                 AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
                 LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
-
+                manager.setOrientation(LinearLayoutManager.HORIZONTAL);
                 layout.tlAvatars.setLayoutManager(manager);
                 layout.tlAvatars.setAdapter(avatarAdapter);
                 layout.tlStatus.setText(taskItem.getStatus());
