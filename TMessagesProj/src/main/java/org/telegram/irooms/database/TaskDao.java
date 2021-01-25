@@ -53,8 +53,8 @@ public abstract class TaskDao {
     public abstract List<Task> getTasksByChatIdAndCompanyId(int company_id, long chatId, long ownerId);
 
 
-    @Query("select * from tbl_tasks where (chat_id in (:chatId,:ownerId)) ")
-    public abstract List<Task> getTasksByChatId(long chatId, long ownerId);
+    @Query("select * from tbl_tasks where (chat_id in (:chatId)) ")
+    public abstract List<Task> getTasksByChatId(long chatId);
 
 
     @Query("select * from tbl_tasks where local_status in (1,2)")

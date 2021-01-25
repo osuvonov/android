@@ -13,7 +13,4 @@ public interface Constants {
     int OTHERS_TASK=98;
     String SOCKET_ENDPOINT = "https://sock.irooms.io";
 
-    enum Status {
-        New, Done, TODO, Finished
-    }
 }

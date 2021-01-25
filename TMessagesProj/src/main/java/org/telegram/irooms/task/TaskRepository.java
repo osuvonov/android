@@ -48,7 +48,7 @@ public class TaskRepository {
         });
     }
 
-    public void getAccountTasks(long ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getUserTasks(long ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getAccountTasks(ownerId + ""));
     }
 
@@ -175,8 +175,8 @@ public class TaskRepository {
     }
 
 
-    public void getChatRelatedTasks(long chatID, long ownerID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatId(chatID, ownerID);
+    public void getChatRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatId(chatID);
 
         arrayListIRoomCallback.onSuccess(list);
     }

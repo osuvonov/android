@@ -20,8 +20,6 @@ import org.telegram.irooms.task.TaskRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.messenger.UserConfig;
-import org.telegram.tgnet.TLRPC;
-import org.telegram.ui.LaunchActivity;
 
 import java.util.ArrayList;
 
@@ -354,24 +352,23 @@ public class IRoomsManager {
         }, result -> arrayListIRoomCallback.onSuccess(result));
     }
 
-    public void getChatRelatedTasks(Context context, long chatId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getGroupChatRelatedTasks(Context context, long chatId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
                     long ownerId = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().id;
-                    repository.getChatRelatedTasks(chatId, ownerId, arrayListIRoomCallback);
+                    repository.getChatRelatedTasks(chatId, arrayListIRoomCallback);
                     return "";
                 }, result -> {
                 }
         );
     }
 
-    public void getAccountTasks(Context context, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getUserTasks(Context context, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
-                    long ownerId = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().id;
-                    repository.getAccountTasks(ownerId, arrayListIRoomCallback);
+                    repository.getUserTasks(id, arrayListIRoomCallback);
                     return "";
                 }, result -> {
                 }

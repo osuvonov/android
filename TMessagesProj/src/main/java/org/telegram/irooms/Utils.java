@@ -93,4 +93,8 @@ public class Utils {
         }
         return Color.RED;
     }
+
+    public static String[] getStatuses() {
+        return new String[]{"To do", "Doing", "Done", "Archive"};
+    }
 }

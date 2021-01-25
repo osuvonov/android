@@ -116,7 +116,6 @@ import org.telegram.ui.ThemePreviewActivity;
 import org.telegram.ui.TooManyCommunitiesActivity;
 
 import java.net.IDN;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -128,7 +127,6 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 
 import androidx.annotation.RequiresApi;
-import io.socket.client.Socket;
 
 public class AlertsCreator {
 
@@ -208,30 +206,30 @@ public class AlertsCreator {
             }
         }
 
+        // add a list
+        CharSequence[] memberList = new CharSequence[userList.size()];
+        SpannableStringBuilder selectedUsers = new SpannableStringBuilder();
+
+        boolean[] checkedItems = new boolean[userList.size()];
+        int i = 0;
+
+        for (TLRPC.User user : userList) {
+            String userName = "";
+            checkedItems[i] = false;
+            if (user != null) {
+                userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+            }
+            if (selectedUser != null && selectedUser.id == user.id) {
+                checkedItems[i] = true;
+            }
+            memberList[i] = userName;
+            i++;
+        }
 
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
             android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
             builder12.setTitle("Select members");
 
-            // add a list
-            CharSequence[] memberList = new CharSequence[userList.size()];
-
-            boolean[] checkedItems = new boolean[userList.size()];
-
-            int i = 0;
-
-            for (TLRPC.User user : userList) {
-                String userName = "";
-                checkedItems[i] = false;
-                if (user != null) {
-                    userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-                }
-                if (selectedUser != null && selectedUser.id == user.id) {
-                    checkedItems[i] = true;
-                }
-                memberList[i] = userName;
-                i++;
-            }
             ListView listview = new ListView(context);
             listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
             ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(context,
@@ -242,17 +240,12 @@ public class AlertsCreator {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i, boolean b) {
                     checkedItems[i] = b;
-                }
-            });
-            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int j) {
-                    StringBuilder selectedUsers = new StringBuilder();
                     selectedMembers.clear();
+                    selectedUsers.clear();
                     for (int i1 = 0; i1 < userList.size(); i1++) {
+                        TLRPC.User user = userList.get(i1);
 
-                        if (checkedItems[i1]) {
-                            TLRPC.User user = userList.get(i1);
+                        if (user != null && checkedItems[i1]) {
                             selectedMembers.add((long) user.id);
                             if (selectedUsers.length() > 0) {
                                 selectedUsers.append(", ");
@@ -269,12 +262,18 @@ public class AlertsCreator {
                     }
                 }
             });
-
+            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int j) {
+                    //
+                }
+            });
 
             // create and show the alert dialog
             android.app.AlertDialog dialog = builder12.create();
             dialog.show();
         });
+
         if (selectedUser != null) {
             selectedMembers.clear();
             selectedMembers.add((long) selectedUser.id);
@@ -399,8 +398,8 @@ public class AlertsCreator {
             bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
         }
-        bottomSheet.etTaskStatus.setText(statusList.get(0).getName());
 
+        bottomSheet.etTaskStatus.setText(statusList.get(0).getName());
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
             builder1.setTitle("Select status");
@@ -427,29 +426,40 @@ public class AlertsCreator {
         bottomSheet.etTaskStatus.setText(task.getStatus());
         selectedState[0] = task.getStatus_code();
 
+        CharSequence[] memberList = new CharSequence[userList.size()];
+        SpannableStringBuilder selectedUsers = new SpannableStringBuilder();
+        boolean[] checkedItems = new boolean[userList.size()];
+
+        for (int i = 0; i < userList.size(); i++) {
+            String userName = "";
+            checkedItems[i] = false;
+            TLRPC.User user = userList.get(i);
+
+            if (user != null) {
+                userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                if (task.getMembers().contains((long) user.id)) {
+                    checkedItems[i] = true;
+                    if (selectedUsers.length() > 0) {
+                        selectedUsers.append(", ");
+                    }
+                    selectedUsers.append(userName);
+                }
+                memberList[i] = userName;
+            }
+        }
+
+        if (selectedUsers.toString().length() == 0) {
+            bottomSheet.tvSelectMembers.setText("Select members");
+        } else {
+            bottomSheet.tvSelectMembers.setText(selectedUsers);
+        }
+
+        selectedMembers.addAll(task.getMembers());
+
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
             android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
             builder12.setTitle("Select members");
 
-            // add a list
-            CharSequence[] memberList = new CharSequence[userList.size()];
-
-            boolean[] checkedItems = new boolean[userList.size()];
-
-            int i = 0;
-
-            for (TLRPC.User user : userList) {
-                String userName = "";
-                checkedItems[i] = false;
-                if (user != null) {
-                    userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-                }
-                if (task.getMembers().contains((long) user.id)) {
-                    checkedItems[i] = true;
-                }
-                memberList[i] = userName;
-                i++;
-            }
             ListView listview = new ListView(context);
             listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
             ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(context,
@@ -460,17 +470,12 @@ public class AlertsCreator {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i, boolean b) {
                     checkedItems[i] = b;
-                }
-            });
-            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int j) {
-                    StringBuilder selectedUsers = new StringBuilder();
+                    selectedUsers.clear();
                     selectedMembers.clear();
                     for (int i1 = 0; i1 < userList.size(); i1++) {
+                        TLRPC.User user = userList.get(i1);
 
-                        if (checkedItems[i1]) {
-                            TLRPC.User user = userList.get(i1);
+                        if (user != null && checkedItems[i1]) {
                             selectedMembers.add((long) user.id);
                             if (selectedUsers.length() > 0) {
                                 selectedUsers.append(", ");
@@ -487,34 +492,18 @@ public class AlertsCreator {
                     }
                 }
             });
+            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int j) {
 
+                }
+            });
 
             // create and show the alert dialog
             android.app.AlertDialog dialog = builder12.create();
             dialog.show();
         });
-        selectedMembers.clear();
-        StringBuilder selectedUsers = new StringBuilder();
-        for (int i1 = 0; i1 < userList.size(); i1++) {
-            TLRPC.User user = userList.get(i1);
 
-            if (user != null && task.getMembers().contains((long) user.id)) {
-                selectedMembers.add((long) user.id);
-                if (selectedUsers.length() > 0) {
-                    selectedUsers.append(", ");
-                }
-                String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-
-                selectedUsers.append(userName);
-            }
-        }
-        if (selectedUsers.toString().length() == 0) {
-            bottomSheet.tvSelectMembers.setText("Select members");
-        } else {
-            bottomSheet.tvSelectMembers.setText(selectedUsers);
-        }
-
-        selectedMembers.addAll(task.getMembers());
 
         bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
             boolean tomorrowSelected = selectedDeadLineView[0] == 2;

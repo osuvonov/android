@@ -120,7 +120,6 @@ import org.telegram.irooms.task.TaskRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.irooms.task.TaskUtil;
 import org.telegram.irooms.ui.avatar.AvatarAdapter2;
-import org.telegram.irooms.ui.avatar.UserCell2;
 import org.telegram.irooms.ui.spinner.State;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -747,7 +746,78 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         void openSearch(String text);
 
         default void onUnpin(boolean all, boolean hide) {
+        }
+    }
 
+    private void fillChatRelatedTasks() {
+        final int chatId = arguments.getInt("chat_id", 0);
+        final int userId = arguments.getInt("user_id", 0);
+
+        if (chatId == 0 && userId == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
+            //saved messages/tasks
+            IRoomsManager.getInstance().getUserTasks(getParentActivity(), userId,
+                    new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                        @Override
+                        public void onSuccess(ArrayList<Task> list) {
+                            if (list != null && list.size() != 0) {
+                                taskList = list;
+                                getParentActivity().runOnUiThread(() -> {
+
+                                    if (chatListView.getAdapter() != null) {
+                                        chatListView.getAdapter().notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else if (chatId == 0 && userId != UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
+            //private chat with someone
+            IRoomsManager.getInstance().getUserTasks(getParentActivity(), userId,
+                    new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                        @Override
+                        public void onSuccess(ArrayList<Task> list) {
+                            if (list != null && list.size() != 0) {
+                                taskList = list;
+                                getParentActivity().runOnUiThread(() -> {
+
+                                    if (chatListView.getAdapter() != null) {
+                                        chatListView.getAdapter().notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        } else if (chatId != 0) {
+            //group chat
+            IRoomsManager.getInstance().getGroupChatRelatedTasks(getParentActivity(), Math.abs(dialog_id),
+                    new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                        @Override
+                        public void onSuccess(ArrayList<Task> list) {
+                            if (list != null && list.size() != 0) {
+                                taskList = list;
+                                getParentActivity().runOnUiThread(() -> {
+                                    if (chatListView.getAdapter() != null) {
+                                        chatListView.getAdapter().notifyDataSetChanged();
+                                    }
+                                });
+                            }
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                        }
+                    });
         }
     }
 
@@ -1669,31 +1739,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         LaunchActivity.TaskListener taskListener = new LaunchActivity.TaskListener() {
             @Override
             public void onCompanyTaskListCame(ArrayList<Task> list) {
-                IRoomsManager.getInstance().getChatRelatedTasks(getParentActivity(), Math.abs(dialog_id),
-                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                            @Override
-                            public void onSuccess(ArrayList<Task> list) {
-                                Log.w("getChatRelatedTasks", "success list size: " + list.size());
-                                if (list != null && list.size() != 0) {
-                                    taskList = list;
-                                    getParentActivity().runOnUiThread(() -> {
-
-                                        if (chatListView.getAdapter() != null) {
-                                            chatListView.getAdapter().notifyDataSetChanged();
-                                        }
-                                    });
-                                }
-                            }
-
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-//                taskList.addAll(list);
-//                if (getParentActivity() != null) {
-//                    getParentActivity().runOnUiThread(() -> chatListView.getAdapter().notifyDataSetChanged());
-//                }
+                fillChatRelatedTasks();
             }
 
             @Override
@@ -1739,53 +1785,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             });
             ((LaunchActivity) getParentActivity()).setTaskListener(taskListener);
 
-            if (arguments.getInt("user_id", 0) != 0) {
-                IRoomsManager.getInstance().getAccountTasks(getParentActivity(),
-                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                            @Override
-                            public void onSuccess(ArrayList<Task> list) {
-                                Log.w("getChatRelatedTasks", "success list size: " + list.size());
-                                if (list != null && list.size() != 0) {
-                                    taskList = list;
-                                    getParentActivity().runOnUiThread(() -> {
-
-                                        if (chatListView.getAdapter() != null) {
-                                            chatListView.getAdapter().notifyDataSetChanged();
-                                        }
-                                    });
-                                }
-                            }
-
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            } else {
-                IRoomsManager.getInstance().getChatRelatedTasks(getParentActivity(), Math.abs(dialog_id),
-                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                            @Override
-                            public void onSuccess(ArrayList<Task> list) {
-                                Log.w("getChatRelatedTasks", "success list size: " + list.size());
-                                if (list != null && list.size() != 0) {
-                                    taskList = list;
-                                    getParentActivity().runOnUiThread(() -> {
-
-                                        if (chatListView.getAdapter() != null) {
-                                            chatListView.getAdapter().notifyDataSetChanged();
-                                        }
-                                    });
-                                }
-                            }
-
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            }
-
-
+            fillChatRelatedTasks();
         }
 
 
@@ -5114,16 +5114,24 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
-
+                bottomTaskSort.taskArchive.setBackgroundResource(R.drawable.btn_click);
             });
 
+            bottomTaskSort.taskArchive.setOnClickListener(view -> {
+                ((TaskAdapter) chatListView.getAdapter()).sort(3);
+                bottomTaskSort.taskArchive.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
+                bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
+                bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
+                bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
+                bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
+            });
             bottomTaskSort.taskTodo.setOnClickListener(view -> {
                 ((TaskAdapter) chatListView.getAdapter()).sort(0);
                 bottomTaskSort.taskTodo.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
-
+                bottomTaskSort.taskArchive.setBackgroundResource(R.drawable.btn_click);
             });
 
             bottomTaskSort.taskDoing.setOnClickListener(view -> {
@@ -5132,6 +5140,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 bottomTaskSort.taskDoing.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
+                bottomTaskSort.taskArchive.setBackgroundResource(R.drawable.btn_click);
             });
 
             bottomTaskSort.taskAll.setOnClickListener(view -> {
@@ -5140,6 +5149,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 bottomTaskSort.taskAll.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
+                bottomTaskSort.taskArchive.setBackgroundResource(R.drawable.btn_click);
             });
 
             contentView.addView(bottomTaskSort.getRoot(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 50, Gravity.BOTTOM | Gravity.LEFT));
@@ -19512,10 +19522,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
                     return;
                 }
-                String[] statuses = {"To do", "Doing", "Done"};
+                String[] statuses = Utils.getStatuses();
                 ArrayList<State> statusList = new ArrayList<>();
 
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < statuses.length; i++) {
                     State state = new State(i, statuses[i]);
                     statusList.add(state);
                 }
@@ -19523,15 +19533,23 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 TLRPC.User selectedUser = null;
                 final int chatId = arguments.getInt("chat_id", 0);
                 if (chatId == 0) {
-                    TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-                    if (user != null) {
-                        userList.add(user);
-                        selectedUser = user;
-                    }
+                    if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                        TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                        if (user != null) {
+                            userList.add(user);
+                            selectedUser = user;
+                        }
+                    } else {
+                        TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                        if (user != null) {
+                            userList.add(user);
+                            selectedUser = user;
+                        }
 
-                    user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                    if (user != null) {
-                        userList.add(user);
+                        user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                        if (user != null) {
+                            userList.add(user);
+                        }
                     }
                 } else {
                     if (selectedCompany == null) {
@@ -19567,13 +19585,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                                     messageIds = new ArrayList<>();
                                                     messageIds.add(messageId);
                                                     MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
-
                                                 }
                                             }
 
                                             @Override
                                             public void onUpdate(Task task) {
-
                                             }
                                         }).create();
                                 bottomSheet.setFocusable(true);
@@ -21696,10 +21712,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     layout.tlTaskedit.setOnClickListener(view -> {
-                                        String[] statuses = {"To do", "Doing", "Done"};
+                                        String[] statuses =Utils.getStatuses();
                                         ArrayList<State> statusList = new ArrayList<>();
 
-                                        for (int i = 0; i < 3; i++) {
+                                        for (int i = 0; i < statuses.length; i++) {
                                             State state = new State(i, statuses[i]);
                                             statusList.add(state);
                                         }
@@ -21708,13 +21724,33 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                                         final int chatId = arguments.getInt("chat_id", 0);
                                         if (chatId == 0) {
-                                            TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-                                            if (user != null && selectedCompany.getMembers().contains((long) user.id)) {
-                                                userList.add(user);
-                                            }
-                                            user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                                            if (user != null) {
-                                                userList.add(user);
+                                            if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                                                boolean found = false;
+                                                for (long id : finalTaskItem.getMembers()) {
+                                                    if (dialog_id == id) {
+                                                        found = true;
+                                                    }
+                                                    TLRPC.User user = getMessagesController().getUser((int) id);
+                                                    if (user != null) {
+                                                        userList.add(user);
+                                                    }
+                                                }
+                                                if (!found) {
+                                                    TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                                    if (user != null) {
+                                                        userList.add(user);
+                                                    }
+                                                }
+                                            } else {
+                                                TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                                                if (user != null) {
+                                                    userList.add(user);
+                                                }
+
+                                                user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                                if (user != null) {
+                                                    userList.add(user);
+                                                }
                                             }
                                         } else {
                                             List<Long> temp = new ArrayList<>();
@@ -21757,9 +21793,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
-                                        TLRPC.User user=getMessagesController().getUser((int) i);
-                                        if (user!=null)
-                                        users.add(user);
+                                        TLRPC.User user = getMessagesController().getUser((int) i);
+                                        if (user != null)
+                                            users.add(user);
                                     }
                                     AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
                                     LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
@@ -21818,10 +21854,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     layout.tlTaskedit.setOnClickListener(view -> {
-                                        String[] statuses = {"To do", "Doing", "Done"};
+                                        String[] statuses = Utils.getStatuses();
                                         ArrayList<State> statusList = new ArrayList<>();
 
-                                        for (int i = 0; i < 3; i++) {
+                                        for (int i = 0; i < statuses.length; i++) {
                                             State state = new State(i, statuses[i]);
                                             statusList.add(state);
                                         }
@@ -21829,13 +21865,33 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         ArrayList<TLRPC.User> userList = new ArrayList<>();
 
                                         if (chatId == 0) {
-                                            TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-                                            if (user != null && selectedCompany.getMembers().contains((long) user.id)) {
-                                                userList.add(user);
-                                            }
-                                            user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                                            if (user != null) {
-                                                userList.add(user);
+                                            if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                                                boolean found = false;
+                                                for (long id : finalTaskItem.getMembers()) {
+                                                    if (dialog_id == id) {
+                                                        found = true;
+                                                    }
+                                                    TLRPC.User user = getMessagesController().getUser((int) id);
+                                                    if (user != null) {
+                                                        userList.add(user);
+                                                    }
+                                                }
+                                                if (!found) {
+                                                    TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                                    if (user != null) {
+                                                        userList.add(user);
+                                                    }
+                                                }
+                                            } else {
+                                                TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                                                if (user != null) {
+                                                    userList.add(user);
+                                                }
+
+                                                user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                                if (user != null) {
+                                                    userList.add(user);
+                                                }
                                             }
                                         } else {
                                             List<Long> temp = new ArrayList<>();
@@ -21877,8 +21933,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
-                                        TLRPC.User user = getMessagesController().getUser((int)i);
-                                        if (user!=null)
+                                        TLRPC.User user = getMessagesController().getUser((int) i);
+                                        if (user != null)
                                             users.add(user);
                                     }
                                     AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
@@ -21930,10 +21986,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     layout.tlTaskedit.setOnClickListener(view -> {
-                                        String[] statuses = {"To do", "Doing", "Done"};
+                                        String[] statuses =Utils.getStatuses();
                                         ArrayList<State> statusList = new ArrayList<>();
 
-                                        for (int i = 0; i < 3; i++) {
+                                        for (int i = 0; i < statuses.length; i++) {
                                             State state = new State(i, statuses[i]);
                                             statusList.add(state);
                                         }
@@ -21942,13 +21998,33 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         final int chatId = arguments.getInt("chat_id", 0);
 
                                         if (chatId == 0) {
-                                            TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-                                            if (user != null && selectedCompany.getMembers().contains((long) user.id)) {
-                                                userList.add(user);
-                                            }
-                                            user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                                            if (user != null) {
-                                                userList.add(user);
+                                            if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                                                boolean found = false;
+                                                for (long id : finalTaskItem.getMembers()) {
+                                                    if (dialog_id == id) {
+                                                        found = true;
+                                                    }
+                                                    TLRPC.User user = getMessagesController().getUser((int) id);
+                                                    if (user != null) {
+                                                        userList.add(user);
+                                                    }
+                                                }
+                                                if (!found) {
+                                                    TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                                    if (user != null) {
+                                                        userList.add(user);
+                                                    }
+                                                }
+                                            } else {
+                                                TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                                                if (user != null) {
+                                                    userList.add(user);
+                                                }
+
+                                                user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                                if (user != null) {
+                                                    userList.add(user);
+                                                }
                                             }
                                         } else {
                                             List<Long> temp = new ArrayList<>();
@@ -21990,9 +22066,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
-                                        TLRPC.User user = getMessagesController().getUser((int)i);
-                                        if (user!=null)
-                                        users.add(user);
+                                        TLRPC.User user = getMessagesController().getUser((int) i);
+                                        if (user != null)
+                                            users.add(user);
                                     }
                                     AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
                                     LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
@@ -22681,10 +22757,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     layout.iconDeadline.setVisibility(View.VISIBLE);
                 }
                 layout.tlTaskedit.setOnClickListener(view -> {
-                    String[] statuses = {"To do", "Doing", "Done"};
+                    String[] statuses = Utils.getStatuses();
                     ArrayList<State> statusList = new ArrayList<>();
 
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < statuses.length; i++) {
                         State state = new State(i, statuses[i]);
                         statusList.add(state);
                     }
@@ -22692,13 +22768,33 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     ArrayList<TLRPC.User> userList = new ArrayList<>();
 
                     if (chatId == 0) {
-                        TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-                        if (user != null) {
-                            userList.add(user);
-                        }
-                        user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                        if (user != null) {
-                            userList.add(user);
+                        if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                            boolean found = false;
+                            for (long id : taskItem.getMembers()) {
+                                if (dialog_id == id) {
+                                    found = true;
+                                }
+                                TLRPC.User user = getMessagesController().getUser((int) id);
+                                if (user != null) {
+                                    userList.add(user);
+                                }
+                            }
+                            if (!found) {
+                                TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                if (user != null) {
+                                    userList.add(user);
+                                }
+                            }
+                        } else {
+                            TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                            if (user != null) {
+                                userList.add(user);
+                            }
+
+                            user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                            if (user != null) {
+                                userList.add(user);
+                            }
                         }
                     } else {
                         List<Long> temp = new ArrayList<>();
@@ -22744,8 +22840,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 layout.tlDescription.setText(taskDescription);
                 ArrayList<TLRPC.User> users = new ArrayList<>();
                 for (long i : taskItem.getMembers()) {
-                    TLRPC.User user=getMessagesController().getUser((int) i);
-                    if (user!=null)
+                    TLRPC.User user = getMessagesController().getUser((int) i);
+                    if (user != null)
                         users.add(user);
                 }
                 AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
