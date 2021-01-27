@@ -2843,6 +2843,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             Bundle args = new Bundle();
             args.putBoolean("destroyAfterSelect", true);
             presentFragment(new ContactsActivity(args));
+            startCreatingTaskFromFAB();
         });
 
 
@@ -2872,7 +2873,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
             });
         }
-        floatingButtonContainer.setContentDescription(LocaleController.getString("NewMessageTitle", R.string.NewMessageTitle));
+        floatingButtonContainer.setContentDescription("Create task");
         floatingButtonContainer.addView(floatingButton, LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 56 : 60), (Build.VERSION.SDK_INT >= 21 ? 56 : 60), Gravity.LEFT | Gravity.TOP, 10, 6, 10, 0));
 
         searchTabsView = null;
@@ -3125,6 +3126,15 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         return fragmentView;
+    }
+    boolean creatingTaskFromFAB=false;
+    private void startCreatingTaskFromFAB() {
+        creatingTaskFromFAB=true;
+        //1. select member or group from list
+        //2. after selecting open that window
+        //3. automatically show popup dialog fragment
+
+
     }
 
     private void updateContextViewPosition() {

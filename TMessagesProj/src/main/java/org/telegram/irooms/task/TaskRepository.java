@@ -109,35 +109,27 @@ public class TaskRepository {
 
     //
     public void createOnlineTask(Task task, long currentAccountId) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            task.setLocalStatus(3);
-//            if (currentAccountId == task.getCreatorId()) {
-//                if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
-//                    taskDao.deleteTask(task.getLocal_id());
-//                }
-//            } else {
+        task.setLocalStatus(3);
 
-            if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
-                Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
-                if (task1 != null && task1.getId() == -1) {
-                    taskDao.deleteTask(task.getLocal_id());
-                } else {
-                    taskDao.deleteTask(task.getId());
-                }
+        if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
+            Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
+            if (task1 != null && task1.getId() == -1) {
+                taskDao.deleteTask(task.getLocal_id());
             } else {
                 taskDao.deleteTask(task.getId());
             }
-//            }
-            taskDao.createTask(task);
-        });
+        } else {
+            taskDao.deleteTask(task.getId());
+        }
+        taskDao.createTask(task);
     }
 
     public void updateLocalTask(Task task) {
         TaskDatabase.databaseWriteExecutor.execute(() -> {
             if (task.getLocalStatus() == 1) {
                 Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
-                if (task1!=null)
-                task.setpId(task1.getpId());
+                if (task1 != null)
+                    task.setpId(task1.getpId());
                 taskDao.updateTask(task);
                 return;
             }
@@ -156,14 +148,12 @@ public class TaskRepository {
     }
 
     public void updateOnlineTask(Task task) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            Task task1 = taskDao.getTask(task.getId());
-            if (task1 != null) {
-                task.setpId(task1.getpId());
-            }
-            task.setLocalStatus(3);
-            taskDao.updateTask(task);
-        });
+        Task task1 = taskDao.getTask(task.getId());
+        if (task1 != null) {
+            task.setpId(task1.getpId());
+        }
+        task.setLocalStatus(3);
+        taskDao.updateTask(task);
     }
 
     public ArrayList<Company> getCompanyList() {

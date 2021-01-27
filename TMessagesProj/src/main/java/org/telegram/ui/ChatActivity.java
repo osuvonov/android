@@ -44,7 +44,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
+
+import androidx.preference.PreferenceManager;
+
 import android.provider.MediaStore;
 import android.text.Layout;
 import android.text.Spannable;
@@ -1725,15 +1727,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1);
 
-        ((LaunchActivity) getParentActivity()).setBackendTaskListener(new LaunchActivity.BackendTaskListener() {
+        ((LaunchActivity) getParentActivity()).setBackendTaskListener(new LaunchActivity.BackendForOfflineTaskListener() {
             @Override
-            public void onBackendTaskCreated(Task task) {
-                ChatActivity.this.onTaskCreated(task);
+            public void onBackendTaskForLocalTaskCreated(Task task) {
+                ChatActivity.this.onCloudTaskCreatedForOfflineTask(task);
             }
 
             @Override
-            public void onBackendTaskUpdated(Task task) {
-                ChatActivity.this.onTaskUpdated(task);
+            public void onBackendTaskForOfflineTaskUpdated(Task task) {
+                ChatActivity.this.onCloudTaskUpdatedForOfflineTask(task);
             }
         });
         LaunchActivity.TaskListener taskListener = new LaunchActivity.TaskListener() {
@@ -1745,11 +1747,20 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             @Override
             public void onTaskUpdated(Task task) {
                 try {
-                    for (int i = 0; i < taskList.size(); i++) {
+                    for (int i = taskList.size() - 1; i >= 0; i--) {
                         if (taskList.get(i).getId() == task.getId()) {
                             taskList.remove(i);
                             taskList.add(i, task);
-                            chatListView.getAdapter().notifyDataSetChanged();
+                            if (chatListView.getAdapter() != null) {
+                                if (!isChatMode) {
+                                    if (chatListView.getAdapter() != null) {
+                                        ((TaskAdapter) chatListView.getAdapter()).updateWithCurrentSort();
+                                    }
+                                } else {
+                                    chatListView.getAdapter().notifyDataSetChanged();
+                                }
+                            }
+
                             break;
                         }
                     }
@@ -1841,32 +1852,45 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         SendMessagesHelper.getInstance(currentAccount).setMessageSentListener(new SendMessagesHelper.MessageSentListener() {
             @Override
             public void onMessageSent(int oldId, int newId, String message) {
+                Log.e("last message: ", "last message: " + messages.get(0).messageText + " id:" + messages.get(0).getId());
+                Log.e("ids to delete: ", "oldid: " + oldId + ", new id: " + newId);
+
                 for (int i = 0; i < messages.size(); i++) {
-                    if (oldId == messages.get(i).getId()) {
-                        sentMessagesToBeDeleted.put(oldId, newId);
+                    if (oldId == messages.get(i).getId() || newId == messages.get(i).getId()) {
 
-                        ArrayList<Integer> messageIds;
-                        messageIds = new ArrayList<>();
-                        messageIds.add(newId);
-                        String taskIdentificationPart = messages.get(i).messageText.subSequence(0, messages.get(i).messageText.toString().indexOf('\n')).toString();
-                        String localTaskId = "";
-                        if (taskIdentificationPart.contains("Task #")) {
-                            localTaskId = taskIdentificationPart.substring(taskIdentificationPart.indexOf("#") + 1);
-                        }
+                        sentMessagesToBeDeleted.put(messages.get(i).getId(), newId);
 
-                        if (localTaskId.length() >= 19 && messageIds.size() > 0) {
-                            String finalLocalTaskId = localTaskId;
-                            Task taskItem = taskList.stream().filter(task -> task.getLocal_id().equals(finalLocalTaskId)).findFirst().orElse(null);
-                            if (taskItem != null && taskItem.getId() > 0) {
-                                MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
-                                sentMessagesToBeDeleted.remove(oldId);
-                                getParentActivity().runOnUiThread(() -> {
-                                    chatListView.getAdapter().notifyDataSetChanged();
-                                });
+                        try {
+                            ArrayList<Integer> messageIds;
+                            messageIds = new ArrayList<>();
+                            messageIds.add(newId);
+                            String taskIdentificationPart = messages.get(i).messageText.subSequence(0, messages.get(i).messageText.toString().indexOf('\n')).toString();
+                            String localTaskId = "";
+                            if (taskIdentificationPart.contains("Task #")) {
+                                localTaskId = taskIdentificationPart.substring(taskIdentificationPart.indexOf("#") + 1);
                             }
-                        }
 
-                        break;
+                            if (localTaskId.length() >= 19 && messageIds.size() > 0) {
+                                String finalLocalTaskId = localTaskId;
+                                Task taskItem = taskList.stream().filter(task -> task.getLocal_id().equals(finalLocalTaskId)).findFirst().orElse(null);
+                                if (taskItem != null && taskItem.getId() > 0) {
+                                    MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+                                    taskList.remove(taskItem);
+                                    sentMessagesToBeDeleted.remove(messages.get(i).getId());
+                                    try {
+                                        getParentActivity().runOnUiThread(() -> {
+                                            chatListView.getAdapter().notifyDataSetChanged();
+                                        });
+                                    } catch (Exception x) {
+                                    }
+                                }
+                            }
+
+                            break;
+                        } catch (Exception c) {
+                            c.printStackTrace();
+                            break;
+                        }
                     }
                 }
             }
@@ -5083,6 +5107,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             chatTab.chatActivityTask.setOnClickListener(view -> {
                 if (isChatMode) {
                     isChatMode = false;
+
                     chatListView.setAdapter(new TaskAdapter());
                     chatListView.getAdapter().notifyDataSetChanged();
                     try {
@@ -19542,8 +19567,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     } else {
                         TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                         if (user != null) {
-                            userList.add(user);
-                            selectedUser = user;
+                            if (selectedCompany.getMembers().contains((long)user.id)) {
+                                userList.add(user);
+                                selectedUser = user;
+                            }
                         }
 
                         user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
@@ -19576,15 +19603,25 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         selectedObject.messageText, userList, statusList, selectedObject.getChatId() == 0 ? (int) dialog_id : selectedObject.getChatId(), new TaskManagerListener() {
                                             @Override
                                             public void onCreate(Task task) {
+                                                Log.e("Local task create ", task.getLocal_id());
                                                 taskList.add(task);
                                                 String message = "Task #" + task.getLocal_id() + "\n" + task.getDescription();
                                                 SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
+                                                Log.e("message sent ", message);
 
+                                                // if message which is selected to create task, is created by message owner
+                                                // we delete it
                                                 if (messageId != 0 && senderId == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
                                                     ArrayList<Integer> messageIds;
                                                     messageIds = new ArrayList<>();
                                                     messageIds.add(messageId);
                                                     MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+                                                    try {
+                                                        getParentActivity().runOnUiThread(() -> {
+                                                            chatListView.getAdapter().notifyDataSetChanged();
+                                                        });
+                                                    } catch (Exception x) {
+                                                    }
                                                 }
                                             }
 
@@ -19624,12 +19661,19 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 taskList.add(task);
                                 String message = "Task #" + task.getLocal_id() + "\n" + task.getDescription();
                                 SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
-
+                                // if message which is selected to create task, is created
+                                // by message owner we delete it
                                 if (messageId != 0 && senderId == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
                                     ArrayList<Integer> messageIds;
                                     messageIds = new ArrayList<>();
                                     messageIds.add(messageId);
                                     MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+                                    try {
+                                        getParentActivity().runOnUiThread(() -> {
+                                            chatListView.getAdapter().notifyDataSetChanged();
+                                        });
+                                    } catch (Exception x) {
+                                    }
                                 }
                             }
 
@@ -19647,11 +19691,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         selectedObjectToEditCaption = null;
     }
 
-
-    private void onTaskCreated(Task task) {
-        Log.w("task test", " Backend task created: " + task.getId() + " " + task.getDescription());
+    private void onCloudTaskCreatedForOfflineTask(Task task) {
+        Log.e(" Backend task created: ", task.getId() + " " + task.getDescription());
         Task t = taskList.stream().filter(task1 -> task1.getLocal_id().equals(task.getLocal_id())).findFirst().orElse(null);
         if (t != null) {
+            Log.e("t.getMEssageId ", "id: " + t.getMessageId());
             task.setMessageId(t.getMessageId());
             taskList.remove(t);
             taskList.add(task);
@@ -19677,7 +19721,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         }
     }
 
-    private void onTaskUpdated(Task task) {
+    private void onCloudTaskUpdatedForOfflineTask(Task task) {
         Task t = taskList.stream().filter(task1 -> task1.getId() == (task.getId())).findFirst().orElse(null);
         if (t != null) {
             taskList.remove(t);
@@ -21645,6 +21689,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            holder.itemView.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT));
+
             if (position == botInfoRow) {
                 BotHelpCell helpView = (BotHelpCell) holder.itemView;
                 if (UserObject.isReplyUser(currentUser)) {
@@ -21664,6 +21710,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         if (taskIdentificationPart.contains("Task #")) {
                             try {
                                 String localTaskId = taskIdentificationPart.substring(taskIdentificationPart.indexOf("#") + 1);
+                                ArrayList<Task> tasks = null;
                                 Task taskItem = null;
                                 taskItem = taskList.stream().filter(task -> task.getLocal_id().equals(localTaskId)).findFirst().orElse(null);
                                 if (taskItem != null && taskItem.getId() > 0 && taskItem.getLocalStatus() == 3) {
@@ -21689,7 +21736,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                                         MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
                                         sentMessagesToBeDeleted.remove(key);
-                                        notifyItemRemoved(position);
+                                        try {
+                                            getParentActivity().runOnUiThread(() -> {
+                                                chatListView.getAdapter().notifyDataSetChanged();
+                                            });
+                                        } catch (Exception x) {
+                                        }
                                     }
                                 }
                                 if (taskItem == null) {
@@ -21712,7 +21764,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     layout.tlTaskedit.setOnClickListener(view -> {
-                                        String[] statuses =Utils.getStatuses();
+                                        String[] statuses = Utils.getStatuses();
                                         ArrayList<State> statusList = new ArrayList<>();
 
                                         for (int i = 0; i < statuses.length; i++) {
@@ -21744,7 +21796,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             } else {
                                                 TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                                                 if (user != null) {
-                                                    userList.add(user);
+                                                    if (selectedCompany.getMembers().contains(user.id)) {
+                                                        userList.add(user);
+                                                    }
                                                 }
 
                                                 user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
@@ -21885,7 +21939,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             } else {
                                                 TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                                                 if (user != null) {
-                                                    userList.add(user);
+                                                    if (selectedCompany.getMembers().contains((long)user.id)) {
+                                                        userList.add(user);
+                                                    }
                                                 }
 
                                                 user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
@@ -21986,7 +22042,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     layout.tlTaskedit.setOnClickListener(view -> {
-                                        String[] statuses =Utils.getStatuses();
+                                        String[] statuses = Utils.getStatuses();
                                         ArrayList<State> statusList = new ArrayList<>();
 
                                         for (int i = 0; i < statuses.length; i++) {
@@ -22018,7 +22074,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             } else {
                                                 TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                                                 if (user != null) {
-                                                    userList.add(user);
+                                                    if (selectedCompany.getMembers().contains((long)user.id)) {
+                                                        userList.add(user);
+                                                    }
                                                 }
 
                                                 user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
@@ -22086,6 +22144,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         }
                     }
                 }
+
                 View view = holder.itemView;
 
                 if (view instanceof ChatMessageCell) {
@@ -22296,6 +22355,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
                 }
             }
+
         }
 
         @Override
@@ -22719,6 +22779,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             notifyDataSetChanged();
         }
 
+        public void updateWithCurrentSort() {
+            sort(currentSort);
+        }
+
         public TaskAdapter() {
             taskList = (ArrayList<Task>) taskList.stream().sorted(Comparator.comparingLong(Task::getId)).collect(Collectors.toList());
             if (chatInfo == null) {
@@ -22788,7 +22852,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         } else {
                             TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                             if (user != null) {
-                                userList.add(user);
+                                if (selectedCompany.getMembers().contains((long)user.id)) {
+                                    userList.add(user);
+                                }
                             }
 
                             user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
@@ -23005,6 +23071,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 chatMessageCellsCache.add((ChatMessageCell) view);
             }
         }
+
     }
 
     public static boolean isClickableLink(String str) {

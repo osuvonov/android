@@ -3,7 +3,7 @@ package org.telegram.irooms.network;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
- import android.preference.PreferenceManager;
+ import androidx.preference.PreferenceManager;
 import android.util.Base64;
 import android.widget.Toast;
 

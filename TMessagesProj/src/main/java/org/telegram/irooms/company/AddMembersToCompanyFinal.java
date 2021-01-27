@@ -28,7 +28,7 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.InputFilter;
 import android.view.Gravity;
 import android.view.View;

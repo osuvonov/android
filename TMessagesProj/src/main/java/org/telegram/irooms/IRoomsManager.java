@@ -3,7 +3,7 @@ package org.telegram.irooms;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.exoplayer2.util.Log;
 import com.google.gson.Gson;
@@ -154,7 +154,6 @@ public class IRoomsManager {
 
                             taskRepository.createOnlineTask(myTask, UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId());
                             callback.onCreate(myTask);
-
                         }
                         return myTask;
                     }, result -> {

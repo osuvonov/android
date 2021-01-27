@@ -9,7 +9,7 @@
 package org.rooms.messenger;
 
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.SparseArray;

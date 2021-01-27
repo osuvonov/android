@@ -34,14 +34,11 @@ public abstract class TaskDao {
     @Update(onConflict = OnConflictStrategy.REPLACE)
     public abstract void updateTask(Task task);
 
-    @Query("select * from tbl_tasks where id=:taskId")
+    @Query("select * from tbl_tasks where id=:taskId order by id desc limit 1")
     public abstract Task getTask(long taskId);
 
-    @Query("select * from tbl_tasks where local_id=:localId")
+    @Query("select  * from tbl_tasks where local_id=:localId order by pId desc limit 1")
     public abstract Task getTaskByLocalId(String localId);
-
-    @Query("select * from tbl_tasks where pId=:pId")
-    public abstract Task getTaskByPid(long pId);
 
     @Query("select * from tbl_tasks ")
     public abstract List<Task> getTasks();

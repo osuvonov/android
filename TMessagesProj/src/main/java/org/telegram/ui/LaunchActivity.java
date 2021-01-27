@@ -35,7 +35,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.StatFs;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -244,16 +244,16 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     }
 
-    public interface BackendTaskListener {
-        void onBackendTaskCreated(Task task);
+    public interface BackendForOfflineTaskListener {
+        void onBackendTaskForLocalTaskCreated(Task task);
 
-        void onBackendTaskUpdated(Task task);
+        void onBackendTaskForOfflineTaskUpdated(Task task);
 
     }
 
-    private BackendTaskListener backendTaskListener;
+    private BackendForOfflineTaskListener backendTaskListener;
 
-    public void setBackendTaskListener(BackendTaskListener s) {
+    public void setBackendTaskListener(BackendForOfflineTaskListener s) {
         this.backendTaskListener = s;
     }
 
@@ -435,7 +435,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     }
                 });
             }
-            Log.e("init comapesines","size: "+companies.size());
+            Log.e("init comapesines", "size: " + companies.size());
             fillTaskList(companies);
         } catch (Exception e) {
             e.printStackTrace();
@@ -454,7 +454,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         TaskSocketQuery query = new TaskSocketQuery();
         query.setCompany_id(PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getInt(Constants.SELECTED_COMPANY_ID, 0));
 
-        IRoomsManager.getInstance().getMyTasks(this,companies, mSocket, query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+        IRoomsManager.getInstance().getMyTasks(this, companies, mSocket, query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
             @Override
             public void onSuccess(ArrayList<Task> success) {
                 Log.e("company task list ", " size: " + success.size());
@@ -754,7 +754,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     @Override
                     public void onCreate(Task task) {
                         if (backendTaskListener != null) {
-                            backendTaskListener.onBackendTaskCreated(task);
+                            backendTaskListener.onBackendTaskForLocalTaskCreated(task);
                         }
                     }
 
@@ -776,7 +776,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     @Override
                     public void onUpdate(Task task) {
                         if (backendTaskListener != null) {
-                            backendTaskListener.onBackendTaskUpdated(task);
+                            backendTaskListener.onBackendTaskForOfflineTaskUpdated(task);
                         }
                     }
                 });

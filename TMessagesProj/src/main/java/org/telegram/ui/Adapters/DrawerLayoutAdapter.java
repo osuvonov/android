@@ -10,7 +10,7 @@ package org.telegram.ui.Adapters;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import android.view.View;
 import android.view.ViewGroup;
 
