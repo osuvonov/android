@@ -43,6 +43,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 
 import androidx.preference.PreferenceManager;
@@ -1206,8 +1207,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         super(args);
     }
 
+    boolean createTask = false;
+
     @Override
     public boolean onFragmentCreate() {
+        createTask = arguments.getBoolean("createTask");
         final int chatId = arguments.getInt("chat_id", 0);
         final int userId = arguments.getInt("user_id", 0);
         final int encId = arguments.getInt("enc_id", 0);
@@ -7193,7 +7197,162 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         if (replyingMessageObject != null) {
             chatActivityEnterView.setReplyingMessageObject(replyingMessageObject);
         }
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                showTaskCreator(companyId);
+            }
+        }, 500);
         return fragmentView;
+    }
+
+    private void showTaskCreator(int companyId) {
+        if (createTask && !isChannel()) {
+            getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
+
+            ArrayList<State> statusList = new ArrayList<>();
+            ArrayList<TLRPC.User> userList = new ArrayList<>();
+            String[] statuses = Utils.getStatuses();
+
+            for (int i = 0; i < statuses.length; i++) {
+                State state = new State(i, statuses[i]);
+                statusList.add(state);
+            }
+            if (selectedCompany == null) {
+                IRoomsManager.getInstance().getCompany(getParentActivity(), companyId, new IRoomsManager.IRoomCallback<Company>() {
+                    @Override
+                    public void onSuccess(Company company) {
+                        selectedCompany = company;
+                        List<Long> temp = new ArrayList<>();
+                        final int chatId = arguments.getInt("chat_id", 0);
+                        if (chatId == 0) {
+                            if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                                TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                if (user != null) {
+                                    userList.add(user);
+                                }
+                            } else {
+                                TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                                if (user != null) {
+                                    if (selectedCompany.getMembers().contains((long) user.id)) {
+                                        userList.add(user);
+                                    }
+                                }
+
+                                user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                if (user != null) {
+                                    userList.add(user);
+                                }
+                            }
+                        } else {
+                            for (TLRPC.ChatParticipant pt : chatInfo.participants.participants) {
+                                temp.add((long) pt.user_id);
+                            }
+                            List<Long> users = Utils.intersectionMembers(selectedCompany.getMembers(), temp);
+                            for (long id : users) {
+                                TLRPC.User user = getMessagesController().getUser((int) id);
+                                if (user != null) {
+                                    userList.add(user);
+                                }
+                            }
+                        }
+
+
+                        final int messageId = 0;
+                        final int senderId = 0;
+                        final BottomSheet bottomSheet = AlertsCreator.createTaskEditorDialogBySocket(getParentActivity(), null,
+                                "", userList, statusList, (int) dialog_id, new TaskManagerListener() {
+                                    @Override
+                                    public void onCreate(Task task) {
+                                        Log.e("Local task create ", task.getLocal_id());
+                                        taskList.add(task);
+                                        String message = "Task #" + task.getLocal_id() + "\n" + task.getDescription();
+                                        SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
+                                        Log.e("message sent ", message);
+
+                                        // if message which is selected to create task, is created by message owner
+                                        // we delete it
+                                        if (messageId != 0 && senderId == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
+                                            ArrayList<Integer> messageIds;
+                                            messageIds = new ArrayList<>();
+                                            messageIds.add(messageId);
+                                            MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+                                            try {
+                                                getParentActivity().runOnUiThread(() -> {
+                                                    chatListView.getAdapter().notifyDataSetChanged();
+                                                });
+                                            } catch (Exception x) {
+                                            }
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onUpdate(Task task) {
+                                    }
+                                }).create();
+                        bottomSheet.setFocusable(true);
+                        showDialog(bottomSheet);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+
+                List<Long> temp = new ArrayList<>();
+                final int chatId = arguments.getInt("chat_id", 0);
+                if (chatId == 0) {
+                    if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
+                        TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                        if (user != null) {
+                            userList.add(user);
+                        }
+                    } else {
+                        TLRPC.User user = getMessagesController().getUser((int) dialog_id);
+                        if (user != null) {
+                            if (selectedCompany.getMembers().contains((long) user.id)) {
+                                userList.add(user);
+                            }
+                        }
+
+                        user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                        if (user != null) {
+                            userList.add(user);
+                        }
+                    }
+                } else {
+                    for (TLRPC.ChatParticipant pt : chatInfo.participants.participants) {
+                        temp.add((long) pt.user_id);
+                    }
+                    List<Long> users = Utils.intersectionMembers(selectedCompany.getMembers(), temp);
+                    for (long id : users) {
+                        TLRPC.User user = getMessagesController().getUser((int) id);
+                        if (user != null) {
+                            userList.add(user);
+                        }
+                    }
+                }
+                final BottomSheet bottomSheet = AlertsCreator.createTaskEditorDialogBySocket(getParentActivity(), null, "", userList, statusList, (int) dialog_id, new TaskManagerListener() {
+                    @Override
+                    public void onCreate(Task task) {
+                        Log.e("Local task create ", task.getLocal_id());
+                        taskList.add(task);
+                        String message = "Task #" + task.getLocal_id() + "\n" + task.getDescription();
+                        SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
+                        Log.e("message sent ", message);
+                    }
+
+                    @Override
+                    public void onUpdate(Task task) {
+                    }
+                }).create();
+                bottomSheet.setFocusable(true);
+                showDialog(bottomSheet);
+            }
+        }
+
     }
 
     private boolean isChannel() {
@@ -19567,7 +19726,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     } else {
                         TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                         if (user != null) {
-                            if (selectedCompany.getMembers().contains((long)user.id)) {
+                            if (selectedCompany.getMembers().contains((long) user.id)) {
                                 userList.add(user);
                                 selectedUser = user;
                             }
@@ -21939,7 +22098,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             } else {
                                                 TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                                                 if (user != null) {
-                                                    if (selectedCompany.getMembers().contains((long)user.id)) {
+                                                    if (selectedCompany.getMembers().contains((long) user.id)) {
                                                         userList.add(user);
                                                     }
                                                 }
@@ -22074,7 +22233,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             } else {
                                                 TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                                                 if (user != null) {
-                                                    if (selectedCompany.getMembers().contains((long)user.id)) {
+                                                    if (selectedCompany.getMembers().contains((long) user.id)) {
                                                         userList.add(user);
                                                     }
                                                 }
@@ -22852,7 +23011,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         } else {
                             TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                             if (user != null) {
-                                if (selectedCompany.getMembers().contains((long)user.id)) {
+                                if (selectedCompany.getMembers().contains((long) user.id)) {
                                     userList.add(user);
                                 }
                             }
