@@ -67,8 +67,7 @@ import org.telegram.irooms.task.TaskManagerListener;
 import org.telegram.irooms.task.TaskRepository;
 import org.telegram.irooms.task.TaskUtil;
 import org.telegram.irooms.ui.spinner.MemberState;
-import org.telegram.irooms.ui.spinner.State;
-import org.telegram.messenger.AccountInstance;
+ import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
@@ -131,7 +130,7 @@ import androidx.annotation.RequiresApi;
 public class AlertsCreator {
 
     public static BottomSheet.Builder createTaskEditorDialogBySocket(Context context, TLRPC.User selectedUser, CharSequence text, ArrayList<TLRPC.User> userList,
-                                                                     ArrayList<State> statusList, int chatId, TaskManagerListener callback) {
+                                                                     int chatId, TaskManagerListener callback) {
         if (context == null) {
             return null;
         }
@@ -173,23 +172,14 @@ public class AlertsCreator {
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
 
-        bottomSheet.etTaskStatus.setText(statusList.get(0).getName());
+        bottomSheet.etTaskStatus.setText(Utils.getStatuses()[0]);
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-            builder1.setTitle("Select status");
+            builder1.setTitle("Выберите статус");
 
-            // add a list
-            String[] statuses = new String[statusList.size()];
-            int i = 0;
-
-            for (State status : statusList) {
-                statuses[i] = status.getName();
-                i++;
-            }
-
-            builder1.setItems(statuses, (dialog, which) -> {
+            builder1.setItems(Utils.getStatuses(), (dialog, which) -> {
                 selectedState[0] = which;
-                bottomSheet.etTaskStatus.setText(statusList.get(which).getName());
+                bottomSheet.etTaskStatus.setText(Utils.getStatuses()[which]);
                 dialog.dismiss();
             });
 
@@ -228,7 +218,7 @@ public class AlertsCreator {
 
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
             android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
-            builder12.setTitle("Select members");
+            builder12.setTitle("Выбрать участников");
 
             ListView listview = new ListView(context);
             listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
@@ -256,7 +246,7 @@ public class AlertsCreator {
                         }
                     }
                     if (selectedUsers.toString().length() == 0) {
-                        bottomSheet.tvSelectMembers.setText("Select members");
+                        bottomSheet.tvSelectMembers.setText("Выбрать участников");
                     } else {
                         bottomSheet.tvSelectMembers.setText(selectedUsers);
                     }
@@ -322,9 +312,8 @@ public class AlertsCreator {
             task.setMembers(selectedMembers);
             task.setCreatorId(UserConfig.getInstance(0).clientUserId);
             task.setExpiresAt(deadline[0]);
-            State state = (State) statusList.get(selectedState[0]);
-            task.setStatus(state.getName());
-            task.setStatus_code(state.getId());
+            task.setStatus(Utils.getStatuses()[selectedState[0]]);
+            task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
             task.setCompanyId(PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", 0));
             task.setLocal_id(Utils.generateLocalId());
@@ -343,7 +332,7 @@ public class AlertsCreator {
     }
 
     public static BottomSheet.Builder editTaskDialogBySocket(Context context, Task task, CharSequence text, ArrayList<TLRPC.User> userList,
-                                                             ArrayList<State> statusList, int chatId, TaskManagerListener callback) {
+                                                           int chatId, TaskManagerListener callback) {
         if (context == null) {
             return null;
         }
@@ -383,6 +372,14 @@ public class AlertsCreator {
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
+
+        if (task.getExpires_at()==null){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            deadline[0] = task.getExpires_at();
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+        }else
         if (task.getExpires_at().equals(TaskUtil.getEndOfTheDay())) {
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
             selectedDeadLineView[0] = 1;
@@ -399,23 +396,14 @@ public class AlertsCreator {
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
         }
 
-        bottomSheet.etTaskStatus.setText(statusList.get(0).getName());
+        bottomSheet.etTaskStatus.setText(Utils.getStatuses()[0]);
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-            builder1.setTitle("Select status");
+            builder1.setTitle("Выберите статус");
 
-            // add a list
-            String[] statuses = new String[statusList.size()];
-            int i = 0;
-
-            for (State status : statusList) {
-                statuses[i] = status.getName();
-                i++;
-            }
-
-            builder1.setItems(statuses, (dialog, which) -> {
+            builder1.setItems(Utils.getStatuses(), (dialog, which) -> {
                 selectedState[0] = which;
-                bottomSheet.etTaskStatus.setText(statusList.get(which).getName());
+                bottomSheet.etTaskStatus.setText(Utils.getStatuses()[which]);
                 dialog.dismiss();
             });
 
@@ -449,7 +437,7 @@ public class AlertsCreator {
         }
 
         if (selectedUsers.toString().length() == 0) {
-            bottomSheet.tvSelectMembers.setText("Select members");
+            bottomSheet.tvSelectMembers.setText("Выбрать участников");
         } else {
             bottomSheet.tvSelectMembers.setText(selectedUsers);
         }
@@ -458,7 +446,7 @@ public class AlertsCreator {
 
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
             android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
-            builder12.setTitle("Select members");
+            builder12.setTitle("Выбрать участников");
 
             ListView listview = new ListView(context);
             listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
@@ -486,7 +474,7 @@ public class AlertsCreator {
                         }
                     }
                     if (selectedUsers.toString().length() == 0) {
-                        bottomSheet.tvSelectMembers.setText("Select members");
+                        bottomSheet.tvSelectMembers.setText("Выбрать участников");
                     } else {
                         bottomSheet.tvSelectMembers.setText(selectedUsers);
                     }
@@ -551,9 +539,8 @@ public class AlertsCreator {
                 deadline[0] = TaskUtil.getMaxDate();
             }
             task.setExpiresAt(deadline[0]);
-            State state = statusList.get(selectedState[0]);
-            task.setStatus(state.getName());
-            task.setStatus_code(state.getId());
+            task.setStatus(Utils.getStatuses()[selectedState[0]]);
+            task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
             task.setCompanyId(companyId);
             if (task.getLocal_id().equals("")) {

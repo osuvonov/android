@@ -27,6 +27,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -166,6 +167,7 @@ import org.telegram.ui.ProxyListActivity;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -1497,7 +1499,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             updatePasscodeButton();
             updateProxyButton(false);
         }
-        searchItem = menu.addItem(0, R.drawable.ic_ab_search).setIsSearchField(true, true).setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
+        searchItem = menu.addItem(0, R.drawable.ic_action_search).setIsSearchField(true, true).setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
             @Override
             public void onSearchExpand() {
                 searching = true;
@@ -1519,6 +1521,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 setScrollY(0);
                 updatePasscodeButton();
                 actionBar.setBackButtonContentDescription(LocaleController.getString("AccDescrGoBack", R.string.AccDescrGoBack));
+
             }
 
             @Override
@@ -1576,6 +1579,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 searchViewPager.onTextChanged(searchItem.getSearchField().getText().toString());
 
                 updateFiltersView(true, null, null, true);
+
             }
 
             @Override
@@ -1586,23 +1590,19 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         searchItem.setClearsTextOnSearchCollapse(false);
         searchItem.setSearchFieldHint(LocaleController.getString("Search", R.string.Search));
         searchItem.setContentDescription(LocaleController.getString("Search", R.string.Search));
-        if (onlySelect) {
-            actionBar.setBackButtonImage(R.drawable.ic_ab_back);
+        actionBar.setBackButtonDrawable(backDrawable = new BlackBackDrawable(false));
+        actionBar.setBackgroundColor(getParentActivity().getResources().getColor(R.color.white));
 
-            actionBar.setBackgroundColor(Theme.getColor(Theme.key_actionBarDefault));
-        } else {
-            actionBar.setBackButtonDrawable(backDrawable = new BackDrawable(false));
+        int blackColor = getParentActivity().getResources().getColor(R.color.black);
+        actionBar.setTitleColor(blackColor);
+        actionBar.setTitle("Выберите чат или группу");
 
-            actionBar.setTitle("Select chat or group...");
-        }
         if (!onlySelect) {
             actionBar.setAddToContainer(false);
             actionBar.setCastShadows(false);
             actionBar.setClipContent(true);
         }
-        actionBar.setTitleActionRunnable(() -> {
-            scrollToTop();
-        });
+        actionBar.setTitleActionRunnable(this::scrollToTop);
 
         if (initialDialogsType == 0 && folderId == 0 && !onlySelect && TextUtils.isEmpty(searchString)) {
             scrimPaint = new Paint() {
@@ -2447,13 +2447,17 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                     if (searchString != null) {
                         if (getMessagesController().checkCanOpenChat(args, DialogsActivity2.this)) {
                             getNotificationCenter().postNotificationName(NotificationCenter.closeChats);
+                            args.putBoolean("createTask", true);
+
                             presentFragment(new ChatActivity(args));
                             finishFragment();
                         }
                     } else {
                         if (getMessagesController().checkCanOpenChat(args, DialogsActivity2.this)) {
+                            args.putBoolean("createTask", true);
+
                             presentFragment(new ChatActivity(args));
-                         }
+                        }
                     }
                 }
             }
@@ -2720,7 +2724,8 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         }
 
         viewPages[0].listView.setGlowColor(Theme.getColor(Theme.key_actionBarDefaultArchived));
-        actionBar.setTitleColor(Theme.getColor(Theme.key_actionBarDefaultArchivedTitle));
+
+//        actionBar.setTitleColor(Theme.getColor(Theme.key_actionBarDefaultArchivedTitle));
         actionBar.setItemsColor(Theme.getColor(Theme.key_actionBarDefaultArchivedIcon), false);
         actionBar.setItemsBackgroundColor(Theme.getColor(Theme.key_actionBarDefaultArchivedSelector), false);
         actionBar.setSearchTextColor(Theme.getColor(Theme.key_actionBarDefaultArchivedSearch), false);
@@ -2933,7 +2938,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                         } else {
                             hideActionMode(true);
                         }
-                    } else   {
+                    } else {
                         finishFragment();
                     }
                 }
@@ -3150,18 +3155,9 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 if (hasNotContactsPermission || hasNotStoragePermission) {
                     askingForPermissions = true;
                     if (hasNotContactsPermission && askAboutContacts && getUserConfig().syncContacts && activity.shouldShowRequestPermissionRationale(Manifest.permission.READ_CONTACTS)) {
-                        AlertDialog.Builder builder = AlertsCreator.createContactsPermissionDialog(activity, param -> {
-                            askAboutContacts = param != 0;
-                            MessagesController.getGlobalNotificationsSettings().edit().putBoolean("askAboutContacts", askAboutContacts).commit();
-                            askForPermissons(false);
-                        });
-                        showDialog(permissionDialog = builder.create());
+
                     } else if (hasNotStoragePermission && activity.shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
-                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
-                        builder.setMessage(LocaleController.getString("PermissionStorage", R.string.PermissionStorage));
-                        builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
-                        showDialog(permissionDialog = builder.create());
+
                     } else {
                         askForPermissons(true);
                     }
@@ -3174,27 +3170,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             if (MessagesController.getGlobalNotificationsSettings().getBoolean("askedAboutMiuiLockscreen", false)) {
                 return;
             }
-            showDialog(new AlertDialog.Builder(getParentActivity())
-                    .setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"))
-                    .setMessage(LocaleController.getString("PermissionXiaomiLockscreen", R.string.PermissionXiaomiLockscreen))
-                    .setPositiveButton(LocaleController.getString("PermissionOpenSettings", R.string.PermissionOpenSettings), (dialog, which) -> {
-                        Intent intent = XiaomiUtilities.getPermissionManagerIntent();
-                        if (intent != null) {
-                            try {
-                                getParentActivity().startActivity(intent);
-                            } catch (Exception x) {
-                                try {
-                                    intent = new Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-                                    intent.setData(Uri.parse("package:" + ApplicationLoader.applicationContext.getPackageName()));
-                                    getParentActivity().startActivity(intent);
-                                } catch (Exception xx) {
-                                    FileLog.e(xx);
-                                }
-                            }
-                        }
-                    })
-                    .setNegativeButton(LocaleController.getString("ContactsPermissionAlertNotNow", R.string.ContactsPermissionAlertNotNow), (dialog, which) -> MessagesController.getGlobalNotificationsSettings().edit().putBoolean("askedAboutMiuiLockscreen", true).commit())
-                    .create());
+
         }
         showFiltersHint();
         if (viewPages != null) {
@@ -3896,14 +3872,16 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             if (searchString != null) {
                 if (getMessagesController().checkCanOpenChat(args, DialogsActivity2.this)) {
                     getNotificationCenter().postNotificationName(NotificationCenter.closeChats);
+                    args.putBoolean("createTask", true);
+
                     presentFragment(new ChatActivity(args));
-                 }
+                }
             } else {
                 if (getMessagesController().checkCanOpenChat(args, DialogsActivity2.this)) {
                     args.putBoolean("createTask", true);
                     presentFragment(new ChatActivity(args));
                     finishFragment(true);
-                 }
+                }
             }
         }
     }
@@ -4046,11 +4024,15 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             if (getMessagesController().checkCanOpenChat(args, DialogsActivity2.this)) {
                 getNotificationCenter().postNotificationName(NotificationCenter.closeChats);
                 prepareBlurBitmap();
+                args.putBoolean("createTask", true);
+
                 presentFragmentAsPreview(new ChatActivity(args));
             }
         } else {
             if (getMessagesController().checkCanOpenChat(args, DialogsActivity2.this)) {
                 prepareBlurBitmap();
+                args.putBoolean("createTask", true);
+
                 presentFragmentAsPreview(new ChatActivity(args));
             }
         }
@@ -5075,12 +5057,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             } catch (Exception x) {
             }
             if (alert) {
-                AlertDialog.Builder builder = AlertsCreator.createContactsPermissionDialog(activity, param -> {
-                    askAboutContacts = param != 0;
-                    MessagesController.getGlobalNotificationsSettings().edit().putBoolean("askAboutContacts", askAboutContacts).commit();
-                    askForPermissons(false);
-                });
-                showDialog(permissionDialog = builder.create());
+
                 return;
             }
             permissons.add(Manifest.permission.READ_CONTACTS);

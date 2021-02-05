@@ -28,7 +28,9 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
+
 import androidx.preference.PreferenceManager;
+
 import android.text.InputFilter;
 import android.view.Gravity;
 import android.view.View;
@@ -39,10 +41,13 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.FileLog;
@@ -51,6 +56,7 @@ import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.NotificationCenter;
 import org.rooms.messenger.R;
+import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -62,6 +68,7 @@ import org.telegram.ui.Cells.GroupCreateUserCell;
 import org.telegram.ui.Cells.HeaderCell;
 import org.telegram.ui.Cells.ShadowSectionCell;
 import org.telegram.ui.Cells.TextSettingsCell;
+import org.telegram.ui.Cells.UserCell;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.CombinedDrawable;
 import org.telegram.ui.Components.ContextProgressView;
@@ -83,6 +90,7 @@ import io.socket.client.Socket;
 
 public class AddMembersToCompanyFinal extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
 
+    private String companyName;
     private String action = "add";
     private GroupCreateAdapter adapter;
     private RecyclerListView listView;
@@ -121,6 +129,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
         super(args);
         createCompany = args.getBoolean("create_company");
         action = args.getString("action");
+        companyName = args.getString("companyName");
         chatType = args.getInt("chatType", ChatObject.CHAT_TYPE_CHAT);
         currentGroupCreateAddress = args.getString("address");
         currentGroupCreateLocation = args.getParcelable("location");
@@ -239,7 +248,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
         if (createCompany) {
-            actionBar.setTitle("Register a company");
+            actionBar.setTitle("Создать команду");
         } else {
             actionBar.setTitle(PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getString(Constants.SELECTED_COMPANY_NAME, ""));
         }
@@ -497,7 +506,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                 JSONObject co = jsonObject.getJSONObject("result");
                                 if (co != null) {
                                     int companyId = co.getInt("id");
-                                    String companyName = co.getString("name");
+                                    companyName = co.getString("name");
                                     if (PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.SELECTED_COMPANY_NAME, "").equals("")) {
                                         PreferenceManager.getDefaultSharedPreferences(getParentActivity()).edit().putString(Constants.SELECTED_COMPANY_NAME, companyName).commit();
                                         PreferenceManager.getDefaultSharedPreferences(getParentActivity()).edit().putInt(Constants.SELECTED_COMPANY_ID, companyId).commit();
@@ -509,7 +518,13 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                     IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, companyId, selectedContacts, new IRoomsManager.IRoomsCallback() {
                                         @Override
                                         public void onSuccess(String success) {
-                                            Toast.makeText(getParentActivity(), "Company has been successfully registered", Toast.LENGTH_SHORT).show();
+                                            ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
+                                            String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
+
+                                            for (Integer integer : members) {
+                                                SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                            }
+                                            Toast.makeText(getParentActivity(), "Команда успешно добавлена.", Toast.LENGTH_SHORT).show();
                                             ((LaunchActivity) getParentActivity()).refreshCompany();
 
                                             getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
@@ -541,10 +556,16 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                 });
             } else {
                 if (action == "add") {
-                    IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(),socket, PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1), selectedContacts, new IRoomsManager.IRoomsCallback() {
+                    IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1), selectedContacts, new IRoomsManager.IRoomsCallback() {
                         @Override
                         public void onSuccess(String success) {
-                            Toast.makeText(getParentActivity(), "Selected members added to company", Toast.LENGTH_SHORT).show();
+                            ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
+                            String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
+
+                            for (Integer integer : members) {
+                                SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                            }
+                            Toast.makeText(getParentActivity(), "Выбранные участники добавлены в команду", Toast.LENGTH_SHORT).show();
                             ((LaunchActivity) getParentActivity()).refreshCompany();
                             getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
                             finishFragment();

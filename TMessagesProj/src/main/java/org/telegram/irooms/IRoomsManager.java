@@ -3,6 +3,7 @@ package org.telegram.irooms;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.preference.PreferenceManager;
 
 import com.google.android.exoplayer2.util.Log;
@@ -316,6 +317,7 @@ public class IRoomsManager {
                 edit().putInt(Constants.SELECTED_COMPANY_ID, company.getId()).commit();
 
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(Constants.IS_OWNER, isOwner).commit();
+
 //        try {
 //            Socket socket = ((LaunchActivity) context).getmSocket();
 //            if (socket != null) {
@@ -363,17 +365,36 @@ public class IRoomsManager {
         );
     }
 
-    public void getUserTasks(Context context, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getUserTasks(Context context, int selectedAccountUserId, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
-                    repository.getUserTasks(id, arrayListIRoomCallback);
+                    repository.getPrivateChatTasks(selectedAccountUserId, id, arrayListIRoomCallback);
                     return "";
                 }, result -> {
                 }
         );
     }
 
+    public void getAccountTasks(Context context, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        TaskRunner runner = new TaskRunner();
+        runner.executeAsync(() -> {
+                    TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
+                    repository.getAccountTasks(id, arrayListIRoomCallback);
+                    return "";
+                }, result -> {
+                }
+        );
+    }
+
+    public void setCompanyRequestAsked(Context context, boolean b) {
+        PreferenceManager.getDefaultSharedPreferences(context).
+                edit().putBoolean(Constants.COMPANY_REGISTER_REQUEST_ASKED, b).commit();
+    }
+
+    public boolean isCompanyCreateRequestBeen(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Constants.COMPANY_REGISTER_REQUEST_ASKED, false);
+    }
 
     public interface IRoomsCallback {
         void onSuccess(String success);

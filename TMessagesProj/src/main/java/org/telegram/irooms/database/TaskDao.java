@@ -2,6 +2,7 @@ package org.telegram.irooms.database;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
@@ -73,11 +74,15 @@ public abstract class TaskDao {
     public abstract int getTasksCount();
 
     @Transaction
-    public  void deleteAndInsertAll(int companyId, ArrayList<Task> list) {
+    public void deleteAndInsertAll(int companyId, ArrayList<Task> list) {
         deleteCompanyOnlineTasks(companyId);
         insertAll(list);
     }
 
+    @Query("Select * from tbl_tasks where (members like '%' || :chatId  || '%') or (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or(chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and creator_id=:accountId)")
+    public abstract List<Task> getPrivateChatTasks(int accountId, int chatId);
+
     @Query("select * from tbl_tasks where members like '%' || :ownerId  || '%'")
     public abstract List<Task> getAccountTasks(String ownerId);
+
 }

@@ -1,60 +1,74 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!--<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:layout_width="match_parent"-->
+<!--    android:layout_height="match_parent"-->
+<!--    android:background="@color/mid"-->
+<!--    android:scrollbars="horizontal">-->
+
+<HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center_vertical"
     android:background="@color/mid"
-    android:gravity="center_vertical"
-    android:orientation="horizontal">
+    android:fillViewport="true" >
 
-    <Button
-        android:id="@+id/task_all"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@color/key_chat_emojiPanelStickerSetNameHighlight"
-        android:padding="5dp"
-        android:text="All"
-        android:textColor="@color/white" />
+        android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/task_todo"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/btn_click"
-        android:padding="5dp"
-        android:text="To do"
-        android:textColor="@color/white" />
+        <Button
+            android:id="@+id/task_all"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@color/key_chat_emojiPanelStickerSetNameHighlight"
+            android:padding="5dp"
+            android:text="Все"
+            android:textColor="@color/white"
+            android:textSize="10sp" />
 
-    <Button
-        android:id="@+id/task_doing"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/btn_click"
-        android:padding="5dp"
-        android:text="Doing"
-        android:textColor="@color/white" />
+        <Button
+            android:id="@+id/task_todo"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/btn_click"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:text="Надо сделать"
+            android:textColor="@color/white"
 
-    <Button
-        android:id="@+id/task_done"
+            android:textSize="10sp" />
 
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/btn_click"
-        android:padding="5dp"
-        android:text="Done"
-        android:textColor="@color/white" />
-    <Button
-        android:id="@+id/task_archive"
+        <Button
+            android:id="@+id/task_doing"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/btn_click"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:text="В работе"
+            android:textColor="@color/white"
 
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/btn_click"
-        android:padding="5dp"
-        android:text="Archive"
-        android:textColor="@color/white" />
-</LinearLayout>
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/task_done"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/btn_click"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:text="Выполнено"
+            android:textColor="@color/white"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/task_archive"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/btn_click"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:text="Архив"
+            android:textColor="@color/white"
+            android:textSize="10sp" />
+    </LinearLayout>
+</HorizontalScrollView><!--</LinearLayout>-->

@@ -6,6 +6,8 @@ public interface Constants {
     int CREATE_COMPANY = 1120;
     String SELECTED_COMPANY_ID = "selected_company_id";
     String SELECTED_COMPANY_NAME = "selected_company_name";
+    String COMPANY_REGISTER_REQUEST_ASKED = "company_register_request_asked";
+
     String IS_OWNER = "is_owner";
     String HAS_COMPANY = "has_company";
     int OWNER_TASK=99;

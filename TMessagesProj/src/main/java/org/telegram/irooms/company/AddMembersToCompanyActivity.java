@@ -23,7 +23,9 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+
 import androidx.preference.PreferenceManager;
+
 import android.text.Editable;
 import android.text.InputType;
 import android.text.SpannableStringBuilder;
@@ -94,6 +96,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class AddMembersToCompanyActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate, View.OnClickListener {
 
+    private String companyName="";
     private String action = "add";
     private ScrollView scrollView;
     private SpansContainer spansContainer;
@@ -343,7 +346,8 @@ public class AddMembersToCompanyActivity extends BaseFragment implements Notific
 
     public AddMembersToCompanyActivity(Bundle args) {
         super(args);
-        createCompany=args.getBoolean("create_company");
+        createCompany = args.getBoolean("create_company");
+        companyName=args.getString("companyName");
         action = args.getString("action");
         chatType = args.getInt("chatType", ChatObject.CHAT_TYPE_CHAT);
         isAlwaysShare = args.getBoolean("isAlwaysShare", false);
@@ -680,7 +684,7 @@ public class AddMembersToCompanyActivity extends BaseFragment implements Notific
                     }
                     if (chatType == ChatObject.CHAT_TYPE_CHAT && selectedContacts.size() == MessagesController.getInstance(currentAccount).maxGroupCount) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                         builder.setMessage(LocaleController.getString("SoftUserLimitAlert", R.string.SoftUserLimitAlert));
                         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
                         showDialog(builder.create());
@@ -886,18 +890,13 @@ public class AddMembersToCompanyActivity extends BaseFragment implements Notific
             }
             AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
             if (selectedContacts.size() == 1) {
-                if(action=="add"){
+                if (action == "add") {
                     builder.setTitle(LocaleController.getString("AddOneMemberAlertTitle", R.string.AddOneMemberAlertTitle));
-                }else{
-                    builder.setTitle("Delete member");
                 }
             } else {
-                if (action=="add"){
+                if (action == "add") {
                     builder.setTitle(LocaleController.formatString("AddMembersAlertTitle", R.string.AddMembersAlertTitle, LocaleController.formatPluralString("Members", selectedContacts.size())));
-                }else{
-                    builder.setTitle("Delete members");
                 }
-
             }
             StringBuilder stringBuilder = new StringBuilder();
             for (int a = 0; a < selectedContacts.size(); a++) {
@@ -964,10 +963,11 @@ public class AddMembersToCompanyActivity extends BaseFragment implements Notific
                     finishFragment();
                 } else {
                     Bundle args = new Bundle();
-                    args.putBoolean("create_company",createCompany);
+                    args.putBoolean("create_company", createCompany);
                     args.putIntegerArrayList("result", result);
                     args.putInt("chatType", chatType);
                     args.putString("action", action);
+                    args.putString("companyName",companyName);
 
                     presentFragment(new AddMembersToCompanyFinal(args));
                 }

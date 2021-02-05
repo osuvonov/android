@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:backgroundTint="@color/holo_blue_bright"
-        android:text="Register a company" />
+        android:text="Создать команду" />
 
     <View
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="Companies" />
+        android:text="Команды" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_create_company"

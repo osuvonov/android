@@ -95,6 +95,6 @@ public class Utils {
     }
 
     public static String[] getStatuses() {
-        return new String[]{"To do", "Doing", "Done", "Archive"};
+        return new String[]{"Надо сделать", "В работе", "Выполнено", "Архив"};
     }
 }

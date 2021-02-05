@@ -1,7 +1,6 @@
 package org.telegram.irooms.task;
 
 import android.app.Application;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -15,8 +14,6 @@ import org.telegram.irooms.database.TaskDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.lifecycle.LiveData;
 
 /**
  * Abstracted Repository as promoted by the Architecture Guide.
@@ -48,8 +45,12 @@ public class TaskRepository {
         });
     }
 
-    public void getUserTasks(long ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getAccountTasks(ownerId + ""));
+    public void getPrivateChatTasks(int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasks(selectedAccountUserId, ownerId));
+    }
+
+    public void getAccountTasks( int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getAccountTasks(ownerId+""));
     }
 
     public interface LocalTaskChangeListener {

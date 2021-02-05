@@ -114,7 +114,7 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
         public void bind(String text, boolean selected, int members) {
             companyNameTextView.setText(text);
             companySelectedCheckBox.setChecked(selected);
-            companyMembersCount.setText(members + " members");
+            companyMembersCount.setText(members + " участников");
         }
     }
 

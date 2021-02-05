@@ -219,4 +219,23 @@ public class IRoomJsonParser {
         }
         return null;
     }
+
+    public static ArrayList<Integer> getAddedMembersToTeam(String json) {
+        ArrayList<Integer> members = new ArrayList<>();
+        try {
+            JSONObject jsonCompany = new JSONObject(json);
+            String success = jsonCompany.getString("success");
+            if (success.equals("true")) {
+                ArrayList<Integer> teamMembers =
+                        new Gson().fromJson(jsonCompany.getString("result"), new TypeToken<ArrayList<Integer>>() {
+                        }.getType());
+                return teamMembers == null ? members : teamMembers;
+            }
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return members;
+    }
 }

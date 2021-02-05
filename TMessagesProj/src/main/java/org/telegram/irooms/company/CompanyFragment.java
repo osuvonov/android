@@ -77,7 +77,7 @@ public class CompanyFragment extends BaseFragment {
 
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
-        actionBar.setTitle("Companies");
+        actionBar.setTitle("Команды");
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
             public void onItemClick(int id) {
@@ -102,7 +102,7 @@ public class CompanyFragment extends BaseFragment {
         });
 
         TextView companiesTitle = new TextView(context);
-        companiesTitle.setText("Companies");
+        companiesTitle.setText("Команды");
         companiesTitle.setGravity(Gravity.CENTER);
         companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
         companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
@@ -153,7 +153,7 @@ public class CompanyFragment extends BaseFragment {
 
     private TextView getCreateCompanyButton(Context context) {
         TextView buttonTextView = new TextView(context);
-        buttonTextView.setText("Register a new company");
+        buttonTextView.setText("Создать новую команду");
         buttonTextView.setPadding(AndroidUtilities.dp(34), 0, AndroidUtilities.dp(34), 0);
         buttonTextView.setGravity(Gravity.CENTER);
         buttonTextView.setTextColor(Theme.getColor(Theme.key_featuredStickers_buttonText));

@@ -75,7 +75,7 @@ public class CompanyInfo extends BaseFragment {
         fragmentView.setOnTouchListener((v, event) -> true);
 
         TextView companiesTitle = new TextView(context);
-        companiesTitle.setText("Members");
+        companiesTitle.setText("Участники");
         //        companiesTitle.setPadding(AndroidUtilities.dp(14), 0, AndroidUtilities.dp(14), 0);
         companiesTitle.setGravity(Gravity.CENTER);
         companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
@@ -94,17 +94,17 @@ public class CompanyInfo extends BaseFragment {
             @Override
             public void removeUserFromCompany(int position, TLRPC.User user) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                builder.setTitle("Are you sure you want to delete this user?");
+                builder.setTitle("Вы уверены, что хотите удалить этого участника?");
                 TextView info = new TextView(getParentActivity());
                 info.setPadding(54, 0, 0, 0);
                 String fullName = user.first_name != null ? user.first_name : "" + user.last_name != null ? user.last_name : "";
 
                 info.setText(fullName);
                 builder.setView(info);
-                builder.setPositiveButton("Yes", (dialogInterface, i) -> {
+                builder.setPositiveButton("Да", (dialogInterface, i) -> {
                     removeMemberFromCompany(position, user.id);
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();

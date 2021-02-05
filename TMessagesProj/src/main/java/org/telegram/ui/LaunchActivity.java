@@ -35,7 +35,9 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.StatFs;
 import android.os.SystemClock;
+
 import androidx.preference.PreferenceManager;
+
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.text.TextUtils;
@@ -158,6 +160,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -295,18 +298,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             };
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-                            builder.setMessage("To create a task you have to be a member of some company. Do you want to register one?").setPositiveButton("Yes", dialogClickListener)
-                                    .setNegativeButton("No", dialogClickListener).show();
+                            builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
+                                    .setNegativeButton("Пропустить", dialogClickListener).show();
 
                         } catch (Exception x) {
                         }
                     }
 
-                    if ((name == null || name.equals("") || name.equals("Register a company")) && companies.size() > 1) {
+                    if ((name == null || name.equals("") || name.equals("Создать команду")) && companies.size() > 1) {
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
 
-                        builder.setTitle("Select company");
+                        builder.setTitle("Выбрать команду");
                         // add a list
                         String[] names = new String[companies.size()];
 
@@ -354,28 +357,40 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
             if (companies.size() == 0) {
                 try {
-                    DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            switch (which) {
-                                case DialogInterface.BUTTON_POSITIVE:
-                                    Bundle args = new Bundle();
-                                    args.putString("action", "add");
-                                    args.putBoolean("create_company", true);
-                                    presentFragment(new AddMembersToCompanyActivity(args));
-                                    break;
+                    IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, new Company(), false);
+                    PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).edit().putBoolean(Constants.HAS_COMPANY, false).commit();
+                    if (!IRoomsManager.getInstance().isCompanyCreateRequestBeen(LaunchActivity.this)) {
 
-                                case DialogInterface.BUTTON_NEGATIVE:
-                                    dialog.dismiss();
-                                    break;
-                            }
-                        }
-                    };
+                        runOnUiThread(() -> {
 
-                    AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-                    builder.setMessage("To create a task you have to be a member of some company. Do you want to register one?").setPositiveButton("Yes", dialogClickListener)
-                            .setNegativeButton("No", dialogClickListener).show();
+                            IRoomsManager.getInstance().setCompanyRequestAsked(LaunchActivity.this, true);
+                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case DialogInterface.BUTTON_POSITIVE:
+                                            Bundle args = new Bundle();
+                                            args.putString("action", "add");
+                                            args.putBoolean("create_company", true);
+                                            presentFragment(new AddMembersToCompanyActivity(args));
+                                            break;
+
+                                        case DialogInterface.BUTTON_NEGATIVE:
+                                            dialog.dismiss();
+                                            break;
+                                    }
+                                }
+                            };
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
+                            builder.create().setCanceledOnTouchOutside(false);
+                            builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
+                                    .setNegativeButton("Пропустить", dialogClickListener).show();
+                        });
+
+                    }
                 } catch (Exception x) {
+                    x.printStackTrace();
                 }
             }
             if (companies.size() > 0) {
@@ -399,40 +414,32 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             }
 
-            if ((name == null || name.equals("") || name.equals("Register a company")) && companies.size() > 1) {
+            if ((name == null || name.equals("") || name.equals("Создать команду")) && companies.size() > 1) {
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
+                runOnUiThread(() -> {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
 
-                        builder.setTitle("Select company");
-                        // add a list
-                        String[] names = new String[companies.size()];
+                    builder.setTitle("Выбрать команду");
+                    // add a list
+                    String[] names = new String[companies.size()];
 
-                        int i = 0;
+                    int i = 0;
 
-                        for (Company member : companies) {
-                            names[i] = member.getName();
-                            i++;
-                        }
-
-                        builder.setItems(names, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
-                                        companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                                drawerLayoutAdapter.notifyDataSetChanged();
-
-                                dialog.dismiss();
-
-                            }
-                        });
-
-                        // create and show the alert dialog
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                    for (Company member : companies) {
+                        names[i] = member.getName();
+                        i++;
                     }
+
+                    builder.setItems(names, (dialog, which) -> {
+                        IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
+                                companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                        drawerLayoutAdapter.notifyDataSetChanged();
+                        dialog.dismiss();
+                    });
+
+                    // create and show the alert dialog
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
                 });
             }
             Log.e("init comapesines", "size: " + companies.size());
@@ -444,10 +451,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     private ArrayList<Task> taskList = new ArrayList<>();
-
-    public ArrayList<Task> getOnlineTasks(long chatId) {
-        return (ArrayList<Task>) taskList.stream().filter(task -> task.getChat_id() == chatId).collect(Collectors.toList());
-    }
 
     public void fillTaskList(ArrayList<Company> companies) {
 
@@ -542,21 +545,17 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         public void call(Object... args) {
             Log.e("onconnect", args.toString());
             try {
-
                 Backend.getInstance().getToken(LaunchActivity.this, new Backend.TokenListener() {
                     @Override
                     public void onToken(String token) {
                         Log.e("onToken", token);
 
                         if (!token.equals("")) {
-                            mSocket.emit("auth", Arrays.asList(token), new Ack() {
-                                @Override
-                                public void call(Object... args) {
-                                    TaskRepository.getInstance(LaunchActivity.this.getApplication()).deleteCompanies();
-                                    Log.e("onToken", "initCompanies(args[0].toString());\n");
+                            mSocket.emit("auth", Collections.singletonList(token), (Ack) args1 -> {
+                                TaskRepository.getInstance(LaunchActivity.this.getApplication()).deleteCompanies();
+                                Log.e("onToken", "initCompanies(args[0].toString());\n");
 
-                                    initCompanies(args[0].toString());
-                                }
+                                initCompanies(args1[0].toString());
                             });
                         } else {
                             mSocket.disconnect();
@@ -1083,6 +1082,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 if (id == 21) {
                     Bundle args = new Bundle();
                     args.putString("action", "add");
+                    args.putString("companyName",PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getString(Constants.SELECTED_COMPANY_NAME,""));
                     args.putBoolean("create_company", false);
                     presentFragment(new AddMembersToCompanyActivity(args));
                     drawerLayoutContainer.closeDrawer(false);

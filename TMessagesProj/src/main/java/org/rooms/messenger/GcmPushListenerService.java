@@ -8,10 +8,14 @@
 
 package org.rooms.messenger;
 
+import android.os.Environment;
 import android.os.SystemClock;
+
 import androidx.preference.PreferenceManager;
+
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -40,10 +44,15 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.TLRPC;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 public class GcmPushListenerService extends FirebaseMessagingService {
@@ -55,6 +64,7 @@ public class GcmPushListenerService extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage message) {
         String from = message.getFrom();
         final Map data = message.getData();
+
         if (data != null) {
             if (data.keySet().contains("task")) {
                 try {
@@ -480,7 +490,7 @@ public class GcmPushListenerService extends FirebaseMessagingService {
                                         break;
                                     }
                                     case "MESSAGE_GAME_SCORE":
-                                    case "CHANNEL_MESSAGE_GAME_SCORE":{
+                                    case "CHANNEL_MESSAGE_GAME_SCORE": {
                                         messageText = LocaleController.formatString("NotificationMessageGameScored", R.string.NotificationMessageGameScored, args[0], args[1], args[2]);
                                         break;
                                     }

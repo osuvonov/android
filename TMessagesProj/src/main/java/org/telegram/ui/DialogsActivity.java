@@ -54,6 +54,7 @@ import android.util.StateSet;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
@@ -75,6 +76,9 @@ import android.widget.TextView;
 
 import androidx.core.graphics.ColorUtils;
 
+import org.rooms.messenger.databinding.TestBinding;
+import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.company.AddMembersToCompanyActivity;
 import org.telegram.irooms.ui.DialogsActivity2;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
@@ -2839,70 +2843,103 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         filtersView.setVisibility(View.GONE);
 
         floatingButtonContainer = new FrameLayout(context);
-        floatingButtonContainer.setVisibility(onlySelect || folderId != 0 ? View.GONE : View.VISIBLE);
-        contentView.addView(floatingButtonContainer, LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 66 : 70) + 20, (Build.VERSION.SDK_INT >= 21 ? 66 : 70) + 20, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.BOTTOM, LocaleController.isRTL ? 4 : 0, 0, LocaleController.isRTL ? 0 : 4, 0));
+//        floatingButtonContainer.setVisibility(onlySelect || folderId != 0 ? View.GONE : View.VISIBLE);
+        floatingButtonContainer.setVisibility(View.VISIBLE);
+        contentView.addView(floatingButtonContainer, LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 146 : 140) + 20, (Build.VERSION.SDK_INT >= 21 ? 46 : 50) + 20, (LocaleController.isRTL ? Gravity.START : Gravity.END) | Gravity.BOTTOM, LocaleController.isRTL ? 4 : 0, 0, LocaleController.isRTL ? 0 : 5, 5));
         floatingButtonContainer.setOnClickListener(v -> {
+            String name = IRoomsManager.getInstance().getSelectedCompanyName(getParentActivity());
+
+            if (name == null || name.equals("")) {
+                try {
+                    DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                        switch (which) {
+                            case DialogInterface.BUTTON_POSITIVE:
+                                Bundle args = new Bundle();
+                                args.putString("action", "add");
+                                args.putBoolean("create_company", true);
+                                presentFragment(new AddMembersToCompanyActivity(args));
+                                break;
+
+                            case DialogInterface.BUTTON_NEGATIVE:
+                                dialog.dismiss();
+                                break;
+                        }
+                    };
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                    builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
+                            .setNegativeButton("Пропустить", dialogClickListener).show();
+                } catch (Exception x) {
+                }
+                return;
+            }
             Bundle args = new Bundle();
             args.putBoolean("destroyAfterSelect", true);
             //            presentFragment(new ContactsActivity(args));
             presentFragment(new DialogsActivity2(args));
         });
-        LinearLayout floatingBtnLayout = new LinearLayout(getParentActivity());
-        floatingBtnLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
-        floatingBtnLayout.setGravity(Gravity.CENTER);
-        floatingBtnLayout.setOrientation(LinearLayout.VERTICAL);
-        floatingBtnLayout.setPadding(6, 2, 6, 2);
 
-        floatingButton = new RLottieImageView(context);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0,20,0,0);
-        floatingButton.setLayoutParams(params);
-        floatingButton.setScaleType(ImageView.ScaleType.CENTER);
-        floatingButton.setBackgroundResource(R.drawable.add);
-        floatingButton.setPadding(8, 8,8,-3);
-
-//        Drawable drawable = Theme.createSimpleSelectorCircleDrawable(AndroidUtilities.dp(56), Theme.getColor(Theme.key_chats_actionBackground), Theme.getColor(Theme.key_chats_actionPressedBackground));
+//        LinearLayout floatingBtnLayout = new LinearLayout(getParentActivity());
+//        floatingBtnLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+//        floatingBtnLayout.setOrientation(LinearLayout.HORIZONTAL);
+//        floatingBtnLayout.setGravity(Gravity.CENTER_VERTICAL);
+//     //   floatingBtnLayout.setPadding(6, 2, 6, 2);
 //
-//        if (Build.VERSION.SDK_INT < 21) {
-//            Drawable shadowDrawable = context.getResources().getDrawable(R.drawable.floating_shadow).mutate();
-//            shadowDrawable.setColorFilter(new PorterDuffColorFilter(0xff000000, PorterDuff.Mode.MULTIPLY));
-//            CombinedDrawable combinedDrawable = new CombinedDrawable(shadowDrawable, drawable, 0, 0);
-//            combinedDrawable.setIconSize(AndroidUtilities.dp(56), AndroidUtilities.dp(56));
-//            drawable = combinedDrawable;
-//        }
+//        floatingButton = new RLottieImageView(context);
+//        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+//                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+//        params.setMargins(0, 0, 0, 0);
+//        floatingButton.setLayoutParams(params);
+//        floatingButton.setScaleType(ImageView.ScaleType.CENTER);
+//        floatingButton.setBackgroundResource(R.drawable.add);
+//        floatingButton.setPadding(5, 5, 5, 5);
 //
-//        floatingButton.setBackground(drawable);
-//        floatingButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
-//        floatingButton.setAnimation(R.drawable.account_add, 52, 52);
+////        Drawable drawable = Theme.createSimpleSelectorCircleDrawable(AndroidUtilities.dp(56), Theme.getColor(Theme.key_chats_actionBackground), Theme.getColor(Theme.key_chats_actionPressedBackground));
+////
+////        if (Build.VERSION.SDK_INT < 21) {
+////            Drawable shadowDrawable = context.getResources().getDrawable(R.drawable.floating_shadow).mutate();
+////            shadowDrawable.setColorFilter(new PorterDuffColorFilter(0xff000000, PorterDuff.Mode.MULTIPLY));
+////            CombinedDrawable combinedDrawable = new CombinedDrawable(shadowDrawable, drawable, 0, 0);
+////            combinedDrawable.setIconSize(AndroidUtilities.dp(56), AndroidUtilities.dp(56));
+////            drawable = combinedDrawable;
+////        }
+////
+////        floatingButton.setBackground(drawable);
+////        floatingButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
+////        floatingButton.setAnimation(R.drawable.account_add, 52, 52);
+////
+////        if (Build.VERSION.SDK_INT >= 21) {
+////            StateListAnimator animator = new StateListAnimator();
+////            animator.addState(new int[]{android.R.attr.state_pressed}, ObjectAnimator.ofFloat(floatingButton, View.TRANSLATION_Z, AndroidUtilities.dp(2), AndroidUtilities.dp(4)).setDuration(200));
+////            animator.addState(new int[]{}, ObjectAnimator.ofFloat(floatingButton, View.TRANSLATION_Z, AndroidUtilities.dp(4), AndroidUtilities.dp(2)).setDuration(200));
+////            floatingButton.setStateListAnimator(animator);
+////            floatingButton.setOutlineProvider(new ViewOutlineProvider() {
+////                @SuppressLint("NewApi")
+////                @Override
+////                public void getOutline(View view, Outline outline) {
+////                    outline.setOval(0, 0, AndroidUtilities.dp(56), AndroidUtilities.dp(56));
+////                }
+////            });
+////        }
+//        TextView fbText = new TextView(getParentActivity());
+//        fbText.setText("Create task");
+//        fbText.setTextColor(getParentActivity().getResources().getColor(R.color.white));
+//        fbText.setTextSize(14);
+//        fbText.setPadding(5, 5, 5, 5);
+//        fbText.setGravity(Gravity.CENTER_HORIZONTAL);
+//        LinearLayout.LayoutParams paramsT = new LinearLayout.LayoutParams(
+//                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.f);
 //
-//        if (Build.VERSION.SDK_INT >= 21) {
-//            StateListAnimator animator = new StateListAnimator();
-//            animator.addState(new int[]{android.R.attr.state_pressed}, ObjectAnimator.ofFloat(floatingButton, View.TRANSLATION_Z, AndroidUtilities.dp(2), AndroidUtilities.dp(4)).setDuration(200));
-//            animator.addState(new int[]{}, ObjectAnimator.ofFloat(floatingButton, View.TRANSLATION_Z, AndroidUtilities.dp(4), AndroidUtilities.dp(2)).setDuration(200));
-//            floatingButton.setStateListAnimator(animator);
-//            floatingButton.setOutlineProvider(new ViewOutlineProvider() {
-//                @SuppressLint("NewApi")
-//                @Override
-//                public void getOutline(View view, Outline outline) {
-//                    outline.setOval(0, 0, AndroidUtilities.dp(56), AndroidUtilities.dp(56));
-//                }
-//            });
-//        }
-        TextView fbText = new TextView(getParentActivity());
-        fbText.setText("Task");
-        fbText.setTextColor(getParentActivity().getResources().getColor(R.color.white));
-        fbText.setTextSize(11);
-        fbText.setPadding(5, 25, 5, -3);
-        fbText.setGravity(Gravity.BOTTOM|Gravity.CENTER_HORIZONTAL);
+//
+//
+//        floatingBtnLayout.addView(floatingButton);
+//        floatingBtnLayout.addView(fbText);
+//        floatingBtnLayout.setBackgroundResource(R.drawable.btn_click_fab);
+//
+//        floatingButtonContainer.setContentDescription("Create task");
 
-
-        floatingBtnLayout.addView(floatingButton);
-        floatingBtnLayout.addView(fbText);
-        floatingBtnLayout.setBackgroundResource(R.drawable.btn_click_fab);
-
-        floatingButtonContainer.setContentDescription("Create task");
-        floatingButtonContainer.addView(floatingBtnLayout, LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 76 : 90), (Build.VERSION.SDK_INT >= 21 ? 76 : 90), Gravity.LEFT | Gravity.TOP, 10, 6, 10, 0));
+        TestBinding binding = TestBinding.inflate(LayoutInflater.from(getParentActivity()),null,false);
+        floatingButtonContainer.addView(binding.getRoot(), LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 156 : 150), (Build.VERSION.SDK_INT >= 21 ? 54 : 60), Gravity.LEFT | Gravity.TOP, 10, 6, 0, 0));
 
         searchTabsView = null;
 
@@ -4520,7 +4557,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateFloatingButtonOffset() {
-        floatingButtonContainer.setTranslationY(floatingButtonTranslation - additionalFloatingTranslation * (1f - floatingButtonHideProgress));
+    //    floatingButtonContainer.setTranslationY(floatingButtonTranslation - additionalFloatingTranslation * (1f - floatingButtonHideProgress));
     }
 
     private boolean hasHiddenArchive() {

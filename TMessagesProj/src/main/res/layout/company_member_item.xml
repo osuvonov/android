@@ -43,7 +43,7 @@ limitations under the License. -->
         android:textSize="12sp" />
 
     <TextView
-        android:text="Remove"
+        android:text="Удалить"
         android:textColor="@android:color/holo_red_dark"
         android:id="@+id/remove_member"
         android:layout_width="wrap_content"

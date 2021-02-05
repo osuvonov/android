@@ -303,10 +303,10 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         }
 
         if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.IS_OWNER, false)) {
-            items.add(new Item(21, "Add members to the company", newGroupIcon));
+            items.add(new Item(21, "Добавить участников в команду", newGroupIcon));
         }
         if (!PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.HAS_COMPANY, false)) {
-            items.add(new Item(13, "Register a company", companyIcon));
+            items.add(new Item(13, "Создать команду", companyIcon));
         }
         items.add(new Item(11, "Saved Tasks/Messages", savedIcon));
         items.add(new Item(2, LocaleController.getString("NewGroup", R.string.NewGroup), newGroupIcon));

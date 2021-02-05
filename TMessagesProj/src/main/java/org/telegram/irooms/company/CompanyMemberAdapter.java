@@ -102,7 +102,7 @@ public class CompanyMemberAdapter extends ListAdapter<TLRPC.User, CompanyMemberA
             lastSeen.setText(lastSeenText);
             if (company.getOwner_id() == getItem(getAdapterPosition()).id) {
                 remove.setTextColor(mContext.getResources().getColor(R.color.key_actionBarDefaultSelector));
-                remove.setText("Owner");
+                remove.setText("Владелец");
             } else {
                 remove.setOnClickListener(view -> {
                     if (userListener != null) {
