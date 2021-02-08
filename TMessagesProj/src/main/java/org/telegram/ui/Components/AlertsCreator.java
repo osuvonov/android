@@ -338,6 +338,7 @@ public class AlertsCreator {
         }
 
         final String[] deadline = {TaskUtil.getMaxDate()};
+
         ArrayList<Long> selectedMembers = new ArrayList<>();
         final int[] selectedState = {0};
 

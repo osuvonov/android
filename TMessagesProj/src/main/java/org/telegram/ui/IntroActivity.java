@@ -23,8 +23,10 @@ import android.opengl.GLUtils;
 import android.os.Bundle;
 import android.os.Looper;
 import android.os.Parcelable;
+
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.TextureView;
@@ -96,19 +98,16 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
 
         titles = new String[]{
                 "Rooms",
-                LocaleController.getString("Page2Title", R.string.Page2Title),
-                LocaleController.getString("Page3Title", R.string.Page3Title),
-                LocaleController.getString("Page5Title", R.string.Page5Title),
-                LocaleController.getString("Page4Title", R.string.Page4Title),
-                LocaleController.getString("Page6Title", R.string.Page6Title)
+                "Быстрый",
+                "Задачи",
+                "Оповещения",
+                "Безопасный"
         };
-        messages = new String[]{
-                LocaleController.getString("Page1Message", R.string.Page1Message),
-                LocaleController.getString("Page2Message", R.string.Page2Message),
-                LocaleController.getString("Page3Message", R.string.Page3Message),
-                LocaleController.getString("Page5Message", R.string.Page5Message),
-                LocaleController.getString("Page4Message", R.string.Page4Message),
-                LocaleController.getString("Page6Message", R.string.Page6Message)
+        messages = new String[]{"Rooms это корпоративный мессенджер с возможностью постановки задач и управления проектами.",
+                "Rooms доставляет сообщения быстрее других мессенджеров.",
+                "Создавайте задачи в два клика.",
+                "Будьте в курсе о выполненных или просроченных работах.",
+                "**Rooms** хранит ваши сообщения в безопасности \n от хакерских атак."
         };
 
         ScrollView scrollView = new ScrollView(this);
@@ -218,7 +217,7 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
         });
 
         startMessagingButton = new TextView(this);
-        startMessagingButton.setText(LocaleController.getString("StartMessaging", R.string.StartMessaging));
+        startMessagingButton.setText("Начать");
         startMessagingButton.setGravity(Gravity.CENTER);
         startMessagingButton.setTextColor(0xffffffff);
         startMessagingButton.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
@@ -244,7 +243,7 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
             });
         }
 
-        bottomPages = new BottomPagesView(this, viewPager, 6);
+        bottomPages = new BottomPagesView(this, viewPager, titles.length);
         frameLayout.addView(bottomPages, LayoutHelper.createFrame(66, 5, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 350, 0, 0));
 
         textView = new TextView(this);
@@ -298,8 +297,8 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
         super.onResume();
         if (justCreated) {
             if (LocaleController.isRTL) {
-                viewPager.setCurrentItem(6);
-                lastPage = 6;
+                viewPager.setCurrentItem(titles.length);
+                lastPage = titles.length;
             } else {
                 viewPager.setCurrentItem(0);
                 lastPage = 0;
@@ -504,7 +503,7 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
 
             int[] configsCount = new int[1];
             EGLConfig[] configs = new EGLConfig[1];
-            int[] configSpec = new int[] {
+            int[] configSpec = new int[]{
                     EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
                     EGL10.EGL_RED_SIZE, 8,
                     EGL10.EGL_GREEN_SIZE, 8,
@@ -532,7 +531,7 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
                 return false;
             }
 
-            int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE };
+            int[] attrib_list = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL10.EGL_NONE};
             eglContext = egl10.eglCreateContext(eglDisplay, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
             if (eglContext == null) {
                 if (BuildVars.LOGS_ENABLED) {
@@ -581,8 +580,8 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
             loadTexture(R.drawable.intro_ic_videocam, 12);
             loadTexture(R.drawable.intro_knot_down, 13);
             loadTexture(R.drawable.intro_knot_up, 14);
-            loadTexture(R.drawable.intro_powerful_infinity_white, 15);
-            loadTexture(R.drawable.intro_powerful_infinity, 16);
+            loadTexture(R.drawable.input_notify_on, 15);
+            loadTexture(R.drawable.input_notify_on, 16);
             loadTexture(R.drawable.intro_powerful_mask, 17);
             loadTexture(R.drawable.intro_powerful_star, 18);
             loadTexture(R.drawable.intro_private_door, 19);

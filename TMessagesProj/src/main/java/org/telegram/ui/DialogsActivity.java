@@ -2879,65 +2879,6 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             presentFragment(new DialogsActivity2(args));
         });
 
-//        LinearLayout floatingBtnLayout = new LinearLayout(getParentActivity());
-//        floatingBtnLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-//        floatingBtnLayout.setOrientation(LinearLayout.HORIZONTAL);
-//        floatingBtnLayout.setGravity(Gravity.CENTER_VERTICAL);
-//     //   floatingBtnLayout.setPadding(6, 2, 6, 2);
-//
-//        floatingButton = new RLottieImageView(context);
-//        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-//                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//        params.setMargins(0, 0, 0, 0);
-//        floatingButton.setLayoutParams(params);
-//        floatingButton.setScaleType(ImageView.ScaleType.CENTER);
-//        floatingButton.setBackgroundResource(R.drawable.add);
-//        floatingButton.setPadding(5, 5, 5, 5);
-//
-////        Drawable drawable = Theme.createSimpleSelectorCircleDrawable(AndroidUtilities.dp(56), Theme.getColor(Theme.key_chats_actionBackground), Theme.getColor(Theme.key_chats_actionPressedBackground));
-////
-////        if (Build.VERSION.SDK_INT < 21) {
-////            Drawable shadowDrawable = context.getResources().getDrawable(R.drawable.floating_shadow).mutate();
-////            shadowDrawable.setColorFilter(new PorterDuffColorFilter(0xff000000, PorterDuff.Mode.MULTIPLY));
-////            CombinedDrawable combinedDrawable = new CombinedDrawable(shadowDrawable, drawable, 0, 0);
-////            combinedDrawable.setIconSize(AndroidUtilities.dp(56), AndroidUtilities.dp(56));
-////            drawable = combinedDrawable;
-////        }
-////
-////        floatingButton.setBackground(drawable);
-////        floatingButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionIcon), PorterDuff.Mode.MULTIPLY));
-////        floatingButton.setAnimation(R.drawable.account_add, 52, 52);
-////
-////        if (Build.VERSION.SDK_INT >= 21) {
-////            StateListAnimator animator = new StateListAnimator();
-////            animator.addState(new int[]{android.R.attr.state_pressed}, ObjectAnimator.ofFloat(floatingButton, View.TRANSLATION_Z, AndroidUtilities.dp(2), AndroidUtilities.dp(4)).setDuration(200));
-////            animator.addState(new int[]{}, ObjectAnimator.ofFloat(floatingButton, View.TRANSLATION_Z, AndroidUtilities.dp(4), AndroidUtilities.dp(2)).setDuration(200));
-////            floatingButton.setStateListAnimator(animator);
-////            floatingButton.setOutlineProvider(new ViewOutlineProvider() {
-////                @SuppressLint("NewApi")
-////                @Override
-////                public void getOutline(View view, Outline outline) {
-////                    outline.setOval(0, 0, AndroidUtilities.dp(56), AndroidUtilities.dp(56));
-////                }
-////            });
-////        }
-//        TextView fbText = new TextView(getParentActivity());
-//        fbText.setText("Create task");
-//        fbText.setTextColor(getParentActivity().getResources().getColor(R.color.white));
-//        fbText.setTextSize(14);
-//        fbText.setPadding(5, 5, 5, 5);
-//        fbText.setGravity(Gravity.CENTER_HORIZONTAL);
-//        LinearLayout.LayoutParams paramsT = new LinearLayout.LayoutParams(
-//                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1.f);
-//
-//
-//
-//        floatingBtnLayout.addView(floatingButton);
-//        floatingBtnLayout.addView(fbText);
-//        floatingBtnLayout.setBackgroundResource(R.drawable.btn_click_fab);
-//
-//        floatingButtonContainer.setContentDescription("Create task");
-
         TestBinding binding = TestBinding.inflate(LayoutInflater.from(getParentActivity()),null,false);
         floatingButtonContainer.addView(binding.getRoot(), LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 156 : 150), (Build.VERSION.SDK_INT >= 21 ? 54 : 60), Gravity.LEFT | Gravity.TOP, 10, 6, 0, 0));
 
@@ -5976,7 +5917,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         animatorSet.playTogether(valueAnimator);
         animatorSet.setDuration(300);
         animatorSet.setInterpolator(floatingInterpolator);
-        floatingButtonContainer.setClickable(!hide);
+     //   floatingButtonContainer.setClickable(!hide);
         animatorSet.start();
     }
 
