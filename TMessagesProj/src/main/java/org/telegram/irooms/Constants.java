@@ -15,4 +15,5 @@ public interface Constants {
     int OTHERS_TASK=98;
     String SOCKET_ENDPOINT = "https://sock.irooms.io";
 
+    String DARK_THEME = "dark_theme";
 }

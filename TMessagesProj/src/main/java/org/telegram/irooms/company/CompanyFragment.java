@@ -101,12 +101,12 @@ public class CompanyFragment extends BaseFragment {
 
         });
 
-        TextView companiesTitle = new TextView(context);
-        companiesTitle.setText("Команды");
-        companiesTitle.setGravity(Gravity.CENTER);
-        companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
-        linearLayout.addView(companiesTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 0));
+//        TextView companiesTitle = new TextView(context);
+//        companiesTitle.setText("Команды");
+//        companiesTitle.setGravity(Gravity.CENTER);
+//        companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+//        companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
+//        linearLayout.addView(companiesTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 0));
 
         listView = new RecyclerListView(context);
         companyViewAdapter = new CompanyViewAdapter(new CompanyViewAdapter.CompanyDiff(), getParentActivity(), new CompanyViewAdapter.CompanySelecterListener() {

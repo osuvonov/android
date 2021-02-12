@@ -66,6 +66,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.rooms.messenger.R;
+import org.telegram.irooms.IRoomsManager;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -110,10 +111,6 @@ import org.telegram.ui.Cells.ArchiveHintInnerCell;
 import org.telegram.ui.Cells.DialogCell;
 import org.telegram.ui.Cells.DialogsEmptyCell;
 import org.telegram.ui.Cells.DividerCell;
-import org.telegram.ui.Cells.DrawerActionCell;
-import org.telegram.ui.Cells.DrawerAddCell;
-import org.telegram.ui.Cells.DrawerProfileCell;
-import org.telegram.ui.Cells.DrawerUserCell;
 import org.telegram.ui.Cells.GraySectionCell;
 import org.telegram.ui.Cells.HashtagSearchCell;
 import org.telegram.ui.Cells.HintDialogCell;
@@ -827,7 +824,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         @Override
         public boolean onTouchEvent(MotionEvent ev) {
             if (filterTabsView != null && !filterTabsView.isEditing() && !searching &&
-                    !parentLayout.checkTransitionAnimation() && !parentLayout.isInPreviewMode() && !parentLayout.isPreviewOpenAnimationInProgress() && !parentLayout.getDrawerLayoutContainer().isDrawerOpened() &&
+                    !parentLayout.checkTransitionAnimation() && !parentLayout.isInPreviewMode() && !parentLayout.isPreviewOpenAnimationInProgress()  &&
                     (ev == null || startedTracking || ev.getY() > actionBar.getMeasuredHeight() + actionBar.getTranslationY())) {
                 if (ev != null) {
                     if (velocityTracker == null) {
@@ -835,48 +832,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                     }
                     velocityTracker.addMovement(ev);
                 }
-                if (ev != null && ev.getAction() == MotionEvent.ACTION_DOWN && checkTabsAnimationInProgress()) {
-                    startedTracking = true;
-                    startedTrackingPointerId = ev.getPointerId(0);
-                    startedTrackingX = (int) ev.getX();
-                    parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(false);
-                    if (animatingForward) {
-                        if (startedTrackingX < viewPages[0].getMeasuredWidth() + viewPages[0].getTranslationX()) {
-                            additionalOffset = viewPages[0].getTranslationX();
-                        } else {
-                            ViewPage page = viewPages[0];
-                            viewPages[0] = viewPages[1];
-                            viewPages[1] = page;
-                            animatingForward = false;
-                            additionalOffset = viewPages[0].getTranslationX();
-                            filterTabsView.selectTabWithId(viewPages[0].selectedType, 1f);
-                            filterTabsView.selectTabWithId(viewPages[1].selectedType, additionalOffset / viewPages[0].getMeasuredWidth());
-                            switchToCurrentSelectedMode(true);
-                            viewPages[0].dialogsAdapter.resume();
-                            viewPages[1].dialogsAdapter.pause();
-                        }
-                    } else {
-                        if (startedTrackingX < viewPages[1].getMeasuredWidth() + viewPages[1].getTranslationX()) {
-                            ViewPage page = viewPages[0];
-                            viewPages[0] = viewPages[1];
-                            viewPages[1] = page;
-                            animatingForward = true;
-                            additionalOffset = viewPages[0].getTranslationX();
-                            filterTabsView.selectTabWithId(viewPages[0].selectedType, 1f);
-                            filterTabsView.selectTabWithId(viewPages[1].selectedType, -additionalOffset / viewPages[0].getMeasuredWidth());
-                            switchToCurrentSelectedMode(true);
-                            viewPages[0].dialogsAdapter.resume();
-                            viewPages[1].dialogsAdapter.pause();
-                        } else {
-                            additionalOffset = viewPages[0].getTranslationX();
-                        }
-                    }
-                    tabsAnimation.removeAllListeners();
-                    tabsAnimation.cancel();
-                    tabsAnimationInProgress = false;
-                } else if (ev != null && ev.getAction() == MotionEvent.ACTION_DOWN) {
-                    additionalOffset = 0;
-                }
+
                 if (ev != null && ev.getAction() == MotionEvent.ACTION_DOWN && !startedTracking && !maybeStartTracking && filterTabsView.getVisibility() == VISIBLE) {
                     startedTrackingPointerId = ev.getPointerId(0);
                     maybeStartTracking = true;
@@ -1002,9 +958,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                                     viewPages[0].dialogsAdapter.resume();
                                     viewPages[1].dialogsAdapter.pause();
                                 }
-                                if (parentLayout != null) {
-                                    parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(viewPages[0].selectedType == filterTabsView.getFirstTabId() || searchIsShowed);
-                                }
+
                                 viewPages[1].setVisibility(View.GONE);
                                 showScrollbars(true);
                                 tabsAnimationInProgress = false;
@@ -1018,8 +972,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                         tabsAnimationInProgress = true;
                         startedTracking = false;
                     } else {
-                        parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(viewPages[0].selectedType == filterTabsView.getFirstTabId() || searchIsShowed);
-                        maybeStartTracking = false;
+                         maybeStartTracking = false;
                         actionBar.setEnabled(true);
                         filterTabsView.setEnabled(true);
                     }
@@ -1499,7 +1452,18 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             updatePasscodeButton();
             updateProxyButton(false);
         }
-        searchItem = menu.addItem(0, R.drawable.ic_action_search).setIsSearchField(true, true).setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
+        int blackColor = getParentActivity().getResources().getColor(R.color.black);
+        int searchIcon = R.drawable.ic_action_search;
+        if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+            actionBar.setBackgroundResource(R.color.background_dark);
+            actionBar.setBackButtonDrawable(backDrawable = new BackDrawable(false));
+            searchIcon = R.drawable.ic_ab_search;
+        }else {
+            actionBar.setBackButtonDrawable(backDrawable = new BlackBackDrawable(false));
+            actionBar.setTitleColor(blackColor);
+            actionBar.setBackgroundColor(getParentActivity().getResources().getColor(R.color.white));
+        }
+        searchItem = menu.addItem(0,searchIcon ).setIsSearchField(true, true).setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
             @Override
             public void onSearchExpand() {
                 searching = true;
@@ -1590,11 +1554,9 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         searchItem.setClearsTextOnSearchCollapse(false);
         searchItem.setSearchFieldHint(LocaleController.getString("Search", R.string.Search));
         searchItem.setContentDescription(LocaleController.getString("Search", R.string.Search));
-        actionBar.setBackButtonDrawable(backDrawable = new BlackBackDrawable(false));
-        actionBar.setBackgroundColor(getParentActivity().getResources().getColor(R.color.white));
 
-        int blackColor = getParentActivity().getResources().getColor(R.color.black);
-        actionBar.setTitleColor(blackColor);
+
+
         actionBar.setTitle("Выберите чат или группу");
 
         if (!onlySelect) {
@@ -1697,9 +1659,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                     if (id != Integer.MAX_VALUE && (id < 0 || id >= dialogFilters.size())) {
                         return;
                     }
-                    if (parentLayout != null) {
-                        parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(id == filterTabsView.getFirstTabId());
-                    }
+
                     viewPages[1].selectedType = id;
                     viewPages[1].setVisibility(View.VISIBLE);
                     viewPages[1].setTranslationX(viewPages[0].getMeasuredWidth());
@@ -3035,9 +2995,6 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 if (updateCurrentTab) {
                     switchToCurrentSelectedMode(false);
                 }
-                if (parentLayout != null) {
-                    parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(id == filterTabsView.getFirstTabId());
-                }
             }
         } else {
             if (filterTabsView.getVisibility() != View.GONE) {
@@ -3074,9 +3031,6 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                     viewPages[a].listView.requestLayout();
                     viewPages[a].requestLayout();
                 }
-            }
-            if (parentLayout != null) {
-                parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(true);
             }
         }
         updateCounters(false);
@@ -3122,9 +3076,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             blurredView.setVisibility(View.GONE);
             blurredView.setBackground(null);
         }
-        if (filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE) {
-            parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(viewPages[0].selectedType == filterTabsView.getFirstTabId() || searchIsShowed);
-        }
+
         if (viewPages != null && !dialogsListFrozen) {
             for (int a = 0; a < viewPages.length; a++) {
                 viewPages[a].dialogsAdapter.notifyDataSetChanged();
@@ -3393,12 +3345,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 editText.setTextColor(Theme.getColor(Theme.key_actionBarDefaultSearch));
             }
             searchViewPager.setKeyboardHeight(((ContentView) fragmentView).getKeyboardHeight());
-            parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(true);
-        } else {
-            if (filterTabsView != null) {
-                parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(viewPages[0].selectedType == filterTabsView.getFirstTabId());
-            }
-        }
+         }
 
         if (animated && searchViewPager.dialogsSearchAdapter.hasRecentSearch()) {
             AndroidUtilities.setAdjustResizeToNothing(getParentActivity(), classGuid);
@@ -5666,14 +5613,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                     }
                 }
             }
-            if (sideMenu != null) {
-                View child = sideMenu.getChildAt(0);
-                if (child instanceof DrawerProfileCell) {
-                    DrawerProfileCell profileCell = (DrawerProfileCell) child;
-                    profileCell.applyBackground(true);
-                    profileCell.updateColors();
-                }
-            }
+
             if (viewPages != null) {
                 for (int a = 0; a < viewPages.length; a++) {
                     if (viewPages[a].pullForegroundDrawable == null) {
@@ -5926,26 +5866,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         arrayList.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_chats_archivePullDownBackgroundActive));
 
         arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_chats_menuBackground));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chats_menuName));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chats_menuPhone));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chats_menuPhoneCats));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chats_menuCloudBackgroundCats));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chat_serviceBackground));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chats_menuTopShadow));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerProfileCell.class}, null, null, null, Theme.key_chats_menuTopShadowCats));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_IMAGECOLOR, new Class[]{DrawerProfileCell.class}, new String[]{"darkThemeView"}, null, null, null, Theme.key_chats_menuName));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR | ThemeDescription.FLAG_CHECKTAG, new Class[]{DrawerProfileCell.class}, null, null, cellDelegate, Theme.key_chats_menuTopBackgroundCats));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_CELLBACKGROUNDCOLOR | ThemeDescription.FLAG_CHECKTAG, new Class[]{DrawerProfileCell.class}, null, null, cellDelegate, Theme.key_chats_menuTopBackground));
 
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_IMAGECOLOR, new Class[]{DrawerActionCell.class}, new String[]{"textView"}, null, null, null, Theme.key_chats_menuItemIcon));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerActionCell.class}, new String[]{"textView"}, null, null, null, Theme.key_chats_menuItemText));
-
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerUserCell.class}, new String[]{"textView"}, null, null, null, Theme.key_chats_menuItemText));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_TEXTCOLOR, new Class[]{DrawerUserCell.class}, new String[]{"checkBox"}, null, null, null, Theme.key_chats_unreadCounterText));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_TEXTCOLOR, new Class[]{DrawerUserCell.class}, new String[]{"checkBox"}, null, null, null, Theme.key_chats_unreadCounter));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_TEXTCOLOR, new Class[]{DrawerUserCell.class}, new String[]{"checkBox"}, null, null, null, Theme.key_chats_menuBackground));
-        arrayList.add(new ThemeDescription(sideMenu, ThemeDescription.FLAG_IMAGECOLOR, new Class[]{DrawerAddCell.class}, new String[]{"textView"}, null, null, null, Theme.key_chats_menuItemIcon));
-        arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DrawerAddCell.class}, new String[]{"textView"}, null, null, null, Theme.key_chats_menuItemText));
 
         arrayList.add(new ThemeDescription(sideMenu, 0, new Class[]{DividerCell.class}, Theme.dividerPaint, null, null, Theme.key_divider));
 

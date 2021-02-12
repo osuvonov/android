@@ -13,7 +13,6 @@ import androidx.room.Update;
 @Dao
 public abstract class TaskDao {
 
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     public abstract void createTask(Task task);
 
@@ -47,25 +46,11 @@ public abstract class TaskDao {
     @Query("select * from tbl_tasks where company_id=:company_id and chat_id=:chatId")
     public abstract List<Task> getTasksByChatIdAndCompanyId(int company_id, long chatId);
 
-    @Query("select * from tbl_tasks where company_id=:company_id and (chat_id in (:chatId,:ownerId) or creator_id in (:chatId,:ownerId)) ")
-    public abstract List<Task> getTasksByChatIdAndCompanyId(int company_id, long chatId, long ownerId);
-
-
     @Query("select * from tbl_tasks where (chat_id in (:chatId)) ")
     public abstract List<Task> getTasksByChatId(long chatId);
 
-
     @Query("select * from tbl_tasks where local_status in (1,2)")
     public abstract List<Task> getOfflineTasks();
-
-    @Query("update tbl_tasks set id=:taskId where local_id=:localId")
-    public abstract void updateFromServer(long taskId, String localId);
-
-    @Query("select max(id) from tbl_tasks")
-    public abstract long getTaskMaxId();
-
-    @Query("delete from tbl_tasks where local_status not in(1,2)")
-    public abstract void deleteOnlineTasks();
 
     @Query("delete from tbl_tasks where local_status not in (1,2) and company_id=:companyId")
     public abstract void deleteCompanyOnlineTasks(int companyId);

@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Dark theme task messaging-->
+
+    <color name="task_text_color_dark">#f9ffffff</color>
+    <color name="background_dark">#232E3B</color>
+    <color name="task_background_color_dark">#263238</color>
+    <color name="task_status_yellow_dark">#fff28c48</color>
+    <color name="task_status_green_dark">#ff4fc244</color>
+    <color name="task_status_blue_dark">#ff3ec1f9</color>
+
+    <color name="task_sort_bottom_tab_selected">#394b60</color>
+
+
+
+    <!-- Dark theme task messaging-->
+
     <color name="disabled_save_task_color">#5FA3DE</color>
     <color name="disabled_text_color">#BCBCBC</color>
     <color name="purple_200">#FFBB86FC</color>

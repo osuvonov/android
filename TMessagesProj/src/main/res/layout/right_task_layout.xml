@@ -43,8 +43,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical|right"
                 android:background="@drawable/btn_click"
-                android:padding="10dp"
-                android:src="@drawable/menu" />
+                android:padding="5dp"
+                android:src="@drawable/msg_edit"/>
         </LinearLayout>
 
         <TextView

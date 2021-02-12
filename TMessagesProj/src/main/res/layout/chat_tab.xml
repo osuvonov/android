@@ -2,13 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="40dp"
+    android:id="@+id/chat_task_tab"
+    android:background="@color/actionBarDefaultColor"
     android:orientation="horizontal">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="@color/actionBarDefaultColor"
         android:orientation="vertical">
 
         <TextView
@@ -34,15 +35,13 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:background="@color/actionBarDefaultColor"
         android:orientation="vertical">
 
         <View
             android:id="@+id/task_bottom_white"
             android:layout_width="80dp"
             android:layout_height="3dp"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/actionBarDefaultColor" />
+            android:layout_gravity="bottom|center_horizontal" />
 
         <TextView
             android:id="@+id/chat_activity_task"

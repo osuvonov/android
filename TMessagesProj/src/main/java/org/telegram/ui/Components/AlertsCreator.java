@@ -29,7 +29,9 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
+
 import androidx.preference.PreferenceManager;
+
 import android.provider.Settings;
 import android.text.Html;
 import android.text.InputType;
@@ -67,7 +69,7 @@ import org.telegram.irooms.task.TaskManagerListener;
 import org.telegram.irooms.task.TaskRepository;
 import org.telegram.irooms.task.TaskUtil;
 import org.telegram.irooms.ui.spinner.MemberState;
- import org.telegram.messenger.AccountInstance;
+import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
@@ -153,6 +155,11 @@ public class AlertsCreator {
             AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
         });
         bottomSheet.etTaskDescription.setText(text);
+        int textColor = context.getResources().getColor(android.R.color.black);
+        if (IRoomsManager.getInstance().isDarkMode(context)) {
+            textColor = context.getResources().getColor(R.color.white);
+        }
+        bottomSheet.etTaskDescription.setTextColor(textColor);
         bottomSheet.etTaskDescription.requestFocus();
 
         bottomSheet.btnTaskDeadlineToday.setOnClickListener(today -> {
@@ -173,6 +180,7 @@ public class AlertsCreator {
         });
 
         bottomSheet.etTaskStatus.setText(Utils.getStatuses()[0]);
+        bottomSheet.etTaskStatus.setTextColor(textColor);
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
             builder1.setTitle("Выберите статус");
@@ -188,14 +196,6 @@ public class AlertsCreator {
             dialog.show();
         });
 
-        ArrayList<MemberState> members = new ArrayList<>();
-        for (TLRPC.User user : userList) {
-            if (user != null) {
-                MemberState state = new MemberState(user);
-                members.add(state);
-            }
-        }
-
         // add a list
         CharSequence[] memberList = new CharSequence[userList.size()];
         SpannableStringBuilder selectedUsers = new SpannableStringBuilder();
@@ -209,7 +209,7 @@ public class AlertsCreator {
             if (user != null) {
                 userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
             }
-            if (selectedUser != null && selectedUser.id == user.id) {
+            if (selectedUser != null && user != null && selectedUser.id == user.id) {
                 checkedItems[i] = true;
             }
             memberList[i] = userName;
@@ -217,13 +217,18 @@ public class AlertsCreator {
         }
 
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
-            android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
+            android.app.AlertDialog.Builder builder12;
+            builder12 = new android.app.AlertDialog.Builder(context);
+            if (IRoomsManager.getInstance().isDarkMode(context)) {
+                builder12 = new android.app.AlertDialog.Builder(context, android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK);
+            }
             builder12.setTitle("Выбрать участников");
 
             ListView listview = new ListView(context);
+
             listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
             ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(context,
-                    android.R.layout.simple_list_item_multiple_choice, memberList);
+                    R.layout.multi_select_view, memberList);
             listview.setAdapter(adapter);
 
             builder12.setMultiChoiceItems(memberList, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
@@ -261,9 +266,10 @@ public class AlertsCreator {
 
             // create and show the alert dialog
             android.app.AlertDialog dialog = builder12.create();
+
             dialog.show();
         });
-
+        bottomSheet.tvSelectMembers.setTextColor(textColor);
         if (selectedUser != null) {
             selectedMembers.clear();
             selectedMembers.add((long) selectedUser.id);
@@ -332,14 +338,13 @@ public class AlertsCreator {
     }
 
     public static BottomSheet.Builder editTaskDialogBySocket(Context context, Task task, CharSequence text, ArrayList<TLRPC.User> userList,
-                                                           int chatId, TaskManagerListener callback) {
+                                                             int chatId, TaskManagerListener callback) {
         if (context == null) {
             return null;
         }
 
         final String[] deadline = {TaskUtil.getMaxDate()};
 
-        ArrayList<Long> selectedMembers = new ArrayList<>();
         final int[] selectedState = {0};
 
         final int[] selectedDeadLineView = {-1};
@@ -348,7 +353,15 @@ public class AlertsCreator {
         builder.setApplyBottomPadding(false);
 
         AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
-
+        // ------------  handling day/night theme   ------------------------------------------------
+        int textColor = context.getResources().getColor(android.R.color.black);
+        if (IRoomsManager.getInstance().isDarkMode(context)) {
+            textColor = context.getResources().getColor(R.color.white);
+        }
+        bottomSheet.etTaskDescription.setTextColor(textColor);
+        bottomSheet.tvSelectMembers.setTextColor(textColor);
+        bottomSheet.etTaskStatus.setTextColor(textColor);
+        // -----------------------------------------------------------------------------------------
         bottomSheet.etTaskDescription.setOnClickListener(click -> {
             bottomSheet.etTaskDescription.requestFocus();
             AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
@@ -374,14 +387,13 @@ public class AlertsCreator {
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
 
-        if (task.getExpires_at()==null){
+        if (task.getExpires_at() == null) {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             deadline[0] = task.getExpires_at();
             bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
-        }else
-        if (task.getExpires_at().equals(TaskUtil.getEndOfTheDay())) {
+        } else if (task.getExpires_at().equals(TaskUtil.getEndOfTheDay())) {
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
             selectedDeadLineView[0] = 1;
             deadline[0] = TaskUtil.getEndOfTheDay();
@@ -443,10 +455,13 @@ public class AlertsCreator {
             bottomSheet.tvSelectMembers.setText(selectedUsers);
         }
 
-        selectedMembers.addAll(task.getMembers());
+        ArrayList<Long> selectedMembers = new ArrayList<>(task.getMembers());
 
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
             android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
+            if (IRoomsManager.getInstance().isDarkMode(context)) {
+                builder12 = new android.app.AlertDialog.Builder(context, android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK);
+            }
             builder12.setTitle("Выбрать участников");
 
             ListView listview = new ListView(context);
@@ -455,37 +470,31 @@ public class AlertsCreator {
                     android.R.layout.simple_list_item_multiple_choice, memberList);
             listview.setAdapter(adapter);
 
-            builder12.setMultiChoiceItems(memberList, checkedItems, new DialogInterface.OnMultiChoiceClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i, boolean b) {
-                    checkedItems[i] = b;
-                    selectedUsers.clear();
-                    selectedMembers.clear();
-                    for (int i1 = 0; i1 < userList.size(); i1++) {
-                        TLRPC.User user = userList.get(i1);
+            builder12.setMultiChoiceItems(memberList, checkedItems, (dialogInterface, i, b) -> {
+                checkedItems[i] = b;
+                selectedUsers.clear();
+                selectedMembers.clear();
+                for (int i1 = 0; i1 < userList.size(); i1++) {
+                    TLRPC.User user = userList.get(i1);
 
-                        if (user != null && checkedItems[i1]) {
-                            selectedMembers.add((long) user.id);
-                            if (selectedUsers.length() > 0) {
-                                selectedUsers.append(", ");
-                            }
-                            String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-
-                            selectedUsers.append(userName);
+                    if (user != null && checkedItems[i1]) {
+                        selectedMembers.add((long) user.id);
+                        if (selectedUsers.length() > 0) {
+                            selectedUsers.append(", ");
                         }
+                        String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+
+                        selectedUsers.append(userName);
                     }
-                    if (selectedUsers.toString().length() == 0) {
-                        bottomSheet.tvSelectMembers.setText("Выбрать участников");
-                    } else {
-                        bottomSheet.tvSelectMembers.setText(selectedUsers);
-                    }
+                }
+                if (selectedUsers.toString().length() == 0) {
+                    bottomSheet.tvSelectMembers.setText("Выбрать участников");
+                } else {
+                    bottomSheet.tvSelectMembers.setText(selectedUsers);
                 }
             });
-            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int j) {
+            builder12.setPositiveButton("Ok", (dialogInterface, j) -> {
 
-                }
             });
 
             // create and show the alert dialog

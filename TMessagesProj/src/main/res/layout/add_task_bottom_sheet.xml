@@ -16,7 +16,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@color/white"
             android:padding="8dp"
             android:text="Описание"
             android:textColor="@color/holo_blue_bright"
@@ -52,7 +51,7 @@
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scroller"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -64,19 +63,18 @@
                     android:layout_height="wrap_content"
                     android:background="@null"
                     android:focusable="true"
-                    android:inputType="textCapSentences"
                     android:focusableInTouchMode="true"
-                    android:hint="Описание"
                     android:imeOptions="actionNext"
+                    android:inputType="textCapSentences"
                     android:nextFocusForward="@+id/et_task_status"
-                    android:padding="8dp"
+                    android:paddingLeft="8dp"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/tv_first_empty_row"
                     android:layout_width="match_parent"
-                    android:layout_height="5dp"
+                    android:layout_height="2dp"
                     android:background="@color/lighter_gray"
                     android:textColor="@color/add_task_text_color"
                     android:textSize="14sp"
@@ -103,8 +101,8 @@
                     android:background="@drawable/btn_click"
                     android:drawableEnd="@drawable/ic_select_member"
                     android:drawableRight="@drawable/ic_select_member"
-                    android:gravity="center_vertical"
                     android:ellipsize="end"
+                    android:gravity="center_vertical"
                     android:padding="8dp"
                     android:textAllCaps="false"
                     android:textSize="14sp"
@@ -115,7 +113,7 @@
                 <TextView
                     android:id="@+id/tv_second_empty_row"
                     android:layout_width="match_parent"
-                    android:layout_height="5dp"
+                    android:layout_height="2dp"
                     android:background="@color/lighter_gray"
                     android:textSize="14sp"
                     app:layout_constraintLeft_toLeftOf="parent"
@@ -134,13 +132,11 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tv_second_empty_row" />
 
-                <Button
+                <TextView
                     android:id="@+id/et_task_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_click"
-                    android:drawableEnd="@drawable/ic_select_member"
-                    android:drawableRight="@drawable/ic_select_member"
                     android:gravity="center_vertical"
                     android:padding="8dp"
                     android:textAllCaps="false"
@@ -151,7 +147,7 @@
                 <TextView
                     android:id="@+id/tv_third_empty_row"
                     android:layout_width="match_parent"
-                    android:layout_height="5dp"
+                    android:layout_height="2dp"
                     android:background="@color/lighter_gray"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
@@ -183,7 +179,6 @@
                         android:id="@+id/btn_task_deadline_today"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@color/white"
                         android:padding="10dp"
                         android:text="Сегодня"
                         android:textColor="@color/disabled_text_color"
@@ -194,7 +189,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="1dp"
-                        android:background="@color/white"
                         android:padding="10dp"
                         android:text="Завтра"
                         android:textColor="@color/disabled_text_color"

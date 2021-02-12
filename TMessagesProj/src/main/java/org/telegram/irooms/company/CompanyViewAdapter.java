@@ -1,7 +1,15 @@
 package org.telegram.irooms.company;
 
 import android.content.Context;
+
+import androidx.core.widget.CompoundButtonCompat;
 import androidx.preference.PreferenceManager;
+
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +23,6 @@ import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
 import org.rooms.messenger.R;
 import org.telegram.messenger.UserConfig;
-
 
 
 import androidx.annotation.NonNull;
@@ -66,6 +73,7 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
         setFadeAnimation(holder.itemView);
 
     }
+
     private void setFadeAnimation(View view) {
         AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(900);
@@ -81,6 +89,10 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
 
         private CompanyViewHolder(View itemView) {
             super(itemView);
+            int textColor = mContext.getResources().getColor(android.R.color.darker_gray);
+            if (IRoomsManager.getInstance().isDarkMode(mContext)) {
+                textColor =mContext.getResources().getColor(R.color.disabled_text_color);
+            }
             nameMemberParent = itemView.findViewById(R.id.name_member_parent);
             nameMemberParent.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -90,8 +102,14 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
             });
 
             companyNameTextView = itemView.findViewById(R.id.textView);
+            companyNameTextView.setTextColor(textColor);
 
             companySelectedCheckBox = itemView.findViewById(R.id.company_checkbox);
+            ColorFilter colorFilter = new PorterDuffColorFilter(textColor, PorterDuff.Mode.SRC_ATOP);
+            Drawable drawable = CompoundButtonCompat.getButtonDrawable(companySelectedCheckBox);
+            if (drawable != null) {
+                drawable.setColorFilter(colorFilter);
+            }
             companySelectedCheckBox.setOnClickListener((compoundButton) -> {
                 try {
                     if (getAdapterPosition() == lastCheckedPosition && !companySelectedCheckBox.isChecked()) {
@@ -109,6 +127,7 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
                 }
             });
             companyMembersCount = itemView.findViewById(R.id.company_members);
+            companyMembersCount.setTextColor(textColor);
         }
 
         public void bind(String text, boolean selected, int members) {

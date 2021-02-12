@@ -16,6 +16,9 @@ import java.util.stream.Stream;
 public class Utils {
     public static List<Long> intersectionMembers(List<Long> companyMembers, List<Long> groupMembers) {
         List<Long> temp = new ArrayList<>();
+        if (companyMembers==null){
+            return temp;
+        }
 
         for (long i : groupMembers) {
             if (companyMembers.contains(i)) {

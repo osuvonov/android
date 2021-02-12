@@ -396,6 +396,14 @@ public class IRoomsManager {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Constants.COMPANY_REGISTER_REQUEST_ASKED, false);
     }
 
+    public void setDarkTheme(Context context, boolean toDark) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(Constants.DARK_THEME, toDark).apply();
+    }
+
+    public boolean isDarkMode(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Constants.DARK_THEME, false);
+    }
+
     public interface IRoomsCallback {
         void onSuccess(String success);
 

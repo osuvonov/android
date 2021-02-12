@@ -752,11 +752,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     }
 
     private void fillChatRelatedTasks() {
-        int selectedAccountUserId= UserConfig.getInstance(UserConfig.selectedAccount).clientUserId;
+        int selectedAccountUserId = UserConfig.getInstance(UserConfig.selectedAccount).clientUserId;
         final int chatId = arguments.getInt("chat_id", 0);
         final int userId = arguments.getInt("user_id", 0);
 
-        if (chatId == 0 && userId ==selectedAccountUserId) {
+        if (chatId == 0 && userId == selectedAccountUserId) {
             //saved messages/tasks
             IRoomsManager.getInstance().getAccountTasks(getParentActivity(), userId,
                     new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
@@ -780,7 +780,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     });
         } else if (chatId == 0 && userId != selectedAccountUserId) {
             //private chat with someone
-            IRoomsManager.getInstance().getUserTasks(getParentActivity(),selectedAccountUserId, userId,
+            IRoomsManager.getInstance().getUserTasks(getParentActivity(), selectedAccountUserId, userId,
                     new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
                         @Override
                         public void onSuccess(ArrayList<Task> list) {
@@ -5077,33 +5077,39 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         if (!isChannel()) {
             BottomTaskSortBinding bottomTaskSort = BottomTaskSortBinding.inflate(LayoutInflater.from(getParentActivity()));
+            bottomTaskSort.getRoot().fullScroll(View.FOCUS_RIGHT);
             ChatTabBinding chatTab = ChatTabBinding.inflate(LayoutInflater.from(getParentActivity()));
-            chatTab.chatActivityChat.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (!isChatMode) {
-                        isChatMode = true;
-                        if (chatAdapter == null) {
-                            chatAdapter = new ChatActivityAdapter(getParentActivity());
-                        }
-                        chatListView.setAdapter(chatAdapter);
-                        chatListView.getAdapter().notifyDataSetChanged();
-                        try {
-                            pinnedMessageView.setVisibility(View.VISIBLE);
-                            updatePinnedMessageView(true);
-                        } catch (Exception x) {
-                        }
-                        bottomTaskSort.getRoot().setVisibility(View.GONE);
+            if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+                chatTab.getRoot().setBackgroundResource(R.color.background_dark);
+                bottomTaskSort.bottomChatTabContainer.setBackgroundResource(R.color.background_dark);
 
-                        chatActivityEnterView.setVisibility(View.VISIBLE);
-                        chatTab.chatBottomWhite.setBackgroundResource(R.color.white);
-                        chatTab.taskBottomWhite.setBackgroundResource(R.color.actionBarDefaultColor);
-                        if (emptyView != null) {
-                            emptyView.setText(LocaleController.getString("NoMessages", R.string.NoMessages));
-                        }
-                        if (mentiondownButton != null) {
-                            mentiondownButton.setVisibility(View.VISIBLE);
-                        }
+                chatTab.chatActivityChat.setBackgroundResource(R.drawable.btn_click2_dark);
+                chatTab.chatActivityTask.setBackgroundResource(R.drawable.btn_click2_dark);
+
+            }
+            chatTab.chatActivityChat.setOnClickListener(view -> {
+                if (!isChatMode) {
+                    isChatMode = true;
+                    if (chatAdapter == null) {
+                        chatAdapter = new ChatActivityAdapter(getParentActivity());
+                    }
+                    chatListView.setAdapter(chatAdapter);
+                    chatListView.getAdapter().notifyDataSetChanged();
+                    try {
+                        pinnedMessageView.setVisibility(View.VISIBLE);
+                        updatePinnedMessageView(true);
+                    } catch (Exception x) {
+                    }
+                    bottomTaskSort.getRoot().setVisibility(View.GONE);
+
+                    chatActivityEnterView.setVisibility(View.VISIBLE);
+                    chatTab.chatBottomWhite.setBackgroundResource(R.color.white);
+                    chatTab.taskBottomWhite.setBackgroundResource(android.R.color.transparent);
+                    if (emptyView != null) {
+                        emptyView.setText(LocaleController.getString("NoMessages", R.string.NoMessages));
+                    }
+                    if (mentiondownButton != null) {
+                        mentiondownButton.setVisibility(View.VISIBLE);
                     }
                 }
             });
@@ -5119,7 +5125,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
                     bottomTaskSort.getRoot().setVisibility(View.VISIBLE);
                     chatActivityEnterView.setVisibility(View.GONE);
-                    chatTab.chatBottomWhite.setBackgroundResource(R.color.actionBarDefaultColor);
+                    chatTab.chatBottomWhite.setBackgroundResource(android.R.color.transparent);
                     chatTab.taskBottomWhite.setBackgroundResource(R.color.white);
                     if (emptyView != null) {
                         emptyView.setText("No tasks here yet");
@@ -5135,10 +5141,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 }
             });
             contentView.addView(chatTab.getRoot(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.TOP | Gravity.LEFT));
-
+            int selectedColor=getParentActivity().getResources().getColor(R.color.key_chat_emojiPanelStickerSetNameHighlight);
+            if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+                selectedColor = getParentActivity().getResources().getColor(R.color.task_sort_bottom_tab_selected);
+                bottomTaskSort.taskAll.setBackgroundColor(selectedColor);
+            }
+            int finalSelectedColor = selectedColor;
             bottomTaskSort.taskDone.setOnClickListener(view -> {
                 ((TaskAdapter) chatListView.getAdapter()).sort(2);
-                bottomTaskSort.taskDone.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
+                bottomTaskSort.taskDone.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
@@ -5147,7 +5158,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
             bottomTaskSort.taskArchive.setOnClickListener(view -> {
                 ((TaskAdapter) chatListView.getAdapter()).sort(3);
-                bottomTaskSort.taskArchive.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
+                bottomTaskSort.taskArchive.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
@@ -5155,7 +5166,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             });
             bottomTaskSort.taskTodo.setOnClickListener(view -> {
                 ((TaskAdapter) chatListView.getAdapter()).sort(0);
-                bottomTaskSort.taskTodo.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
+                bottomTaskSort.taskTodo.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
@@ -5165,7 +5176,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             bottomTaskSort.taskDoing.setOnClickListener(view -> {
                 ((TaskAdapter) chatListView.getAdapter()).sort(1);
                 bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
-                bottomTaskSort.taskDoing.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
+                bottomTaskSort.taskDoing.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskAll.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskArchive.setBackgroundResource(R.drawable.btn_click);
@@ -5174,7 +5185,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             bottomTaskSort.taskAll.setOnClickListener(view -> {
                 ((TaskAdapter) chatListView.getAdapter()).sort(-1);
                 bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
-                bottomTaskSort.taskAll.setBackgroundColor(Theme.getColor(Theme.key_chat_emojiPanelStickerSetNameHighlight));
+                bottomTaskSort.taskAll.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskArchive.setBackgroundResource(R.drawable.btn_click);
@@ -7209,12 +7220,16 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         if (createTask && !isChannel()) {
             getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
 
-             ArrayList<TLRPC.User> userList = new ArrayList<>();
+            ArrayList<TLRPC.User> userList = new ArrayList<>();
 
             if (selectedCompany == null) {
                 IRoomsManager.getInstance().getCompany(getParentActivity(), companyId, new IRoomsManager.IRoomCallback<Company>() {
                     @Override
                     public void onSuccess(Company company) {
+                        if (company == null) {
+                            Toast.makeText(getParentActivity(), "Team null", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         selectedCompany = company;
                         List<Long> temp = new ArrayList<>();
                         final int chatId = arguments.getInt("chat_id", 0);
@@ -7295,21 +7310,21 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             } else {
 
                 List<Long> temp = new ArrayList<>();
-                TLRPC.User selectedUser=null;
+                TLRPC.User selectedUser = null;
                 final int chatId = arguments.getInt("chat_id", 0);
                 if (chatId == 0) {
                     if (UserConfig.getInstance(UserConfig.selectedAccount).clientUserId == (int) dialog_id) {
                         TLRPC.User user = getMessagesController().getUser(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
                         if (user != null) {
                             userList.add(user);
-                            selectedUser=user;
+                            selectedUser = user;
                         }
                     } else {
                         TLRPC.User user = getMessagesController().getUser((int) dialog_id);
                         if (user != null) {
                             if (selectedCompany.getMembers().contains((long) user.id)) {
                                 userList.add(user);
-                                selectedUser=user;
+                                selectedUser = user;
                             }
                         }
 
@@ -19733,6 +19748,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         IRoomsManager.getInstance().getCompany(getParentActivity(), companyId, new IRoomsManager.IRoomCallback<Company>() {
                             @Override
                             public void onSuccess(Company company) {
+                                if (company == null) {
+                                    Toast.makeText(getParentActivity(), "Team null", Toast.LENGTH_SHORT).show();
+                                    return;
+                                }
                                 selectedCompany = company;
                                 List<Long> temp = new ArrayList<>();
                                 for (TLRPC.ChatParticipant pt : chatInfo.participants.participants) {
@@ -21824,12 +21843,37 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 view = new ChatLoadingCell(mContext);
             } else if (viewType == Constants.OWNER_TASK) {
                 RightTaskLayoutBinding binding = RightTaskLayoutBinding.inflate(LayoutInflater.from(getParentActivity()), parent, false);
+                if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+                    binding.tlDescription.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                    binding.taskContainer.setBackgroundResource(R.drawable.rounded_corner_dark);
+                    binding.tlDeadline.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                } else {
+                    binding.tlTaskedit.setScaleType(ImageView.ScaleType.CENTER);
+                    binding.tlTaskedit.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.MULTIPLY));
+                }
                 view = binding.getRoot();
+
             } else if (viewType == Constants.OTHERS_TASK) {
                 LeftTaskLayoutBinding binding = LeftTaskLayoutBinding.inflate(LayoutInflater.from(getParentActivity()), parent, false);
+                if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+                    binding.tlDescription.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                    binding.taskContainer.setBackgroundResource(R.drawable.rounded_corner_dark);
+                    binding.tlDeadline.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                } else {
+                    binding.tlTaskedit.setScaleType(ImageView.ScaleType.CENTER);
+                    binding.tlTaskedit.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.MULTIPLY));
+                }
                 view = binding.getRoot();
             } else if (viewType == Constants.PRIVATE_CHAT_TASK) {
                 LeftTaskLayoutPrivateChatBinding binding = LeftTaskLayoutPrivateChatBinding.inflate(LayoutInflater.from(getParentActivity()), parent, false);
+                if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+                    binding.tlDescription.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                    binding.taskContainer.setBackgroundResource(R.drawable.rounded_corner_dark);
+                    binding.tlDeadline.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                } else {
+                    binding.tlTaskedit.setScaleType(ImageView.ScaleType.CENTER);
+                    binding.tlTaskedit.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.MULTIPLY));
+                }
                 view = binding.getRoot();
             }
             view.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT));
@@ -21859,7 +21903,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         if (taskIdentificationPart.contains("Task #")) {
                             try {
                                 String localTaskId = taskIdentificationPart.substring(taskIdentificationPart.indexOf("#") + 1);
-                                ArrayList<Task> tasks = null;
                                 Task taskItem = null;
                                 taskItem = taskList.stream().filter(task -> task.getLocal_id().equals(localTaskId)).findFirst().orElse(null);
                                 if (taskItem != null && taskItem.getId() > 0 && taskItem.getLocalStatus() == 3) {
@@ -21903,6 +21946,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 if (taskItem != null) {
                                     taskItem.setMessageId(message.getId());
                                     RightTaskLayoutBinding layout = RightTaskLayoutBinding.bind(holder.itemView);
+
                                     String deadline = getDeadLine(taskItem.getExpires_at());
                                     layout.tlDeadline.setText(deadline);
                                     if (deadline.equals("")) {
@@ -21962,7 +22006,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             }
                                         }
                                         final BottomSheet bottomSheet = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                                finalTaskItem1.getDescription(), userList,  finalTaskItem1.getChatId() == 0 ? (int) dialog_id : (int) finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                                finalTaskItem1.getDescription(), userList, finalTaskItem1.getChatId() == 0 ? (int) dialog_id : (int) finalTaskItem1.getChatId(), new TaskManagerListener() {
                                                     @Override
                                                     public void onCreate(Task task) {
 
@@ -21985,7 +22029,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         bottomSheet.setFocusable(true);
                                         showDialog(bottomSheet);
                                     });
-                                    String taskDescription = taskItem.getDescription().equals("") ? "Enjoy the tasks and only tasks you love, use original application, and share it all with friends, family, and the world on Rooms." : taskItem.getDescription();
+                                    String taskDescription = taskItem.getDescription();
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
@@ -22014,6 +22058,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         if (taskIdentificationPart.contains("Task #")) {
                             try {
                                 LeftTaskLayoutBinding layout = LeftTaskLayoutBinding.bind(holder.itemView);
+
                                 layout.tlDescription.setText(message.messageText);
                                 String deadline = "";
                                 layout.tlDeadline.setText(deadline);
@@ -22120,7 +22165,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         bottomSheet.setFocusable(true);
                                         showDialog(bottomSheet);
                                     });
-                                    String taskDescription = taskItem.getDescription().equals("") ? "Enjoy the tasks and only tasks you love, use original application, and share it all with friends, family, and the world on Rooms." : taskItem.getDescription();
+                                    String taskDescription = taskItem.getDescription();
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
@@ -22248,7 +22293,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         bottomSheet.setFocusable(true);
                                         showDialog(bottomSheet);
                                     });
-                                    String taskDescription = taskItem.getDescription().equals("") ? "Enjoy the tasks and only tasks you love, use original application, and share it all with friends, family, and the world on Rooms." : taskItem.getDescription();
+                                    String taskDescription = taskItem.getDescription();
                                     layout.tlDescription.setText(taskDescription);
                                     ArrayList<TLRPC.User> users = new ArrayList<>();
                                     for (long i : taskItem.getMembers()) {
@@ -22895,7 +22940,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 //                if (chatInfo == null) {
 //                    sortedList = (ArrayList<Task>) taskList.stream().filter(task -> task.getMembers().contains(Math.abs(dialog_id))).collect(Collectors.toList());
 //                } else {
-                    sortedList = taskList;
+                sortedList = taskList;
 //                }
             } else {
                 if (chatInfo == null) {
@@ -22916,7 +22961,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 //            if (chatInfo == null) {
 //                sortedList = (ArrayList<Task>) taskList.stream().filter(task -> task.getMembers().contains(Math.abs(dialog_id))).collect(Collectors.toList());
 //            } else {
-                sortedList = taskList;
+            sortedList = taskList;
 //            }
         }
 
@@ -22926,8 +22971,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             View view = null;
 
             TasklistTaskLayoutBinding binding = TasklistTaskLayoutBinding.inflate(LayoutInflater.from(getParentActivity()), parent, false);
-            binding.tlTaskedit.setScaleType(ImageView.ScaleType.CENTER);
-            binding.tlTaskedit.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.MULTIPLY));
+            if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+                binding.tlDescription.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+                binding.taskContainer.setBackgroundResource(R.drawable.rounded_corner_dark);
+                binding.tlDeadline.setTextColor(getParentActivity().getResources().getColor(R.color.task_text_color_dark));
+            } else {
+                binding.tlTaskedit.setScaleType(ImageView.ScaleType.CENTER);
+                binding.tlTaskedit.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultSubmenuItemIcon), PorterDuff.Mode.MULTIPLY));
+            }
+
             view = binding.getRoot();
 
             view.setLayoutParams(new RecyclerView.LayoutParams(RecyclerView.LayoutParams.MATCH_PARENT, RecyclerView.LayoutParams.WRAP_CONTENT));

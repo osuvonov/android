@@ -32,21 +32,17 @@ limitations under the License. -->
             android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
             android:layout_margin="1dp"
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:textColor="@android:color/black"
             android:textSize="16sp" />
 
         <TextView
             android:id="@+id/company_members"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/textView"
-            android:layout_margin="1dp"
+             android:layout_margin="1dp"
             android:ellipsize="end"
             android:singleLine="true"
             android:textSize="12sp" />

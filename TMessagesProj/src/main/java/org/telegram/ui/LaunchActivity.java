@@ -439,6 +439,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
                     // create and show the alert dialog
                     AlertDialog dialog = builder.create();
+                    dialog.setCanceledOnTouchOutside(false);
                     dialog.show();
                 });
             }
@@ -719,33 +720,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     protected void onCreate(Bundle savedInstanceState) {
 
         ApplicationLoader.postInitApplication();
-//        SendMessagesHelper.getInstance(currentAccount).
-//                setMessageSentListener(new SendMessagesHelper.MessageSentListener() {
-//                    @Override
-//                    public void onMessageSent(int oldId, int newId, String messageText) {
-////                        if (backendTaskListener != null) {
-////                            backendTaskListener.onMessageSent(oldId, newId, messageText);
-////                        }
-//                        String taskIdentificationPart = messageText.substring(0, messageText.indexOf('\n'));
-//                        String localTaskId = "";
-//                        if (taskIdentificationPart.contains("Task #")) {
-//                            localTaskId = taskIdentificationPart.substring(taskIdentificationPart.indexOf("#") + 1);
-//                        }
-//                        if (localTaskId.length() >= 19) {
-//                            String finalLocalTaskId = localTaskId;
-//                            for (Task task : createdTasks) {
-//                                if (task.getLocal_id().equals(finalLocalTaskId)) {
-//                                    ArrayList<Integer> messageIds = new ArrayList<>();
-//                                    messageIds.add(newId);
-//                                    createdTasks.remove(task);
-//                                    MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, task.getChatId(), 0, true, false);
-//                                }
-//                                break;
-//                            }
-//
-//                        }
-//                    }
-//                });
         TaskRepository.getInstance(LaunchActivity.this.getApplication()).setLocalTaskChangeListener(new TaskRepository.LocalTaskChangeListener() {
             @Override
             public void onLocalTaskCreated(Task task) {
@@ -762,7 +736,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
                     }
                 });
-
             }
 
             @Override
@@ -1082,7 +1055,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 if (id == 21) {
                     Bundle args = new Bundle();
                     args.putString("action", "add");
-                    args.putString("companyName",PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getString(Constants.SELECTED_COMPANY_NAME,""));
+                    args.putString("companyName", PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getString(Constants.SELECTED_COMPANY_NAME, ""));
                     args.putBoolean("create_company", false);
                     presentFragment(new AddMembersToCompanyActivity(args));
                     drawerLayoutContainer.closeDrawer(false);
@@ -1516,6 +1489,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             showTosActivity(account, UserConfig.getInstance(account).unacceptedTermsOfService);
         }
         updateCurrentConnectionState(currentAccount);
+
+        try{
+            mSocket.disconnect();
+            mSocket.connect();
+        }catch (Exception x){}
+
     }
 
     private void switchToAvailableAccountOrLogout() {
@@ -4509,6 +4488,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 try {
                     int[] pos = (int[]) args[2];
                     boolean toDark = (Boolean) args[4];
+
+                    IRoomsManager.getInstance().setDarkTheme(LaunchActivity.this, toDark);
+
                     RLottieImageView darkThemeView = (RLottieImageView) args[5];
                     int w = drawerLayoutContainer.getMeasuredWidth();
                     int h = drawerLayoutContainer.getMeasuredHeight();

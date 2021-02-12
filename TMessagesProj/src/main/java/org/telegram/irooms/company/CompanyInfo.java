@@ -74,13 +74,13 @@ public class CompanyInfo extends BaseFragment {
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         fragmentView.setOnTouchListener((v, event) -> true);
 
-        TextView companiesTitle = new TextView(context);
-        companiesTitle.setText("Участники");
-        //        companiesTitle.setPadding(AndroidUtilities.dp(14), 0, AndroidUtilities.dp(14), 0);
-        companiesTitle.setGravity(Gravity.CENTER);
-        companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-        companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
-        linearLayout.addView(companiesTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 0));
+//        TextView companiesTitle = new TextView(context);
+//        companiesTitle.setText("Участники");
+//        //        companiesTitle.setPadding(AndroidUtilities.dp(14), 0, AndroidUtilities.dp(14), 0);
+//        companiesTitle.setGravity(Gravity.CENTER);
+//        companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+//        companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
+//        linearLayout.addView(companiesTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 0));
 
         RecyclerListView listView = new RecyclerListView(context);
         ArrayList<TLRPC.User> userList = new ArrayList<>();

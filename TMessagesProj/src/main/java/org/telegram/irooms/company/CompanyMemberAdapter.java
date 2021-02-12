@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
 import org.telegram.messenger.LocaleController;
 import org.rooms.messenger.R;
@@ -82,10 +84,15 @@ public class CompanyMemberAdapter extends ListAdapter<TLRPC.User, CompanyMemberA
         private CompanyMemberViewHolder(View itemView, Company company) {
             super(itemView);
             this.company = company;
-
+            int textColor = mContext.getResources().getColor(android.R.color.darker_gray);
+            if (IRoomsManager.getInstance().isDarkMode(mContext)) {
+                textColor =mContext.getResources().getColor(R.color.disabled_text_color);
+            }
             memberName = itemView.findViewById(R.id.member_name);
+            memberName.setTextColor(textColor);
 
             lastSeen = itemView.findViewById(R.id.last_seen);
+            lastSeen.setTextColor(textColor);
 
             remove = itemView.findViewById(R.id.remove_member);
             remove.setTextColor(mContext.getResources().getColor(R.color.key_dialogRedIcon));

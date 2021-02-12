@@ -25,20 +25,6 @@ public class TaskRepository {
         return taskDao.getOfflineTasks();
     }
 
-//    public void replaceLocalTask(Task myTask) {
-//        TaskDatabase.databaseWriteExecutor.execute(() -> {
-//            taskDao.deleteTask(myTask.getLocal_id());
-//            myTask.setLocalStatus(3);
-//            taskDao.createTask(myTask);
-//        });
-//    }
-
-    public void deleteCompanysOnlineTasks(int id) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            taskDao.deleteCompanyOnlineTasks(id);
-        });
-    }
-
     public void deleteCompanies() {
         TaskDatabase.databaseWriteExecutor.execute(() -> {
             companyDao.deleteCompanies();
@@ -180,28 +166,10 @@ public class TaskRepository {
         });
     }
 
-    public void deleteAndInsertAll(int companyId, ArrayList<Task> list) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            taskDao.deleteAndInsertAll(companyId, list);
-        });
-    }
-
-//    public void update(Task task) {
-//        TaskDatabase.databaseWriteExecutor.execute(() -> {
-//            taskDao.deleteTask(task.getLocal_id());
-//            taskDao.createTask(task);
-//        });
-//    }
-
     public void update(Company company) {
         TaskDatabase.databaseWriteExecutor.execute(() -> {
             companyDao.updateCompany(company);
         });
-    }
-
-
-    public int getAllTasksCount() {
-        return taskDao.getTasksCount();
     }
 
     public void insert(Company company) {

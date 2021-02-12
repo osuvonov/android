@@ -2582,6 +2582,9 @@ public class LoginActivity extends BaseFragment {
                 return;
             }
             AndroidUtilities.runOnUIThread(() -> {
+                try{
+                    resendCode();
+                }catch (Exception x){}
                 if (codeField != null) {
                     for (int a = codeField.length - 1; a >= 0; a--) {
                         if (a == 0 || codeField[a].length() != 0) {

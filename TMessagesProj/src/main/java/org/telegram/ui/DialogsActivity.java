@@ -2880,6 +2880,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         });
 
         TestBinding binding = TestBinding.inflate(LayoutInflater.from(getParentActivity()),null,false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            binding.getRoot().setElevation(12);
+            binding.getRoot().setClipToPadding(false);
+        }
         floatingButtonContainer.addView(binding.getRoot(), LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 156 : 150), (Build.VERSION.SDK_INT >= 21 ? 54 : 60), Gravity.LEFT | Gravity.TOP, 10, 6, 0, 0));
 
         searchTabsView = null;

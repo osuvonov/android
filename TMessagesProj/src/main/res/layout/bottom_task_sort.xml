@@ -6,6 +6,7 @@
 
 <HorizontalScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:id="@+id/bottom_chat_tab_container"
     android:layout_height="match_parent"
     android:background="@color/mid"
     android:fillViewport="true" >
@@ -29,12 +30,11 @@
             android:id="@+id/task_todo"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/btn_click"
             android:padding="5dp"
+            android:background="@null"
             android:singleLine="true"
             android:text="Надо сделать"
             android:textColor="@color/white"
-
             android:textSize="10sp" />
 
         <Button

@@ -13,9 +13,6 @@ import androidx.room.Update;
 public interface CompanyDao {
 
     @Query("select * from tbl_company")
-    LiveData<List<Company>> getAllCompanies();
-
-    @Query("select * from tbl_company")
     List<Company> getCompanyList();
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -30,7 +27,7 @@ public interface CompanyDao {
     @Query("update tbl_company set members=:members where id=:company_id")
     void updateCompanyMembers(int company_id, String members);
 
-    @Query("select * from tbl_company where id=:companyId")
+    @Query("select * from tbl_company where id=:companyId limit 1")
     Company getCompany(int companyId);
 
     @Query("delete from tbl_company")

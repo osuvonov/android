@@ -29,7 +29,6 @@ limitations under the License. -->
         android:padding="5dp"
         android:gravity="center_vertical"
         android:paddingLeft="14dp"
-        android:textColor="@android:color/black"
         android:textSize="16sp" />
 
     <TextView
