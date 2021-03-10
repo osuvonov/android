@@ -84,7 +84,7 @@ public class CompanyMemberAdapter extends ListAdapter<TLRPC.User, CompanyMemberA
         private CompanyMemberViewHolder(View itemView, Company company) {
             super(itemView);
             this.company = company;
-            int textColor = mContext.getResources().getColor(android.R.color.darker_gray);
+            int textColor = mContext.getResources().getColor(android.R.color.black);
             if (IRoomsManager.getInstance().isDarkMode(mContext)) {
                 textColor =mContext.getResources().getColor(R.color.disabled_text_color);
             }

@@ -1816,6 +1816,7 @@ public class LoginActivity extends BaseFragment {
         private String pattern = "*";
         private String catchedPhone;
         private int length;
+        private boolean onceAsked=false;
 
         public LoginActivitySmsView(Context context, final int type) {
             super(context);
@@ -2583,7 +2584,11 @@ public class LoginActivity extends BaseFragment {
             }
             AndroidUtilities.runOnUIThread(() -> {
                 try{
-                    resendCode();
+                    if(!onceAsked){
+                        resendCode();
+                        onceAsked=true;
+                    }
+
                 }catch (Exception x){}
                 if (codeField != null) {
                     for (int a = codeField.length - 1; a >= 0; a--) {

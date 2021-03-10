@@ -13,12 +13,15 @@ import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @TypeConverters(Converters.class)
-@Database(entities = {Task.class, Company.class}, version = 17, exportSchema = false)
+@Database(entities = {Task.class, Company.class, RequestHistory.class}, version = 19, exportSchema = false)
 public abstract class TaskDatabase extends RoomDatabase {
 
     public abstract TaskDao taskDao();
 
     public abstract CompanyDao companyDao();
+
+    public abstract RequestHistoryDao requestHistoryDao();
+
 
     // marking the instance as volatile to ensure atomic access to the variable
     private static volatile TaskDatabase INSTANCE;

@@ -1,5 +1,6 @@
 package org.telegram.irooms.database;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -12,8 +13,9 @@ import androidx.room.TypeConverters;
 public class Company {
 
     public Company() {
-        id = -1;
+        id = 0;
         name = "";
+        members=new ArrayList<>();
     }
 
     public Company(int id, String name) {
@@ -39,7 +41,7 @@ public class Company {
 
     @TypeConverters(Converters.class)
     @ColumnInfo(name = "members")
-    private List<Long> members;
+    private List<Integer> members;
 
     public String getLogo() {
         return logo;
@@ -97,11 +99,11 @@ public class Company {
         this.name = name;
     }
 
-    public List<Long> getMembers() {
+    public List<Integer> getMembers() {
         return members;
     }
 
-    public void setMembers(List<Long> members) {
+    public void setMembers(List<Integer> members) {
         this.members = members;
     }
 }

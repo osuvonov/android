@@ -27,8 +27,8 @@ public class IRoomJsonParser {
                 String logo = jsonCompany.getString("logo");
                 int owner_id = jsonCompany.getInt("owner_id");
                 String created_at = jsonCompany.getString("created_at");
-                ArrayList<Long> members =
-                        new Gson().fromJson(jsonCompany.getString("members"), new TypeToken<ArrayList<Long>>() {
+                ArrayList<Integer> members =
+                        new Gson().fromJson(jsonCompany.getString("members"), new TypeToken<ArrayList<Integer>>() {
                         }.getType());
 
                 Company company = new Company(id, name);
@@ -61,8 +61,8 @@ public class IRoomJsonParser {
                 String logo = jsonCompany.getString("logo");
                 int owner_id = jsonCompany.getInt("owner_id");
                 String created_at = jsonCompany.getString("created_at");
-                ArrayList<Long> members =
-                        new Gson().fromJson(jsonCompany.getString("members"), new TypeToken<ArrayList<Long>>() {
+                ArrayList<Integer> members =
+                        new Gson().fromJson(jsonCompany.getString("members"), new TypeToken<ArrayList<Integer>>() {
                         }.getType());
 
                 Company company = new Company(id, name);
@@ -88,10 +88,9 @@ public class IRoomJsonParser {
             String logo = jsonCompany.getString("logo");
             int owner_id = jsonCompany.getInt("owner_id");
             String created_at = jsonCompany.getString("created_at");
-            ArrayList<Long> members =
-                    new Gson().fromJson(jsonCompany.getString("members"), new TypeToken<ArrayList<Long>>() {
+            ArrayList<Integer> members =
+                    new Gson().fromJson(jsonCompany.getString("members"), new TypeToken<ArrayList<Integer>>() {
                     }.getType());
-
             Company company = new Company(id, name);
             company.setCreatedAt(created_at);
             company.setLogo(logo == null ? "" : logo);
@@ -119,25 +118,21 @@ public class IRoomJsonParser {
 
                 long id = jsonTask.getLong("id");
                 String description = jsonTask.getString("description");
-                String logo = jsonTask.opt("logo") != null ? jsonTask.getString("logo") : "";
-                long creator_id = jsonTask.opt("creator_id") != null ? jsonTask.getLong("creator_id") : 0;
-                long lastUpdater = jsonTask.opt("last_updated_by") != null ? jsonTask.getLong("last_updated_by") : 0;
-
-                long company_id = jsonTask.opt("company_id") != null ? jsonTask.getLong("company_id") : 0;
-
-                long chat_id = jsonTask.getLong("chat_id");
-                long message_id = jsonTask.getLong("message_id");
-
-                String created_at = jsonTask.getString("created_at");
-                String updated_at = jsonTask.getString("updated_at");
-                String expires_at = jsonTask.getString("expires_at").equals("null") ? "" : jsonTask.getString("expires_at");
-                String completed_at = jsonTask.getString("completed_at");
-                String localID = jsonTask.getString("local_id");
-
-                String status = jsonTask.getString("status");
-                int status_code = jsonTask.getInt("status_code");
-                ArrayList<Long> members =
-                        new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Long>>() {
+                String logo = !jsonTask.isNull("logo") ? jsonTask.getString("logo") : "";
+                long creator_id = !jsonTask.isNull("creator_id") ? jsonTask.getLong("creator_id") : 0;
+                long lastUpdater = !jsonTask.isNull("last_updated_by") ? jsonTask.getLong("last_updated_by") : 0;
+                long company_id = !jsonTask.isNull("company_id") ? jsonTask.getLong("company_id") : 0;
+                long chat_id = !jsonTask.isNull("chat_id") ? jsonTask.getLong("chat_id") : 0;
+                long message_id = !jsonTask.isNull("message_id") ? jsonTask.getLong("message_id") : -1;
+                String created_at = !jsonTask.isNull("created_at") ? jsonTask.getString("created_at") : "";
+                String updated_at = !jsonTask.isNull("updated_at") ? jsonTask.getString("updated_at") : "";
+                String expires_at = !jsonTask.isNull("expires_at") ? jsonTask.getString("expires_at"):"";
+                String completed_at = !jsonTask.isNull("completed_at") ? jsonTask.getString("completed_at") : "";
+                String localID = !jsonTask.isNull("local_id") ? jsonTask.getString("local_id") : "";
+                String status =  !jsonTask.isNull("status") ? jsonTask.getString("status"):"";
+                int status_code =  !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code"):0;
+                ArrayList<Integer> members =
+                        new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Integer>>() {
                         }.getType());
 
                 Task task = new Task(id, company_id);
@@ -169,32 +164,30 @@ public class IRoomJsonParser {
         try {
             JSONObject jsonObject = new JSONObject(taskjson);
 
-            JSONObject taskObject;
+            JSONObject jsonTask;
             if (edited) {
-                taskObject = jsonObject;
+                jsonTask = jsonObject;
             } else {
-                taskObject = jsonObject.getJSONObject("result");
+                jsonTask = jsonObject.getJSONObject("result");
             }
 
-            long id = taskObject.getLong("id");
-            String description = taskObject.getString("description");
-            String logo = taskObject.opt("logo") != null ? taskObject.getString("logo") : "";
-            long creator_id = taskObject.opt("creator_id") != null ? taskObject.getLong("creator_id") : 0;
-            long lastUpdater = taskObject.opt("last_updated_by") != null ? taskObject.getLong("last_updated_by") : 0;
-            long company_id = taskObject.opt("company_id") != null ? taskObject.getLong("company_id") : 0;
-
-            long chat_id = taskObject.getLong("chat_id");
-            long message_id = taskObject.getLong("message_id");
-
-            String created_at = taskObject.getString("created_at");
-            String updated_at = taskObject.getString("updated_at");
-            String expires_at = taskObject.getString("expires_at").equals("null") ? "" : taskObject.getString("expires_at");
-            String completed_at = taskObject.getString("completed_at");
-            String status = taskObject.getString("status");
-            String localID = taskObject.getString("local_id");
-            int status_code = taskObject.getInt("status_code");
-            ArrayList<Long> members =
-                    new Gson().fromJson(taskObject.getString("members"), new TypeToken<ArrayList<Long>>() {
+            long id = jsonTask.getLong("id");
+            String description = jsonTask.getString("description");
+            String logo = !jsonTask.isNull("logo") ? jsonTask.getString("logo") : "";
+            long creator_id = !jsonTask.isNull("creator_id") ? jsonTask.getLong("creator_id") : 0;
+            long lastUpdater = !jsonTask.isNull("last_updated_by") ? jsonTask.getLong("last_updated_by") : 0;
+            long company_id = !jsonTask.isNull("company_id") ? jsonTask.getLong("company_id") : 0;
+            long chat_id = !jsonTask.isNull("chat_id") ? jsonTask.getLong("chat_id") : 0;
+            long message_id = !jsonTask.isNull("message_id") ? jsonTask.getLong("message_id") : -1;
+            String created_at = !jsonTask.isNull("created_at") ? jsonTask.getString("created_at") : "";
+            String updated_at = !jsonTask.isNull("updated_at") ? jsonTask.getString("updated_at") : "";
+            String expires_at = !jsonTask.isNull("expires_at")? jsonTask.getString("expires_at"):"" ;
+            String completed_at = !jsonTask.isNull("completed_at") ? jsonTask.getString("completed_at") : "";
+            String localID = !jsonTask.isNull("local_id") ? jsonTask.getString("local_id") : "";
+            String status =  !jsonTask.isNull("status") ? jsonTask.getString("status"):"";
+            int status_code =  !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code"):0;
+            ArrayList<Integer> members =
+                    new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Integer>>() {
                     }.getType());
 
             Task task = new Task(id, company_id);

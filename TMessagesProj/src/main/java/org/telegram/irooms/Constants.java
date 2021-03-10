@@ -16,4 +16,7 @@ public interface Constants {
     String SOCKET_ENDPOINT = "https://sock.irooms.io";
 
     String DARK_THEME = "dark_theme";
+    String CHAT_TYPE_PRIVATE="private";
+    String CHAT_TYPE_GROUP="group";
+
 }

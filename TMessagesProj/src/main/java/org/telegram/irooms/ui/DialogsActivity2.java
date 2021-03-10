@@ -2610,6 +2610,11 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 }
 
                 @Override
+                public void didPressAddTaskButton() {
+
+                }
+
+                @Override
                 public void needStartRecordVideo(int state, boolean notify, int scheduleDate) {
 
                 }

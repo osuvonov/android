@@ -12,17 +12,20 @@ import com.google.gson.Gson;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.database.Company;
+import org.telegram.irooms.database.RequestHistory;
 import org.telegram.irooms.database.Task;
-import org.telegram.irooms.network.Backend;
+import org.telegram.irooms.network.APIClient;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.network.VolleyCallback;
 import org.telegram.irooms.task.TaskManagerListener;
 import org.telegram.irooms.task.TaskRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.irooms.task.TaskSocketQuery;
+import org.telegram.irooms.task.TaskUtil;
 import org.telegram.messenger.UserConfig;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import io.socket.client.Socket;
 
@@ -39,7 +42,7 @@ public class IRoomsManager {
     }
 
     public void authenticate(Context context, IRoomsCallback callback) {
-        Backend.getInstance().loginToRooms(context, new VolleyCallback() {
+        APIClient.getInstance().loginToRooms(context, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 callback.onSuccess(response);
@@ -54,7 +57,7 @@ public class IRoomsManager {
     }
 
     public void registerCompanyBySocket(Context context, Socket socket, String name, IRoomsCallback callback) {
-        Backend.getInstance().registerCompanyBySocket(socket, name, new VolleyCallback() {
+        APIClient.getInstance().registerCompanyBySocket(socket, name, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
@@ -95,7 +98,7 @@ public class IRoomsManager {
     }
 
     public void addMembersToCompanyBySocket(Context context, Socket socket, int companyId, ArrayList<Integer> members, IRoomsCallback callback) {
-        Backend.getInstance().addMembersToCompanyBySocket(context, socket, companyId, members, new VolleyCallback() {
+        APIClient.getInstance().addMembersToCompanyBySocket(context, socket, companyId, members, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
@@ -118,7 +121,7 @@ public class IRoomsManager {
     }
 
     public void deleteMembersFromCompany(Context context, Socket socket, int companyId, ArrayList<Integer> members, IRoomsCallback callback) {
-        Backend.getInstance().deleteMembersFromCompanyBySocket(context, socket, companyId, members, new VolleyCallback() {
+        APIClient.getInstance().deleteMembersFromCompanyBySocket(context, socket, companyId, members, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
@@ -141,7 +144,7 @@ public class IRoomsManager {
     }
 
     public void createTaskBySocket(Context context, Socket socket, Task task, TaskManagerListener callback) {
-        Backend.getInstance().createTaskBySocket(context, socket, task, new VolleyCallback() {
+        APIClient.getInstance().createTaskBySocket(socket, task, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
@@ -173,7 +176,7 @@ public class IRoomsManager {
     }
 
     public void editTaskBySocket(Context context, Socket socket, Task task, TaskManagerListener callback) {
-        Backend.getInstance().editTaskBySocket(context, socket, task, new VolleyCallback() {
+        APIClient.getInstance().editTaskBySocket(socket, task, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
@@ -205,7 +208,7 @@ public class IRoomsManager {
     }
 
     public void getMyCompanies(final Context context, Socket socket, IRoomsCallback callback) {
-        Backend.getInstance().getMyCompaniesBySocket(context, socket, new VolleyCallback() {
+        APIClient.getInstance().getMyCompaniesBySocket(context, socket, new VolleyCallback() {
             @Override
             public void onSuccess(String response) {
                 try {
@@ -221,7 +224,7 @@ public class IRoomsManager {
                                 if (company.getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
                                     SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
                                     prefs.edit().putBoolean(Constants.HAS_COMPANY, true).commit();
-                                    if (prefs.getInt(Constants.SELECTED_COMPANY_ID, -1) == company.getId()) {
+                                    if (prefs.getInt(Constants.SELECTED_COMPANY_ID, 0) == company.getId()) {
                                         prefs.edit().putBoolean(Constants.IS_OWNER, true).commit();
                                     }
                                 }
@@ -256,52 +259,51 @@ public class IRoomsManager {
             TaskRepository repo = TaskRepository.getInstance((Application) context.getApplicationContext());
             return repo.getCompany(companyId);
 
-        }, companyIRoomCallback::onSuccess);
+        }, success -> companyIRoomCallback.onSuccess(success));
     }
 
-    public void getMyTasks(Context context, ArrayList<Company> companies, Socket socket, TaskSocketQuery query, IRoomCallback<ArrayList<Task>> callback) {
+    public void getMyTasks(Context context, Socket socket, TaskSocketQuery query, IRoomCallback<ArrayList<Task>> callback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
+            String date = TaskRepository.getInstance((Application) context.getApplicationContext()).getLastRequestDateForChat(query.getChat_id());
+            query.setFrom_date("".equals(date)?null:date);
 
-            for (Company c : companies) {
-                if (c != null) {
-                    query.setCompany_id(c.getId());
-                    Backend.getInstance().getTasksBySocket(socket, query, new VolleyCallback() {
-                        @Override
-                        public void onSuccess(String response) {
+            APIClient.getInstance().getTasksBySocket(socket, query, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
 
-                            JSONObject jsonObject;
-                            try {
-                                jsonObject = new JSONObject(response);
-                                ArrayList<Task> tasks = IRoomJsonParser.getTasks(jsonObject.toString());
+                    JSONObject jsonObject;
+                    try {
+                        jsonObject = new JSONObject(response);
+                        ArrayList<Task> tasks = IRoomJsonParser.getTasks(jsonObject.toString());
 
-                                if (tasks.size() > 0) {
-                                    TaskRunner taskRunner = new TaskRunner();
-                                    taskRunner.executeAsync(() -> {
-                                        TaskRepository repo = TaskRepository.getInstance((Application) context.getApplicationContext());
-                                        long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
-                                        for (Task task : tasks) {
-                                            repo.createOnlineTask(task, userID);
-                                        }
-                                        return tasks;
-                                    }, result -> {
-                                    });
+                        if (tasks.size() > 0) {
+                            TaskRunner taskRunner = new TaskRunner();
+                            taskRunner.executeAsync(() -> {
+                                TaskRepository repo = TaskRepository.getInstance((Application) context.getApplicationContext());
+
+                                RequestHistory history = new RequestHistory(query.getChat_id(), TaskUtil.getISODate(Calendar.getInstance().getTime()));
+                                repo.insert(history);
+
+                                long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
+                                for (Task task : tasks) {
+                                    repo.createOnlineTask(task, userID);
                                 }
-                                if (callback != null) {
-                                    callback.onSuccess(tasks);
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
+                                return tasks;
+                            }, result -> {
+                                callback.onSuccess(tasks);
+                            });
                         }
-
-                        @Override
-                        public void onError(String error) {
-                            callback.onError(error);
-                        }
-                    });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
+
+                @Override
+                public void onError(String error) {
+                    callback.onError(error);
+                }
+            });
             return null;
         }, result -> {
 
@@ -344,32 +346,31 @@ public class IRoomsManager {
         return name.equals("") ? "" : name;
     }
 
-    public void getCompanyTasks(Context context, int dialog_id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        TaskRunner runner = new TaskRunner();
-        runner.executeAsync(() -> {
-            TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
-            int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.SELECTED_COMPANY_ID, -1);
-            return repository.getCompanyTasks(companyId, dialog_id);
-        }, result -> arrayListIRoomCallback.onSuccess(result));
-    }
-
-    public void getGroupChatRelatedTasks(Context context, long chatId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getGroupChatRelatedTasks(Context context, long chatId, int companyId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
-                    long ownerId = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().id;
+
+//                    if (companyId >= 0) {
+//                        repository.getChatAndCompanyRelatedTasks(chatId, arrayListIRoomCallback, companyId);
+//                    } else {
                     repository.getChatRelatedTasks(chatId, arrayListIRoomCallback);
+//                    }
                     return "";
                 }, result -> {
                 }
         );
     }
 
-    public void getUserTasks(Context context, int selectedAccountUserId, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getUserTasks(int companyId, Context context, int selectedAccountUserId, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     TaskRepository repository = TaskRepository.getInstance((Application) context.getApplicationContext());
+//                    if (companyId >= 0) {
+//                        repository.getPrivateChatTasksByCompany(selectedAccountUserId, id, arrayListIRoomCallback, companyId);
+//                    } else {
                     repository.getPrivateChatTasks(selectedAccountUserId, id, arrayListIRoomCallback);
+//                    }
                     return "";
                 }, result -> {
                 }

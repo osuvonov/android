@@ -393,6 +393,11 @@ public class PopupNotificationActivity extends Activity implements NotificationC
             }
 
             @Override
+            public void didPressAddTaskButton() {
+
+            }
+
+            @Override
             public void needStartRecordVideo(int state, boolean notify, int scheduleDate) {
 
             }

@@ -2847,32 +2847,6 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         floatingButtonContainer.setVisibility(View.VISIBLE);
         contentView.addView(floatingButtonContainer, LayoutHelper.createFrame((Build.VERSION.SDK_INT >= 21 ? 146 : 140) + 20, (Build.VERSION.SDK_INT >= 21 ? 46 : 50) + 20, (LocaleController.isRTL ? Gravity.START : Gravity.END) | Gravity.BOTTOM, LocaleController.isRTL ? 4 : 0, 0, LocaleController.isRTL ? 0 : 5, 5));
         floatingButtonContainer.setOnClickListener(v -> {
-            String name = IRoomsManager.getInstance().getSelectedCompanyName(getParentActivity());
-
-            if (name == null || name.equals("")) {
-                try {
-                    DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-                        switch (which) {
-                            case DialogInterface.BUTTON_POSITIVE:
-                                Bundle args = new Bundle();
-                                args.putString("action", "add");
-                                args.putBoolean("create_company", true);
-                                presentFragment(new AddMembersToCompanyActivity(args));
-                                break;
-
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                dialog.dismiss();
-                                break;
-                        }
-                    };
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                    builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
-                            .setNegativeButton("Пропустить", dialogClickListener).show();
-                } catch (Exception x) {
-                }
-                return;
-            }
             Bundle args = new Bundle();
             args.putBoolean("destroyAfterSelect", true);
             //            presentFragment(new ContactsActivity(args));
@@ -2990,6 +2964,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
                 @Override
                 public void didPressAttachButton() {
+
+                }
+
+                @Override
+                public void didPressAddTaskButton() {
 
                 }
 

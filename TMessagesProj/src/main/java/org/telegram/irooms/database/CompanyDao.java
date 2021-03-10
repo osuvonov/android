@@ -15,7 +15,7 @@ public interface CompanyDao {
     @Query("select * from tbl_company")
     List<Company> getCompanyList();
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void createCompany(Company company);
 
     @Query("delete from tbl_company")

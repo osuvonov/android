@@ -8,6 +8,8 @@ import com.google.gson.reflect.TypeToken;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.CompanyDao;
+import org.telegram.irooms.database.RequestHistory;
+import org.telegram.irooms.database.RequestHistoryDao;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.database.TaskDao;
 import org.telegram.irooms.database.TaskDatabase;
@@ -21,6 +23,8 @@ import java.util.List;
  */
 public class TaskRepository {
 
+    private final RequestHistoryDao requestHistoryDao;
+
     public List<Task> getOfflineTasks() {
         return taskDao.getOfflineTasks();
     }
@@ -31,12 +35,43 @@ public class TaskRepository {
         });
     }
 
-    public void getPrivateChatTasks(int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasks(selectedAccountUserId, ownerId));
+    public String getLastRequestDateForChat(long chat_id) {
+        RequestHistory requestHistory = requestHistoryDao.getLastRequestDateForChat(chat_id);
+        if (requestHistory==null){
+            return "";
+        }
+        String lastRequest = requestHistory.getLastRequest();
+
+        return lastRequest == null ? "" : lastRequest;
     }
 
-    public void getAccountTasks( int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getAccountTasks(ownerId+""));
+    public void insert(RequestHistory requestHistory) {
+        requestHistoryDao.insertRequestHistory(requestHistory);
+    }
+
+    public void getChatRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatId(chatID);
+
+        arrayListIRoomCallback.onSuccess(list);
+    }
+
+    public void getChatAndCompanyRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback, int companyID) {
+        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID, companyID);
+
+        arrayListIRoomCallback.onSuccess(list);
+    }
+
+    public void getPrivateChatTasks(int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        if (getCompanyList().size() > 0) {
+            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksTeam(selectedAccountUserId, ownerId));
+        } else {
+            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId));
+        }
+
+    }
+
+    public void getAccountTasks(int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getAccountTasks(ownerId + ""));
     }
 
     public interface LocalTaskChangeListener {
@@ -72,6 +107,7 @@ public class TaskRepository {
         TaskDatabase db = TaskDatabase.getDatabase(application);
         taskDao = db.taskDao();
         companyDao = db.companyDao();
+        requestHistoryDao = db.requestHistoryDao();
     }
 
     public Company getCompany(int id) {
@@ -112,6 +148,10 @@ public class TaskRepository {
     }
 
     public void updateLocalTask(Task task) {
+
+        if (localTaskChangeListener != null && task.getLocalStatus() != 1) {
+            localTaskChangeListener.onLocalTaskUpdated(task);
+        }
         TaskDatabase.databaseWriteExecutor.execute(() -> {
             if (task.getLocalStatus() == 1) {
                 Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
@@ -129,9 +169,6 @@ public class TaskRepository {
             taskDao.updateTask(task);
         });
 
-        if (localTaskChangeListener != null && task.getLocalStatus() != 1) {
-            localTaskChangeListener.onLocalTaskUpdated(task);
-        }
     }
 
     public void updateOnlineTask(Task task) {
@@ -149,13 +186,6 @@ public class TaskRepository {
 
     public ArrayList<Task> getCompanyTasks(int companyId, int chatId) {
         return (ArrayList<Task>) taskDao.getTasksByChatIdAndCompanyId(companyId, chatId);
-    }
-
-
-    public void getChatRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatId(chatID);
-
-        arrayListIRoomCallback.onSuccess(list);
     }
 
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
@@ -195,7 +225,7 @@ public class TaskRepository {
                 }
                 companyDao.updateCompany(company);
             } else {
-                ArrayList<Long> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
+                ArrayList<Integer> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
                 }.getType());
                 if (company.getMembers() == null || company.getMembers().size() == 0) {
                     company.setMembers(membersToBeAdded);

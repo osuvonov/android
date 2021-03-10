@@ -13,6 +13,7 @@ import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.Typeface;
+import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -73,6 +74,40 @@ public class UserCell extends FrameLayout {
 
     public UserCell(Context context, int padding, int checkbox, boolean admin) {
         this(context, padding, checkbox, admin, false);
+    }
+
+    public UserCell(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        int additionalPadding;
+
+        statusColor = Theme.getColor(Theme.key_windowBackgroundWhiteGrayText);
+        statusOnlineColor = Theme.getColor(Theme.key_windowBackgroundWhiteBlueText);
+
+        avatarDrawable = new AvatarDrawable();
+        int padding = 0;
+        avatarImageView = new BackupImageView(context);
+        avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
+        addView(avatarImageView, LayoutHelper.createFrame(46, 46, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : 7 + padding, 6, LocaleController.isRTL ? 7 + padding : 0, 0));
+
+        nameTextView = new SimpleTextView(context);
+        nameTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        nameTextView.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+        nameTextView.setTextSize(16);
+        nameTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
+        addView(nameTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 20, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 28  : (64 + padding), 10, LocaleController.isRTL ? (64 + padding) : 28  , 0));
+
+        statusTextView = new SimpleTextView(context);
+        statusTextView.setTextSize(15);
+        statusTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
+        addView(statusTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 20, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 28  : (64 + padding), 32, LocaleController.isRTL ? (64 + padding) : 28 , 0));
+
+        imageView = new ImageView(context);
+        imageView.setScaleType(ImageView.ScaleType.CENTER);
+        imageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon), PorterDuff.Mode.MULTIPLY));
+        imageView.setVisibility(GONE);
+        addView(imageView, LayoutHelper.createFrame(LayoutParams.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL, LocaleController.isRTL ? 0 : 16, 0, LocaleController.isRTL ? 16 : 0, 0));
+
+        setFocusable(true);
     }
 
     public UserCell(Context context, int padding, int checkbox, boolean admin, boolean needAddButton) {

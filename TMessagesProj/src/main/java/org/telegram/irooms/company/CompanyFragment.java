@@ -43,10 +43,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class CompanyFragment extends BaseFragment {
 
-    private EmptyTextProgressView emptyView;
-    private LinearLayoutManager layoutManager;
     private RecyclerListView listView;
-    private CompanyViewModel companyViewModel;
     private TextView btnCreateCompany;
     private CompanyViewAdapter companyViewAdapter;
 
@@ -100,14 +97,6 @@ public class CompanyFragment extends BaseFragment {
             ((LaunchActivity) getParentActivity()).getActionBarLayout().presentFragment(new AddMembersToCompanyActivity(args), true);
 
         });
-
-//        TextView companiesTitle = new TextView(context);
-//        companiesTitle.setText("Команды");
-//        companiesTitle.setGravity(Gravity.CENTER);
-//        companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-//        companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
-//        linearLayout.addView(companiesTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 0));
-
         listView = new RecyclerListView(context);
         companyViewAdapter = new CompanyViewAdapter(new CompanyViewAdapter.CompanyDiff(), getParentActivity(), new CompanyViewAdapter.CompanySelecterListener() {
             @Override
@@ -211,9 +200,6 @@ public class CompanyFragment extends BaseFragment {
         themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_SELECTOR, null, null, null, null, Theme.key_listSelector));
 
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{View.class}, Theme.dividerPaint, null, null, Theme.key_divider));
-
-        themeDescriptions.add(new ThemeDescription(emptyView, ThemeDescription.FLAG_TEXTCOLOR, null, null, null, null, Theme.key_emptyListPlaceholder));
-        themeDescriptions.add(new ThemeDescription(emptyView, ThemeDescription.FLAG_PROGRESSBAR, null, null, null, null, Theme.key_progressCircle));
 
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{LoadingCell.class}, new String[]{"progressBar"}, null, null, null, Theme.key_progressCircle));
 

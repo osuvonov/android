@@ -11,14 +11,14 @@ import androidx.room.TypeConverter;
 
 public class Converters {
     @TypeConverter
-    public static List<Long> fromJsonString(String value) {
-        Type listType = new TypeToken<ArrayList<Long>>() {
+    public static List<Integer> fromJsonString(String value) {
+        Type listType = new TypeToken<ArrayList<Integer>>() {
         }.getType();
         return new Gson().fromJson(value, listType);
     }
 
     @TypeConverter
-    public static String fromNumberList(List<Long> list) {
+    public static String fromNumberList(List<Integer> list) {
         return new Gson().toJson(list);
     }
 }

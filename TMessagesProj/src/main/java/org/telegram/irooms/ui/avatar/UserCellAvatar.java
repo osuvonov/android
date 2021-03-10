@@ -26,7 +26,7 @@ import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
 import org.telegram.ui.Components.LayoutHelper;
 
-public class UserCell2 extends FrameLayout {
+public class UserCellAvatar extends FrameLayout {
 
     private BackupImageView avatarImageView;
 
@@ -45,29 +45,15 @@ public class UserCell2 extends FrameLayout {
 
     private boolean needDivider;
 
-    public UserCell2(Context context, AttributeSet attrs) {
+    public UserCellAvatar(Context context, AttributeSet attrs) {
         super(context, attrs);
         avatarDrawable = new AvatarDrawable();
 
         avatarImageView = new BackupImageView(context);
-        avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
-        addView(avatarImageView, LayoutHelper.createFrame(23, 23, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 0, 2,0, 0));
-
-        setFocusable(true);
-    }
-
-    public UserCell2(Context context, int padding, int checkbox, boolean admin) {
-        this(context, padding, checkbox, admin, false);
-    }
-
-    public UserCell2(Context context, int padding, int checkbox, boolean admin, boolean needAddButton) {
-        super(context);
-
-        avatarDrawable = new AvatarDrawable();
-
-        avatarImageView = new BackupImageView(context);
-        avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
-        addView(avatarImageView, LayoutHelper.createFrame(23, 23, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : padding, 2, LocaleController.isRTL ? padding : 0, 0));
+        avatarImageView.setRoundRadius(AndroidUtilities.dp(21));
+        int padding = 0;
+//        addView(avatarImageView, LayoutHelper.createFrame(44, 44, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 0, 2,0, 0));
+        addView(avatarImageView, LayoutHelper.createFrame(43, 43, Gravity.LEFT | Gravity.BOTTOM, LocaleController.isRTL ? 0 : 2 + padding, 6, LocaleController.isRTL ? 7 + padding : 0, 0));
 
         setFocusable(true);
     }

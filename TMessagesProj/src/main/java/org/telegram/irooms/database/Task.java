@@ -1,10 +1,12 @@
 package org.telegram.irooms.database;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -75,7 +77,29 @@ public class Task {
 
     @TypeConverters(Converters.class)
     @ColumnInfo(name = "members")
-    private List<Long> members;
+    private List<Integer> members;
+
+    @Ignore
+    private ArrayList<Integer> receivers;
+
+    @ColumnInfo(name="chat_type")
+    private String chat_type;
+
+    public String getChat_type() {
+        return chat_type;
+    }
+
+    public void setChat_type(String chat_type) {
+        this.chat_type = chat_type;
+    }
+
+    public ArrayList<Integer> getReceivers() {
+        return receivers;
+    }
+
+    public void setReceivers(ArrayList<Integer> receivers) {
+        this.receivers = receivers;
+    }
 
     public int getLocalStatus() {
         return localStatus;
@@ -245,11 +269,11 @@ public class Task {
         this.tag = tag;
     }
 
-    public List<Long> getMembers() {
+    public List<Integer> getMembers() {
         return members;
     }
 
-    public void setMembers(List<Long> members) {
+    public void setMembers(List<Integer> members) {
         this.members = members;
     }
 

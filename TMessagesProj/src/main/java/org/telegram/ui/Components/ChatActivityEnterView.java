@@ -152,6 +152,8 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
 
         void didPressAttachButton();
 
+        void didPressAddTaskButton();
+
         void needStartRecordVideo(int state, boolean notify, int scheduleDate);
 
         void needChangeVideoPreviewState(int state, float seekProgress);
@@ -329,6 +331,9 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
     private LinearLayout attachLayout;
     private ImageView attachButton;
     private ImageView botButton;
+    private ImageView addTaskButton;
+    private ReplaceableIconDrawable addTaskButtonDrawablel;
+
     private LinearLayout textFieldContainer;
     private FrameLayout sendButtonContainer;
     private FrameLayout doneButtonContainer;
@@ -2005,8 +2010,10 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
             if (Build.VERSION.SDK_INT >= 21) {
                 botButton.setBackgroundDrawable(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector)));
             }
-            botButton.setVisibility(GONE);
             attachLayout.addView(botButton, LayoutHelper.createLinear(48, 48));
+
+            botButton.setVisibility(GONE);
+
             botButton.setOnClickListener(v -> {
                 if (searchingType != 0) {
                     searchingType = 0;
@@ -2073,6 +2080,24 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
                     updateFieldHint();
                 }
             });
+            //-------7
+            addTaskButton = new ImageView(context);
+            addTaskButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+            addTaskButton.setImageResource(R.drawable.ic_plus_1);
+            addTaskButton.setScaleType(ImageView.ScaleType.CENTER);
+            if (Build.VERSION.SDK_INT >= 21) {
+                addTaskButton.setBackgroundDrawable(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector)));
+            }
+            attachLayout.addView(addTaskButton, LayoutHelper.createLinear(48, 48));
+            addTaskButton.setOnClickListener(v -> {
+                if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
+                    return;
+                }
+                delegate.didPressAddTaskButton();
+            });
+            addTaskButton.setContentDescription("Add task");
+
+            //---------------------4
 
             attachButton = new ImageView(context);
             attachButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
@@ -6083,7 +6108,7 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
                     return;
                 }
                 AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity);
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                 builder.setMessage(LocaleController.getString("ClearRecentEmoji", R.string.ClearRecentEmoji));
                 builder.setPositiveButton(LocaleController.getString("ClearButton", R.string.ClearButton).toUpperCase(), (dialogInterface, i) -> emojiView.clearRecentEmoji());
                 builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
@@ -6314,6 +6339,10 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
             sizeNotifierLayout.removeView(emojiView);
             emojiView.setVisibility(GONE);
         }
+    }
+
+    public void showAddTaskButton() {
+        addTaskButton.setVisibility(VISIBLE);
     }
 
     public void showEmojiView() {

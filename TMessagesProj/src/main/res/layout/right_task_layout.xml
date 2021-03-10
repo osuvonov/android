@@ -16,8 +16,8 @@
         android:layout_marginRight="7dp"
         android:background="@drawable/rounded_corner"
         android:gravity="right"
-        android:maxWidth="220dp"
-        android:minWidth="220dp"
+        android:maxWidth="260dp"
+        android:minWidth="260dp"
         android:orientation="vertical"
         android:padding="10dp">
 
@@ -64,11 +64,25 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <org.telegram.irooms.ui.avatar.UserCell2
+                android:id="@+id/task_owner_avatar"
+                android:layout_width="34dp"
+                android:layout_height="30dp"
+                android:layout_marginBottom="1dp"
+                />
+
+            <ImageView
+                android:id="@+id/task_arrow"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:padding="3dp"
+                android:src="@drawable/arrow_right" />
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/tl_avatars"
                 android:layout_width="0dp"
                 android:layout_height="30dp"
                 android:layout_marginTop="3dp"
+                android:layout_marginLeft="3dp"
                 android:layout_weight="1"
                 android:minWidth="200dp"
                 android:minHeight="30dp" />

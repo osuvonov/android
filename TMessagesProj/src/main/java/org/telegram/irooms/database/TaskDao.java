@@ -49,6 +49,9 @@ public abstract class TaskDao {
     @Query("select * from tbl_tasks where (chat_id in (:chatId)) ")
     public abstract List<Task> getTasksByChatId(long chatId);
 
+    @Query("select * from tbl_tasks where (chat_id in (:chatId)) and (company_id in (:companyId)) ")
+    public abstract List<Task> getTasksByChatAndCompanyId(long chatId, int companyId);
+
     @Query("select * from tbl_tasks where local_status in (1,2)")
     public abstract List<Task> getOfflineTasks();
 
@@ -64,8 +67,14 @@ public abstract class TaskDao {
         insertAll(list);
     }
 
+    @Query("Select * from tbl_tasks where (members like '%' || :chatId  || '%' and company_id=:companyId) or (members like '%' || :accountId  ||  '%' and creator_id=:chatId and company_id=:companyId) or(chat_id =:accountId and creator_id=:chatId and company_id=:companyId) or(chat_id=:chatId and creator_id=:accountId and company_id=:companyId)")
+    public abstract List<Task> getPrivateChatTasksByCompany(int accountId, int chatId, int companyId);
+
     @Query("Select * from tbl_tasks where (members like '%' || :chatId  || '%') or (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or(chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and creator_id=:accountId)")
-    public abstract List<Task> getPrivateChatTasks(int accountId, int chatId);
+    public abstract List<Task> getPrivateChatTasksTeam(int accountId, int chatId);
+
+    @Query("Select * from tbl_tasks where (chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and creator_id=:accountId)")
+    public abstract List<Task> getPrivateChatTasksNoTeam(int accountId, int chatId);
 
     @Query("select * from tbl_tasks where members like '%' || :ownerId  || '%'")
     public abstract List<Task> getAccountTasks(String ownerId);

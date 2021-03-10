@@ -6,24 +6,32 @@
     android:layout_height="wrap_content"
     android:background="@null"
     android:orientation="horizontal"
-    android:padding="5dp">
+    android:paddingTop="5dp"
+    android:paddingBottom="5dp">
+
+    <org.telegram.irooms.ui.avatar.UserCellAvatar
+        android:id="@+id/avatarCell"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingLeft="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <LinearLayout
         android:id="@+id/task_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="53dp"
-        android:layout_marginLeft="53dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginLeft="58dp"
         android:background="@drawable/rounded_corner"
-        android:maxWidth="220dp"
-        android:minWidth="220dp"
+        android:maxWidth="260dp"
+        android:minWidth="260dp"
         android:orientation="vertical"
         android:padding="10dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="220dp"
-        app:layout_constraintWidth_min="220dp">
+        app:layout_constraintWidth_max="260dp"
+        app:layout_constraintWidth_min="260dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -47,14 +55,14 @@
                 android:layout_gravity="center_vertical|right"
                 android:background="@drawable/btn_click"
                 android:padding="5dp"
-                android:src="@drawable/msg_edit"/>
+                android:src="@drawable/msg_edit" />
         </LinearLayout>
 
         <TextView
-            android:layout_weight="1"
             android:id="@+id/tl_description"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_weight="1"
             android:focusableInTouchMode="false"
             android:padding="4dp"
             android:text=""
@@ -63,51 +71,91 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toLeftOf="@+id/tl_deadline"
             app:layout_constraintTop_toBottomOf="@+id/tl_taskedit" />
-
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="40dp"
             android:layout_gravity="center_vertical"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <org.telegram.irooms.ui.avatar.UserCell2
+                android:id="@+id/task_owner_avatar"
+                android:layout_width="34dp"
+                android:layout_height="30dp"
+                android:layout_marginBottom="1dp"
+                />
+
+            <ImageView
+                android:id="@+id/task_arrow"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:padding="3dp"
+                android:src="@drawable/arrow_right" />
 
             <androidx.recyclerview.widget.RecyclerView
+                android:layout_marginLeft="3dp"
                 android:id="@+id/tl_avatars"
-                android:minWidth="200dp"
-                android:minHeight="30dp"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="30dp"
-                android:layout_alignParentLeft="true"
-                android:layout_marginTop="3dp" />
-<!--            <LinearLayout-->
-<!--                android:orientation="horizontal"-->
-<!--                android:id="@+id/tl_avatars"-->
-<!--                android:layout_width="wrap_content"-->
-<!--                android:layout_height="30dp"-->
-<!--                android:layout_alignParentLeft="true"-->
-<!--                android:layout_marginTop="3dp" />-->
-            <LinearLayout
+                android:layout_marginTop="3dp"
+                android:layout_weight="1"
+                android:minWidth="200dp"
+                android:minHeight="30dp" />
+
+            <ImageView
+                android:id="@+id/iconDeadline"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_deadline" />
+
+            <TextView
+                android:id="@+id/tl_deadline"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_centerVertical="true"
-                android:gravity="center_vertical">
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:padding="3dp"
+                android:textSize="12sp" />
+        </LinearLayout>
+        <!--        <RelativeLayout-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_gravity="center_vertical"-->
+        <!--            android:gravity="center_vertical">-->
 
-                <ImageView
-                    android:id="@+id/iconDeadline"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_gravity="center_vertical"
-                    android:src="@drawable/ic_deadline" />
+        <!--            <androidx.recyclerview.widget.RecyclerView-->
+        <!--                android:id="@+id/tl_avatars"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="30dp"-->
+        <!--                android:layout_alignParentLeft="true"-->
+        <!--                android:layout_marginTop="3dp"-->
+        <!--                android:minWidth="200dp"-->
+        <!--                android:minHeight="30dp" />-->
 
-                <TextView
-                    android:id="@+id/tl_deadline"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="right"
-                    android:gravity="bottom"
-                    android:padding="3dp"
-                    android:textSize="12sp" />
-            </LinearLayout>
-        </RelativeLayout>
+        <!--            <LinearLayout-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:layout_alignParentRight="true"-->
+        <!--                android:layout_centerVertical="true"-->
+        <!--                android:gravity="center_vertical">-->
+
+        <!--                <ImageView-->
+        <!--                    android:id="@+id/iconDeadline"-->
+        <!--                    android:layout_width="16dp"-->
+        <!--                    android:layout_height="16dp"-->
+        <!--                    android:layout_gravity="center_vertical"-->
+        <!--                    android:src="@drawable/ic_deadline" />-->
+
+        <!--                <TextView-->
+        <!--                    android:id="@+id/tl_deadline"-->
+        <!--                    android:layout_width="wrap_content"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_gravity="right"-->
+        <!--                    android:gravity="bottom"-->
+        <!--                    android:padding="3dp"-->
+        <!--                    android:textSize="12sp" />-->
+        <!--            </LinearLayout>-->
+        <!--        </RelativeLayout>-->
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

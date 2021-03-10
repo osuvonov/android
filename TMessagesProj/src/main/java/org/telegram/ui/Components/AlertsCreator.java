@@ -62,6 +62,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 
 import org.rooms.messenger.databinding.AddTaskBottomSheetBinding;
+import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
 import org.telegram.irooms.database.Task;
@@ -126,22 +127,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import androidx.annotation.RequiresApi;
+import io.socket.client.Socket;
 
 public class AlertsCreator {
 
-    public static BottomSheet.Builder createTaskEditorDialogBySocket(Context context, TLRPC.User selectedUser, CharSequence text, ArrayList<TLRPC.User> userList,
-                                                                     int chatId, TaskManagerListener callback) {
+    public static BottomSheet.Builder createTaskEditorDialogBySocket(Socket socket, Context context, TLRPC.User selectedUser, CharSequence text, ArrayList<TLRPC.User> userList,
+                                                                     long chatId, String chatType, TaskManagerListener callback) {
         if (context == null) {
             return null;
         }
 
         final String[] deadline = {TaskUtil.getMaxDate()};
-        ArrayList<Long> selectedMembers = new ArrayList<>();
+        ArrayList<Integer> selectedMembers = new ArrayList<>();
         final int[] selectedState = {0};
-        //  selectedMembers.add(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);//todo will we add task owner as members of task
-
 
         final int[] selectedDeadLineView = {-1};
 
@@ -161,6 +162,7 @@ public class AlertsCreator {
         }
         bottomSheet.etTaskDescription.setTextColor(textColor);
         bottomSheet.etTaskDescription.requestFocus();
+        AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
 
         bottomSheet.btnTaskDeadlineToday.setOnClickListener(today -> {
             boolean todaySelected = selectedDeadLineView[0] == 1;
@@ -241,7 +243,7 @@ public class AlertsCreator {
                         TLRPC.User user = userList.get(i1);
 
                         if (user != null && checkedItems[i1]) {
-                            selectedMembers.add((long) user.id);
+                            selectedMembers.add(user.id);
                             if (selectedUsers.length() > 0) {
                                 selectedUsers.append(", ");
                             }
@@ -272,7 +274,7 @@ public class AlertsCreator {
         bottomSheet.tvSelectMembers.setTextColor(textColor);
         if (selectedUser != null) {
             selectedMembers.clear();
-            selectedMembers.add((long) selectedUser.id);
+            selectedMembers.add(selectedUser.id);
             String userName = ((selectedUser.first_name == null ? "" : selectedUser.first_name) + " " + (selectedUser.last_name == null ? "" : selectedUser.last_name));
             bottomSheet.tvSelectMembers.setText(userName);
         }
@@ -313,23 +315,45 @@ public class AlertsCreator {
 
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
-            Task task = new Task(-1, PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", -1));
-            task.setDescription(bottomSheet.etTaskDescription.getText().toString());
+            int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.SELECTED_COMPANY_ID, 0);
+            Task task = new Task(-1, companyId);
+            String description=bottomSheet.etTaskDescription.getText().toString();
+            if ("".equals(description)||description==null){
+                bottomSheet.btnTaskSave.setEnabled(true);
+                return;
+            }
+            task.setDescription(description);
             task.setMembers(selectedMembers);
             task.setCreatorId(UserConfig.getInstance(0).clientUserId);
             task.setExpiresAt(deadline[0]);
             task.setStatus(Utils.getStatuses()[selectedState[0]]);
             task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
-            task.setCompanyId(PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", 0));
+            task.setCompanyId(companyId);
             task.setLocal_id(Utils.generateLocalId());
             task.setLocalStatus(1);
 
-            callback.onCreate(task);
-            TaskRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
+            ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
+            task.setReceivers(receiverIds);
+            task.setChat_type(chatType);
+
+            if (!socket.connected()) {
+                callback.onCreate(task);
+                TaskRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
+            } else {
+                IRoomsManager.getInstance().createTaskBySocket(context, socket, task, new TaskManagerListener() {
+                    @Override
+                    public void onCreate(Task task) {
+                        callback.onCreate(task);
+                    }
+
+                    @Override
+                    public void onUpdate(Task task) {
+                    }
+                });
+            }
 
             builder.getDismissRunnable().run();
-
         });
 
         builder.setCustomView(bottomSheet.getRoot());
@@ -338,7 +362,7 @@ public class AlertsCreator {
     }
 
     public static BottomSheet.Builder editTaskDialogBySocket(Context context, Task task, CharSequence text, ArrayList<TLRPC.User> userList,
-                                                             int chatId, TaskManagerListener callback) {
+                                                             long chatId, TaskManagerListener callback) {
         if (context == null) {
             return null;
         }
@@ -438,7 +462,7 @@ public class AlertsCreator {
 
             if (user != null) {
                 userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
-                if (task.getMembers().contains((long) user.id)) {
+                if (task.getMembers().contains(user.id)) {
                     checkedItems[i] = true;
                     if (selectedUsers.length() > 0) {
                         selectedUsers.append(", ");
@@ -455,7 +479,7 @@ public class AlertsCreator {
             bottomSheet.tvSelectMembers.setText(selectedUsers);
         }
 
-        ArrayList<Long> selectedMembers = new ArrayList<>(task.getMembers());
+        ArrayList<Integer> selectedMembers = new ArrayList<>(task.getMembers());
 
         bottomSheet.tvSelectMembers.setOnClickListener(view -> {
             android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
@@ -478,7 +502,7 @@ public class AlertsCreator {
                     TLRPC.User user = userList.get(i1);
 
                     if (user != null && checkedItems[i1]) {
-                        selectedMembers.add((long) user.id);
+                        selectedMembers.add(user.id);
                         if (selectedUsers.length() > 0) {
                             selectedUsers.append(", ");
                         }
@@ -494,7 +518,6 @@ public class AlertsCreator {
                 }
             });
             builder12.setPositiveButton("Ok", (dialogInterface, j) -> {
-
             });
 
             // create and show the alert dialog
@@ -542,7 +565,13 @@ public class AlertsCreator {
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
             int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", -1);
-            task.setDescription(bottomSheet.etTaskDescription.getText().toString());
+            String description=bottomSheet.etTaskDescription.getText().toString();
+            if ("".equals(description)||description==null){
+                bottomSheet.btnTaskSave.setEnabled(true);
+                return;
+            }
+            task.setDescription(description);
+
             task.setMembers(selectedMembers);
             task.setCreatorId(UserConfig.getInstance(0).clientUserId);
             if (deadline[0] == null || deadline[0].equals("null")) {
@@ -553,9 +582,13 @@ public class AlertsCreator {
             task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
             task.setCompanyId(companyId);
-            if (task.getLocal_id().equals("")) {
+            if (task.getLocal_id().equals("") || task.getLocal_id().equals("local")) {
                 task.setLocal_id(Utils.generateLocalId());
             }
+
+            ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
+            task.setReceivers(receiverIds);
+
             callback.onUpdate(task);
 
             TaskRepository.getInstance((Application) context.getApplicationContext()).updateLocalTask(task);

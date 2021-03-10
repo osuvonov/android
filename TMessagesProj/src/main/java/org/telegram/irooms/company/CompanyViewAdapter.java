@@ -2,6 +2,7 @@ package org.telegram.irooms.company;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
 import androidx.core.widget.CompoundButtonCompat;
 import androidx.preference.PreferenceManager;
 
@@ -23,7 +24,10 @@ import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
 import org.rooms.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.tgnet.TLRPC;
 
+
+import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -74,6 +78,13 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
 
     }
 
+    @Override
+    public void submitList(@Nullable List<Company> list) {
+        if (list != null)
+            list.add(new Company());
+        super.submitList(list);
+    }
+
     private void setFadeAnimation(View view) {
         AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(900);
@@ -89,9 +100,9 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
 
         private CompanyViewHolder(View itemView) {
             super(itemView);
-            int textColor = mContext.getResources().getColor(android.R.color.darker_gray);
+            int textColor = mContext.getResources().getColor(android.R.color.black);
             if (IRoomsManager.getInstance().isDarkMode(mContext)) {
-                textColor =mContext.getResources().getColor(R.color.disabled_text_color);
+                textColor = mContext.getResources().getColor(R.color.disabled_text_color);
             }
             nameMemberParent = itemView.findViewById(R.id.name_member_parent);
             nameMemberParent.setOnClickListener(new View.OnClickListener() {
@@ -130,8 +141,18 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
             companyMembersCount.setTextColor(textColor);
         }
 
-        public void bind(String text, boolean selected, int members) {
-            companyNameTextView.setText(text);
+        public void bind(String companyName, boolean selected, int members) {
+            if ("".equals(companyName)) {
+                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+                String name = (user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name);
+                companyName = name;
+
+                companyNameTextView.setText(companyName);
+                companySelectedCheckBox.setChecked(selected);
+                companyMembersCount.setText("Личные задачи");//Личные задачи,  Индивидуальный пользователь, Для собственных целей
+                return;
+            }
+            companyNameTextView.setText(companyName);
             companySelectedCheckBox.setChecked(selected);
             companyMembersCount.setText(members + " участников");
         }

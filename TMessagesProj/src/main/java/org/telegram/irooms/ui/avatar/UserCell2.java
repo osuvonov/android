@@ -10,6 +10,7 @@ package org.telegram.irooms.ui.avatar;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.FrameLayout;
 
@@ -44,6 +45,17 @@ public class UserCell2 extends FrameLayout {
 
     private boolean needDivider;
 
+    public UserCell2(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        avatarDrawable = new AvatarDrawable();
+
+        avatarImageView = new BackupImageView(context);
+        avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
+        addView(avatarImageView, LayoutHelper.createFrame(23, 23, Gravity.CENTER, 0, 2,0, 0));
+
+        setFocusable(true);
+    }
+
     public UserCell2(Context context, int padding, int checkbox, boolean admin) {
         this(context, padding, checkbox, admin, false);
     }
@@ -55,7 +67,7 @@ public class UserCell2 extends FrameLayout {
 
         avatarImageView = new BackupImageView(context);
         avatarImageView.setRoundRadius(AndroidUtilities.dp(24));
-        addView(avatarImageView, LayoutHelper.createFrame(23, 23, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : padding, 2, LocaleController.isRTL ?  padding : 0, 0));
+        addView(avatarImageView, LayoutHelper.createFrame(23, 23, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 0 : padding, 2, LocaleController.isRTL ? padding : 0, 0));
 
         setFocusable(true);
     }

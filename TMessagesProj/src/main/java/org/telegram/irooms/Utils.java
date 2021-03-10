@@ -14,13 +14,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 public class Utils {
-    public static List<Long> intersectionMembers(List<Long> companyMembers, List<Long> groupMembers) {
-        List<Long> temp = new ArrayList<>();
+    public static List<Integer> intersectionMembers(List<Integer> companyMembers, List<Integer> groupMembers) {
+        List<Integer> temp = new ArrayList<>();
         if (companyMembers==null){
             return temp;
         }
 
-        for (long i : groupMembers) {
+        for (int  i : groupMembers) {
             if (companyMembers.contains(i)) {
                 temp.add(i);
             }

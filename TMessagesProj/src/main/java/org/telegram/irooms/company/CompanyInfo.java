@@ -39,13 +39,6 @@ public class CompanyInfo extends BaseFragment {
     }
 
     @Override
-    public boolean onFragmentCreate() {
-        super.onFragmentCreate();
-
-        return true;
-    }
-
-    @Override
     public boolean onBackPressed() {
         try {
             ((LaunchActivity) getParentActivity()).refreshCompany();
@@ -73,14 +66,6 @@ public class CompanyInfo extends BaseFragment {
         LinearLayout linearLayout = (LinearLayout) fragmentView;
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         fragmentView.setOnTouchListener((v, event) -> true);
-
-//        TextView companiesTitle = new TextView(context);
-//        companiesTitle.setText("Участники");
-//        //        companiesTitle.setPadding(AndroidUtilities.dp(14), 0, AndroidUtilities.dp(14), 0);
-//        companiesTitle.setGravity(Gravity.CENTER);
-//        companiesTitle.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
-//        companiesTitle.setBackgroundColor(context.getResources().getColor(R.color.lighter_gray));
-//        linearLayout.addView(companiesTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 0));
 
         RecyclerListView listView = new RecyclerListView(context);
         ArrayList<TLRPC.User> userList = new ArrayList<>();
@@ -122,7 +107,6 @@ public class CompanyInfo extends BaseFragment {
         linearLayout.addView(listView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, 24, 24, 24, 0));
 
         return fragmentView;
-
     }
 
     private void removeMemberFromCompany(int position, int id) {

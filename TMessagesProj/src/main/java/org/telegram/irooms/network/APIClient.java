@@ -18,7 +18,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
-import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.messenger.UserConfig;
@@ -32,16 +31,16 @@ import java.util.Map;
 import io.socket.client.Ack;
 import io.socket.client.Socket;
 
-public class Backend {
+public class APIClient {
 
-    private Backend() {
+    private APIClient() {
     }
 
-    private static Backend instance;
+    private static APIClient instance;
 
-    public static Backend getInstance() {
+    public static APIClient getInstance() {
         if (instance == null) {
-            instance = new Backend();
+            instance = new APIClient();
         }
         return instance;
     }
@@ -202,21 +201,7 @@ public class Backend {
         }
     }
 
-    public void createTask(Context context, Task task, final VolleyCallback callback) {
-
-        String hostNameCloud = BASE_URL + "/tasks/create";
-
-        JSONObject postData = null;
-        try {
-            postData = new JSONObject(new Gson().toJson(task));
-
-            makePostRequest(context, postData, hostNameCloud, callback);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void createTaskBySocket(Context context, Socket socket, Task task, final VolleyCallback callback) {
+    public void createTaskBySocket(Socket socket, Task task, final VolleyCallback callback) {
 
         JSONObject postData = null;
         try {
@@ -227,22 +212,7 @@ public class Backend {
         }
     }
 
-    public void editTask(Context context, Task task, final VolleyCallback callback) {
-
-        String hostNameCloud = BASE_URL + "/tasks/edit";
-
-        JSONObject postData = null;
-        try {
-
-            postData = new JSONObject(new Gson().toJson(task));
-
-            makePostRequest(context, postData, hostNameCloud, callback);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void editTaskBySocket(Context context, Socket socket, Task task, final VolleyCallback callback) {
+    public void editTaskBySocket(Socket socket, Task task, final VolleyCallback callback) {
 
         JSONObject postData = null;
         try {
@@ -426,7 +396,7 @@ public class Backend {
                             preferences.edit().putString("token" + UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone, token).commit();
                             callback.onSuccess(response.toString());
                             String subscToken = preferences.getString("subscription_token", "");
-                            Backend.getInstance().subscribeTaskNotification(context, subscToken, token, new VolleyCallback() {
+                            APIClient.getInstance().subscribeTaskNotification(context, subscToken, token, new VolleyCallback() {
                                 @Override
                                 public void onSuccess(String response) {
                                 }

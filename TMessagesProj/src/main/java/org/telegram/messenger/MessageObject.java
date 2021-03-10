@@ -71,7 +71,7 @@ public class MessageObject {
     public static final int TYPE_STICKER = 13;
     public static final int TYPE_ANIMATED_STICKER = 15;
     public static final int TYPE_POLL = 17;
-
+    public int localTaskId=-1;
     public int localType;
     public String localName;
     public String localUserName;

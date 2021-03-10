@@ -10,7 +10,9 @@ package org.telegram.ui.Adapters;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+
 import androidx.preference.PreferenceManager;
+
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,6 +24,7 @@ import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.rooms.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Cells.DrawerActionCell;
 import org.telegram.ui.Cells.DividerCell;
@@ -181,7 +184,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
                 return 4;
             } else {
                 if (accountNumbers.size() < UserConfig.MAX_ACCOUNT_COUNT) {
-                    if (i == accountNumbers.size()){
+                    if (i == accountNumbers.size()) {
                         return 5;
                     } else if (i == accountNumbers.size() + 1) {
                         return 2;
@@ -300,6 +303,11 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
 
         if (!PreferenceManager.getDefaultSharedPreferences(mContext).getString(Constants.SELECTED_COMPANY_NAME, "").equals("")) {
             items.add(new Item(1, IRoomsManager.getInstance().getSelectedCompanyName(mContext), companyIcon));
+        } else {
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            String name = (user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name);
+            name = name.concat("\nЛичные задачи");
+            items.add(new Item(1, name, companyIcon));
         }
 
         if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.IS_OWNER, false)) {
@@ -317,11 +325,11 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         if (hasGps) {
             items.add(new Item(12, LocaleController.getString("PeopleNearby", R.string.PeopleNearby), peopleNearbyIcon));
         }
-      //items.add(new Item(11, LocaleController.getString("SavedMessages", R.string.SavedMessages), savedIcon));
+        //items.add(new Item(11, LocaleController.getString("SavedMessages", R.string.SavedMessages), savedIcon));
         items.add(new Item(8, LocaleController.getString("Settings", R.string.Settings), settingsIcon));
         items.add(null); // divider
         items.add(new Item(7, LocaleController.getString("InviteFriends", R.string.InviteFriends), inviteIcon));
-      //items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), helpIcon));
+        //items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), helpIcon));
     }
 
     public int getId(int position) {
