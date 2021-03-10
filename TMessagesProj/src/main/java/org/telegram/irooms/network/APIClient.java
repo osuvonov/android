@@ -143,8 +143,6 @@ public class Backend {
                 showToast(context, error);
             }
         });
-
-
     }
 
     private void showToast(Context context, String message) {
