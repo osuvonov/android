@@ -41,7 +41,6 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.util.Base64;
-import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -59,17 +58,14 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
 import org.rooms.messenger.databinding.AddTaskBottomSheetBinding;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.TaskManagerListener;
-import org.telegram.irooms.task.TaskRepository;
+import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskUtil;
-import org.telegram.irooms.ui.spinner.MemberState;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -339,7 +335,7 @@ public class AlertsCreator {
 
             if (!socket.connected()) {
                 callback.onCreate(task);
-                TaskRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
+                RoomsRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
             } else {
                 IRoomsManager.getInstance().createTaskBySocket(context, socket, task, new TaskManagerListener() {
                     @Override
@@ -591,7 +587,7 @@ public class AlertsCreator {
 
             callback.onUpdate(task);
 
-            TaskRepository.getInstance((Application) context.getApplicationContext()).updateLocalTask(task);
+            RoomsRepository.getInstance((Application) context.getApplicationContext()).updateLocalTask(task);
             builder.getDismissRunnable().run();
 
         });

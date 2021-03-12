@@ -89,7 +89,7 @@ import org.telegram.irooms.network.APIClient;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.network.SocketSSL;
 import org.telegram.irooms.task.TaskManagerListener;
-import org.telegram.irooms.task.TaskRepository;
+import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
@@ -232,16 +232,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     private static final int PLAY_SERVICES_REQUEST_CHECK_SETTINGS = 140;
     private Socket mSocket;
-
-    {
-        try {
-            IO.Options options = new IO.Options();
-            options.forceNew = true;
-            SocketSSL.set(options);
-            mSocket = IO.socket(Constants.SOCKET_ENDPOINT, options);
-        } catch (URISyntaxException e) {
-        }
-    }
 
     public interface BackendForOfflineTaskListener {
         void onBackendTaskForLocalTaskCreated(Task task);
@@ -389,7 +379,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 //                    x.printStackTrace();
 //                }
 //            }
-            TaskRepository.getInstance(getApplication()).deleteCompanies();
+            RoomsRepository.getInstance(getApplication()).deleteCompanies();
             if (companies.size() > 0) {
                 try {
                     for (Company company : companies) {
@@ -400,7 +390,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 prefs.edit().putBoolean(Constants.IS_OWNER, true).commit();
                             }
                         }
-                        TaskRepository.getInstance(getApplication()).insert(company);
+                        RoomsRepository.getInstance(getApplication()).insert(company);
                     }
                 } catch (Exception x) {
                 }
@@ -511,7 +501,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         try {
             Company company1 = IRoomJsonParser.getCompany(company);
             if (company1 != null) {
-                TaskRepository.getInstance(getApplication()).update(company1);
+                RoomsRepository.getInstance(getApplication()).update(company1);
             }
         } catch (Exception x) {
 
@@ -522,18 +512,15 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         @Override
         public void call(Object... args) {
             Log.e("onconnect", args.toString());
-            syncOfflineTasks();
             try {
-                IRoomsManager.getInstance().authenticate(LaunchActivity.this, new IRoomsManager.IRoomsCallback() {
+                APIClient.getInstance().getToken(LaunchActivity.this, new APIClient.TokenListener() {
                     @Override
-                    public void onSuccess(String success) {
-                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
-
-                        String token = preferences.getString("token" + UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone, "");
-
-                        if (!token.equals("")) {
+                    public void onToken(String token) {
+                        if (token != null && !"".equals(token)) {
                             mSocket.emit("auth", Collections.singletonList(token), (Ack) args1 -> {
-                                TaskRepository.getInstance(LaunchActivity.this.getApplication()).deleteCompanies();
+                                syncOfflineTasks();
+
+                                RoomsRepository.getInstance(LaunchActivity.this.getApplication()).deleteCompanies();
 
                                 initCompanies(args1[0].toString());
                             });
@@ -556,24 +543,30 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         if (mSocket.connected()) {
             TaskRunner taskRunner = new TaskRunner();
             taskRunner.executeAsync(() -> {
-                List<Task> offlineTasks = TaskRepository.getInstance(LaunchActivity.this.getApplication()).getOfflineTasks();
+                List<Task> offlineTasks = RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getOfflineTasks();
                 if (offlineTasks.size() > 0 && mSocket != null) {
+                    Log.e("offline tasks length ", "length: " + offlineTasks.size());
                     for (Task task : offlineTasks) {
                         if (task.getLocalStatus() == 1) {
+
                             IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
                                 @Override
                                 public void onCreate(Task task) {
                                     createdTasks.add(task);
                                     if (taskListener != null) {
                                         taskListener.onTaskCreated(task);
-                                    } else {
-                                        String part1 = "Task #" + task.getId() + "\n";
-
-                                        String message = part1 + task.getDescription();
-
-                                        SendMessagesHelper.getInstance(currentAccount).sendMessage(message, task.getChat_id(), null, null, null, false, null, null, null, true, 0);
-
                                     }
+
+                                    String message = "Task #" + task.getId() + "\n";
+                                    message += "Вы получили новое задание.\n" +
+                                            "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US";
+
+                                    Log.e("offline task message ", "length: " + offlineTasks.size());
+                                    long chatID = task.getChatId();
+                                    if (task.getChat_type() != null && task.getChat_type().equals("group")) {
+                                        chatID = -chatID;
+                                    }
+                                    SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message, chatID, null, null, null, false, null, null, null, true, 0);
                                 }
 
                                 @Override
@@ -613,7 +606,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
             Task task = IRoomJsonParser.getTask(data.toString(), true);
 
-            TaskRepository.getInstance(getApplication()).updateOnlineTask(task);
+            RoomsRepository.getInstance(getApplication()).updateOnlineTask(task);
             runOnUiThread(() -> taskUpdated(task));
         } catch (Exception x) {
             return;
@@ -627,7 +620,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
             Task task = IRoomJsonParser.getTask(data.toString(), true);
 
-            TaskRepository.getInstance(getApplication()).insert(task);
+            RoomsRepository.getInstance(getApplication()).insert(task);
 
             runOnUiThread(() -> taskCreated(task));
         } catch (Exception x) {
@@ -684,9 +677,15 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
+        try {
+            IO.Options options = new IO.Options();
+            options.forceNew = true;
+            SocketSSL.set(options);
+            mSocket = IO.socket(Constants.SOCKET_ENDPOINT, options);
+        } catch (URISyntaxException e) {
+        }
         ApplicationLoader.postInitApplication();
-        TaskRepository.getInstance(LaunchActivity.this.getApplication()).setLocalTaskChangeListener(new TaskRepository.LocalTaskChangeListener() {
+        RoomsRepository.getInstance(LaunchActivity.this.getApplication()).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
             @Override
             public void onLocalTaskCreated(Task task) {
                 IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {

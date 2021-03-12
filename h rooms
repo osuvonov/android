@@ -1,0 +1,2642 @@
+[33mcommit 01a2d5cfdf9e1a76af4e904cf7d4e38ab989bc26[m[33m ([m[1;36mHEAD -> [m[1;32mrooms[m[33m, [m[1;32mdouble_column[m[33m)[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Wed Mar 10 11:16:59 2021 +0500
+
+    v 7.4.12
+
+[33mcommit 7f5cb7d699d9bd73eb528d66611840e257666e6f[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Wed Mar 10 11:14:51 2021 +0500
+
+    v 7.4.12
+
+[33mcommit 1c5cb278c526f7ea77bb0482bbad6ee14feb4d77[m[33m ([m[1;31mrooms/rooms[m[33m)[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Fri Feb 12 14:13:39 2021 +0500
+
+    dark theme implemented, some bugs fixed
+
+[33mcommit 75d35ef6c263e77347a487d5b7c5777b2d463994[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Mon Feb 8 12:15:17 2021 +0500
+
+    Added russian text to IntroActivity, fixed FAB task create button click issues when scrolling
+
+[33mcommit 2c1aa182545243cef1fc5a206ff6f54241f10fae[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Fri Feb 5 15:56:03 2021 +0500
+
+    notification fixed
+
+[33mcommit d9638736c83be803a07107315d737eefceee29bc[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Sat Jan 30 16:41:22 2021 +0500
+
+    FAB button to create task added
+
+[33mcommit 3ed7b26f63b020bbb28fcdddaf8d0919870a24a9[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Wed Jan 27 16:17:25 2021 +0500
+
+    New release 2159 went to play market
+
+[33mcommit 1f189c12bacb01a0ed881d623ef65d0752732645[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Wed Jan 27 15:23:10 2021 +0500
+
+    bugs fixed
+
+[33mcommit 68a364ce663b339430569c45faac88946ad24ac5[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Mon Jan 25 16:22:36 2021 +0500
+
+    Several bugs fixed, added archive status for task and tasks filter
+
+[33mcommit 8c581f3cfacc0245ca6c54cfd490c77d50e93591[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Fri Jan 22 16:38:54 2021 +0500
+
+    Show multiple Person in Charge avatars in Task Card View
+
+[33mcommit 0e92e1ed5b2738516cfbd1c155e2e99e2a97e936[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Fri Jan 22 10:41:36 2021 +0500
+
+    Select multiple Person in Charge in Create/Edit task
+
+[33mcommit 81364d1ea489e9e6039540398127a4c6842f1a4c[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Thu Jan 21 12:17:34 2021 +0500
+
+    When removing member if last name is null, null value was appearing with firstname. null removed from UI
+
+[33mcommit fd1c173a40a99433cff9b3994adff794276c701d[m
+Author: shuhrat <shuh100@gmail.com>
+Date:   Thu Jan 21 11:37:26 2021 +0500
+
+    Offline task and bugs
+
+[33mcommit d52de1a40a5e81736e7c100ca73e20226eed73d9[m[33m ([m[1;33mtag: release-7.3.0_2206[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Jan 1 08:38:45 2021 +0400
+
+    Update to 7.3.1 (2206)
+
+[33mcommit d0e2266da126786ae60ef5e190e81deec2004920[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Dec 26 09:18:43 2020 +0400
+
+    Update to 7.3.1 (2199)
+
+[33mcommit d333b1f95689f5619e7ab47e6bd960a5d48ac9c6[m[33m ([m[1;33mtag: release-7.3.0_2197[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Dec 24 23:58:45 2020 +0400
+
+    Update to 7.3.0 (2197)
+
+[33mcommit 4b588b90aa783a00dcff9cb94621aab75341b187[m[33m ([m[1;33mtag: release-7.3.0_2196[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Dec 24 09:36:01 2020 +0400
+
+    Update to 7.3.0 (2196)
+
+[33mcommit d52b2c921abd3c1e8d6368858313ad0cb0468c07[m[33m ([m[1;33mtag: release-7.3.0_2195[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Wed Dec 23 11:48:30 2020 +0400
+
+    Update to 7.3.0 (2195)
+
+[33mcommit 5a47056c7b1cb0b7d095ca6e7d1a288c01f8f160[m[33m ([m[1;33mtag: release-7.2.1_2139[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sun Nov 1 00:13:37 2020 +0300
+
+    Update to 7.2.1 (2139)
+
+[33mcommit 00e58e8782149e68f0efae85ea36275ad39c0617[m[33m ([m[1;33mtag: release-7.2.1_2137[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Oct 30 23:48:42 2020 +0300
+
+    Update to 7.2.1 (2137)
+
+[33mcommit 11fbfb1329df700b203e1852a71c4c11b5ab12f4[m[33m ([m[1;33mtag: release-7.2.1_2136[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Oct 30 22:15:43 2020 +0300
+
+    Update to 7.2.1 (2136)
+
+[33mcommit 8726c6d11f42ea95274c9d9cd1c738e7e5521565[m[33m ([m[1;33mtag: release-7.2.1_2135[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Oct 30 20:44:29 2020 +0300
+
+    Update to 7.2.1 (2135)
+
+[33mcommit 002c01ecd37cd08ed07b3ed84d79318d091dfc85[m[33m ([m[1;33mtag: release-7.2.0_2134[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Oct 30 15:41:45 2020 +0300
+
+    Update to 7.2.0 (2134)
+
+[33mcommit aaa5dc0328e40aa46aac73edb3d1d54e061a2d59[m[33m ([m[1;33mtag: release-7.2.0_2128[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Oct 30 13:26:29 2020 +0300
+
+    Update to 7.2.0 (2128)
+
+[33mcommit 19599e6ea41a4db70b032be8151ea0d84d19caf4[m[33m ([m[1;33mtag: release-7.1.3_2103[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Oct 15 03:39:36 2020 +0300
+
+    Update to 7.1.3 (2103)
+
+[33mcommit d3ad1316c4d13cc884d733b34ab3981b461df16f[m[33m ([m[1;33mtag: release-7.1.3_2100[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Mon Oct 5 01:13:31 2020 +0300
+
+    Update to 7.1.3 (2100)
+
+[33mcommit 75d0903666098ce22ae7f0eaf3bc7e935486b656[m[33m ([m[1;33mtag: release-7.1.2_2098[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Oct 3 00:48:16 2020 +0300
+
+    Update to 7.1.2 (2098)
+
+[33mcommit 99f5637dda59bc405734342d3e2448701d63f2d3[m[33m ([m[1;33mtag: release-7.1.1_2096[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Oct 2 14:25:02 2020 +0300
+
+    Update to 7.1.1 (2096)
+
+[33mcommit 4992f231b39af28e1467f5f1eb90b99122b5aca6[m[33m ([m[1;33mtag: release-7.1.1_2094[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Oct 1 04:59:32 2020 +0300
+
+    Update to 7.1.1 (2094)
+
+[33mcommit 2eeca37bb48792274ef277c560833a73ad7c893b[m[33m ([m[1;33mtag: release-7.1.0_2092[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Wed Sep 30 19:55:35 2020 +0300
+
+    Update to 7.1.0 (2092)
+
+[33mcommit 1139e12ef126609bc76d6d39a3f46edb1038f9d3[m[33m ([m[1;33mtag: release-7.1.0_2090[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Wed Sep 30 16:48:47 2020 +0300
+
+    Update to 7.1.0 (2090)
+
+[33mcommit e33a2fbedc08770c09df1c0eb6fe507ecd4753e4[m[33m ([m[1;33mtag: release-7.0.1_2065[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Aug 22 02:59:49 2020 +0300
+
+    Update to 7.0.1 (2065)
+
+[33mcommit 4c5f32babf6cf9d0869f1732280684d974841653[m[33m ([m[1;33mtag: release-7.0.0_2064[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sun Aug 16 00:06:36 2020 +0300
+
+    Update to 7.0.0 (2064)
+
+[33mcommit 6e495f54b8d7b75681ba4b9c05a72cedc21890e2[m[33m ([m[1;33mtag: release-7.0.0_2061[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Aug 15 03:01:55 2020 +0300
+
+    Update to 7.0.0 (2061)
+
+[33mcommit 321b75636741cd9b64aaf04fe95b593e7c0cba7b[m[33m ([m[1;33mtag: release-7.0.0_2060[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Aug 14 19:58:22 2020 +0300
+
+    Update to 7.0.0 (2060)
+
+[33mcommit c0125f27ead31fd5712f0b043347a5f7ebb3401f[m
+Merge: 32071036 b8f17ead
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Aug 14 19:54:29 2020 +0300
+
+    Merge pull request #1569 from alabiaga/patch-2
+    
+    Notification shortcut update
+
+[33mcommit b8f17ead8fa8940718ecfa54dba50fbe530fc1dc[m
+Author: Aaron Labiaga <alabiaga@google.com>
+Date:   Sun Aug 9 05:06:56 2020 -0400
+
+    Notification shortcut update
+    
+    Remove notification shortcuts after notification is sent as per 3rd item under https://github.com/android/user-interface-samples/tree/master/People#shortcuts, to allow shortcuts to be cached.
+    
+    Q: Will my shortcuts appear in the long press app launcher context menu?
+    A: They can depending on their rank, but if you prefer not having shortcuts appear on launcher you can remove the shortcut with ShortcutManager#removeDynamicShortcuts() or #removeAllDynamicShortcuts() after sending the notification. You can also rank other app shortcuts with higher ranking, so only those dynamic shortcuts appear on launcher.
+    
+    Thanks for all your great work on this. I will push for making the API better for this. Thanks again and note that this pull request can be a throwaway and I just wanted to show at what point the shortcuts can be removed. I checked out the codebase, made these changes and was able to get this working on a flashed Android 11 device. Thanks again.
+
+[33mcommit 320710366d89feb7d639b56afd4780ca6c10c508[m[33m ([m[1;33mtag: release-6.3.0_2042[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jul 27 00:11:01 2020 +0300
+
+    Update to 6.3.0 (2042)
+
+[33mcommit 520592b43d2527f8f4a743de2baa4f67644f260c[m[33m ([m[1;33mtag: release-6.3.0_2040[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 26 11:03:38 2020 +0300
+
+    Update to 6.3.0 (2040)
+
+[33mcommit feba57ced0f98c02e7e4301b7bab889991e87968[m[33m ([m[1;33mtag: release-6.2.0_1988[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jun 6 09:07:06 2020 +0300
+
+    Update to 6.2.0 (1988)
+
+[33mcommit f424ea165af4e868391b24640d2e715d1a45ce3c[m[33m ([m[1;33mtag: release-6.2.0_1986[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 5 17:08:29 2020 +0300
+
+    Update to 6.2.0 (1986)
+
+[33mcommit e2f7baf2bdcdd81bac4be4f9c43b41ff903d6720[m[33m ([m[1;33mtag: release-6.2.0_1985[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 5 05:40:01 2020 +0300
+
+    Update to 6.2.0 (1985)
+
+[33mcommit dceccae0b74576d092fb3b2accaffded2c0b5f63[m[33m ([m[1;33mtag: release-6.2.0_1984[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jun 4 19:47:15 2020 +0300
+
+    Update to 6.2.0 (1984)
+    
+    https://github.com/DrKLO/Telegram/pull/1561
+
+[33mcommit f120800a7f6ba6b6d83bed42e1c8d662170b58cc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri May 1 13:16:27 2020 +0300
+
+    Update to 6.1.1 (1947)
+
+[33mcommit 5a2a813dc029ba1b9a31b514a78eb85fced0183f[m[33m ([m[1;33mtag: release-6.1.1_1946[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri May 1 05:08:26 2020 +0300
+
+    Update to 6.1.1 (1946)
+
+[33mcommit dbf81a34affcd1c24d78e1403347ea8b3a186154[m[33m ([m[1;33mtag: release-6.1.1_1945[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Apr 30 22:07:00 2020 +0300
+
+    Update to 6.1.1 (1945)
+
+[33mcommit 73e5ba43d60e899f7d12aefd85a6aa40587c679c[m[33m ([m[1;33mtag: release-6.1.0_1941[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Apr 24 13:30:21 2020 +0300
+
+    Update to 6.1.0 (1941)
+
+[33mcommit ed9e38da5b3b6ca80a7cb719a000d310d07497b0[m[33m ([m[1;33mtag: release-6.1.0_1940[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Apr 24 12:28:11 2020 +0300
+
+    Update to 6.1.0 (1940)
+
+[33mcommit ae0d24ebf214110f4e6691f54d5867331d7d9158[m[33m ([m[1;33mtag: release-6.1.0_1938[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Apr 24 12:21:58 2020 +0300
+
+    Update to 6.1.0 (1938)
+
+[33mcommit 0b83be73561f3caea394579d471b3d738fd1e320[m[33m ([m[1;33mtag: release-6.0.1_1911[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Tue Mar 31 00:22:54 2020 +0300
+
+    Update to 6.0.1 (1911)
+
+[33mcommit ce5e817fb5130d55ca32b55158dde668ddf75c7b[m[33m ([m[1;33mtag: release-6.0.1_1910[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Mon Mar 30 19:49:17 2020 +0300
+
+    Update to 6.0.1 (1910)
+
+[33mcommit 80c4acfa3bb588f843af2324c8ee0fa46f7ab0d7[m[33m ([m[1;33mtag: release-6.0.0_1908[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Mon Mar 30 15:00:09 2020 +0300
+
+    Update to 6.0.0 (1908)
+
+[33mcommit df90eface5ebd755ea86c3a4eec66fe5b6e29041[m[33m ([m[1;33mtag: release-5.15.0_1869[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Feb 15 21:17:30 2020 +0300
+
+    Update to 5.15.0 (1869)
+
+[33mcommit dae819b5a3d1ec89312385f6e7eedcd7866e82fd[m[33m ([m[1;33mtag: release-5.15.0_1868[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Feb 14 20:15:39 2020 +0300
+
+    Update to 5.15.0 (1868)
+
+[33mcommit 08a8e007eb41c512443837df8be49243816475f2[m[33m ([m[1;33mtag: release-5.15.0_1867[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Feb 14 05:26:25 2020 +0300
+
+    Update to 5.15.0 (1867)
+
+[33mcommit 071d5114941a09618d2b323b427c1161a5aaa95b[m[33m ([m[1;33mtag: release-5.15.0_1866[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Feb 13 23:45:02 2020 +0300
+
+    Update to 5.15.0 (1866)
+
+[33mcommit 2eafc07314532d9ec31bdb63378a30a4969c26db[m[33m ([m[1;33mtag: release-5.15.0_1864[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Feb 13 21:26:53 2020 +0300
+
+    Update to 5.15.0 (1864)
+
+[33mcommit 7d6fa267c13bacd48f8d8f10d31a61f38b77bfe4[m[33m ([m[1;33mtag: release-5.14.0_1851[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 23 20:55:45 2020 +0300
+
+    Update to 5.14.0 (1851)
+
+[33mcommit 049932d52c43ad88ad46fc394016aaaec5535a78[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 23 19:54:36 2020 +0300
+
+    Update to 5.14.0 (1850)
+
+[33mcommit c623952aa2a7b769ea5ff1ab355d83f20637393e[m[33m ([m[1;33mtag: release-5.14.0_1849[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 23 17:57:54 2020 +0300
+
+    Update to 5.14.0 (1849)
+
+[33mcommit 207ef50ce6d10c9bc7d3dad2cc82b97fb4c1bec3[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 23 16:06:41 2020 +0300
+
+    Update to 5.14.0 (1848)
+
+[33mcommit 29aa3efe1e3606cca375832fa701e60b40333a9d[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 23 15:58:50 2020 +0300
+
+    Update to 5.14.0 (1847)
+
+[33mcommit 30d603778d6b4c78729e8daf24b899288010e24d[m[33m ([m[1;33mtag: release-5.14.0_1846[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 23 09:15:40 2020 +0300
+
+    Update to 5.14.0 (1846)
+
+[33mcommit 6a10354656d48ee26127ee4d95656f24c2da449c[m
+Merge: 31736964 7fb9f0b8
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Tue Jan 14 08:54:49 2020 +0300
+
+    Merge pull request #1545 from janka102/patch-1
+    
+    Fix apkdiff not checking entire files
+
+[33mcommit 7fb9f0b85621940e0a5ba977278f6f27fc323046[m
+Author: Jesse Smick <janka102@users.noreply.github.com>
+Date:   Mon Jan 6 23:22:05 2020 -0800
+
+    Fix apkdiff not checking entire files
+
+[33mcommit 31736964fa12b5981632ecfd75d5f6d4f91f7135[m[33m ([m[1;33mtag: release-5.13.1_1829[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Mon Jan 6 17:02:23 2020 +0300
+
+    Update to 5.13.1 (1829)
+
+[33mcommit 06f489520115aa3d1a4928a5e1fe5b0aaf8c5d57[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sun Jan 5 21:39:58 2020 +0300
+
+    Update to 5.13.1 (1828)
+
+[33mcommit dd07a925ee3f25307808b263f775266c4cf6444d[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sun Jan 5 14:50:11 2020 +0300
+
+    Update to 5.13.1 (1827)
+
+[33mcommit 46be79049ee71fb282fe5e4d1c1dc7fdee25a345[m[33m ([m[1;33mtag: release-5.13.1_1826[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Jan 4 01:58:46 2020 +0300
+
+    Update to 5.13.1 (1826)
+
+[33mcommit 76be9be85567bc15f287f3193e2cc6c0743bb30a[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Sat Jan 4 01:37:09 2020 +0300
+
+    Update to 5.13.1 (1825)
+
+[33mcommit 44dadb10556d82ac07ecd85e7d0db37fd9f71c26[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Fri Jan 3 18:45:22 2020 +0300
+
+    Update to 5.13.1 (1824)
+
+[33mcommit 12caa1e8cda083267cdb733539067a5bf1f1c0f9[m[33m ([m[1;33mtag: release-5.13.0_1823[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 2 18:08:53 2020 +0300
+
+    Update to 5.13.0 (1823)
+
+[33mcommit 4e55e974f8092ccb00d2cbae4da25bf9f32f732e[m[33m ([m[1;33mtag: release-5.13.0_1821[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Thu Jan 2 01:29:20 2020 +0300
+
+    Update to 5.13.0 (1821)
+
+[33mcommit 1eea3ab6f7fa8ff5b90282a2bb0e919aabea7d35[m[33m ([m[1;33mtag: release-5.13.0_1820[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Wed Jan 1 21:32:12 2020 +0300
+
+    Update to 5.13.0 (1820)
+    
+    Merged some parts of https://github.com/DrKLO/Telegram/pull/1541
+
+[33mcommit cc1dc35742f9ed21587e464cea5233bf201a2b2d[m[33m ([m[1;33mtag: release-5.13.0_1819[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Tue Dec 31 22:46:59 2019 +0300
+
+    Update to 5.13.0 (1819)
+
+[33mcommit 471ed12003872b56fe93477d62e924dbb7ae3e1e[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Tue Dec 31 17:18:43 2019 +0300
+
+    Update README.md
+
+[33mcommit f41b228a111e304c2505a86c7cc8b448eaecaf6f[m[33m ([m[1;33mtag: release-5.13.0_1818[m[33m)[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Tue Dec 31 16:08:08 2019 +0300
+
+    Update to 5.13.0 (1818)
+
+[33mcommit 28eb8dfd0ef959fd5ad7d5d22f1d32879707c0a0[m
+Author: DrKLO <drklo.dev@gmail.com>
+Date:   Tue Sep 10 13:56:11 2019 +0300
+
+    Update to 5.11.0
+
+[33mcommit 53e04b55fbb665fcb3859f54f15ae203179a88c2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Aug 22 01:53:26 2019 +0200
+
+    Update to 5.10.0
+
+[33mcommit 9f48ec7ea2dbdf0caef16ed0fc6b6cd1e3f3f368[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jul 19 16:22:40 2019 +0700
+
+    Update README.md
+
+[33mcommit ff5735503e068a6f1cada09b977f633df7caf98d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 18 20:01:39 2019 +0700
+
+    Update to 5.9.0
+
+[33mcommit a9966a0353dc9d46c1ea60d141acd57affead7c9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 14 21:23:49 2019 +0700
+
+    Update README.md
+
+[33mcommit 9ffc7787d6ed4386363fad001334ae411c2877d9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Jun 4 13:14:50 2019 +0300
+
+    Update to 5.7.1
+
+[33mcommit 96247ca2bcf2dda42d65828dacaa1c5cb5518807[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Jun 4 13:02:52 2019 +0300
+
+    Removed submodule
+
+[33mcommit 2cf2a45acaf1643302f831a3939bb28d3270f47a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue May 14 15:08:05 2019 +0300
+
+    Update to 5.6.1
+
+[33mcommit e397bd9afdfd9315bf099f78a903f8754d297d7a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 3 20:40:48 2019 +0000
+
+    Update to 5.4.0
+
+[33mcommit f338a88eb4c48348378fb9575fa6b63ff80bbec3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Feb 8 05:30:32 2019 +0300
+
+    Update to 5.3.1
+
+[33mcommit a724d96e9c008b609fe188d122aa2922e40de5fc[m
+Merge: ae90d60e e222fded
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jan 23 20:03:43 2019 +0300
+
+    Merge branch 'master' of https://github.com/DrKLO/Telegram
+
+[33mcommit ae90d60e0c34e9ceb20f1a9f7edaf9c85044ed7e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jan 23 20:03:33 2019 +0300
+
+    Update to 5.2.1
+
+[33mcommit e222fded6cca5ace3649be6f18b55f526311bc79[m
+Merge: 75d78218 ea72d6c0
+Author: DrKLO <69369+DrKLO@users.noreply.github.com>
+Date:   Wed Nov 7 19:49:44 2018 +0300
+
+    Merge pull request #1482 from acran/master
+    
+    Bugfix: correctly render vcard of a selected inline query result
+
+[33mcommit ea72d6c0bd3b7f9f3e45e3d532c0cab24a9e0bcb[m
+Author: Roman Anasal <roman.anasal@academyconsult.de>
+Date:   Wed Sep 26 01:23:00 2018 +0200
+
+    Bugfix: correctly render vcard of a selected inline query result
+
+[33mcommit 75d782181e1b48b73223892c9b8b4b1cf4c10dfd[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Aug 29 01:59:16 2018 +0300
+
+    Bug fixes
+
+[33mcommit 5972d1d69f71e097c8f51bf60c8f3845965acf9a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Aug 27 21:45:56 2018 +0300
+
+    Bug fixes
+
+[33mcommit 7e327c1e2cf511b472e101ca0948343897757f10[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Aug 27 15:13:23 2018 +0300
+
+    Bug fixes
+
+[33mcommit fe599cd519185f8ec118a36bfd23b9ed4d23d829[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Aug 27 11:33:11 2018 +0300
+
+    Update to 4.9.1
+
+[33mcommit d073b80063c568f31d81cc88c927b47c01a1dbf4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jul 30 09:07:02 2018 +0700
+
+    Update to 4.9.0
+
+[33mcommit e9e40cb13ea942b148b259c083fb3364a0cd90ea[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Dec 9 03:45:38 2017 +0300
+
+    bug fixes
+
+[33mcommit 5630ad862398a54e425a4578e8dea7f93c7f2c8f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Dec 8 20:37:54 2017 +0300
+
+    Update readme
+
+[33mcommit 4ebcbf61cd1ce04685c82f93b962d1094c5ffac2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Dec 8 20:35:59 2017 +0300
+
+    Update to 4.6.0
+
+[33mcommit 9e4f5491f446b781eb5eee951a4f0c2cacc1cf7e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jul 24 11:38:35 2017 +0300
+
+    Fixed build.gradle
+
+[33mcommit c92ecf973ce6f7e1dfec3b47c53cd94b1b5d85ab[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jul 24 00:06:13 2017 +0300
+
+    Update to 4.2.1
+
+[33mcommit 7fcd94d5c911e7b7ca9e823d7d603eeb90c418d0[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 23 20:29:17 2017 +0300
+
+    Bug fixes
+
+[33mcommit 5faa453835aa87517d6fb2bb644dbcbf793e8d0f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 23 18:27:09 2017 +0300
+
+    Update locales, bug fixes
+
+[33mcommit 1eb13d5dd828ca14f0bdd834a1d4e51779e7c293[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 23 16:43:02 2017 +0300
+
+    Update submodule
+
+[33mcommit 56e22d4c59fef4a94a8d174eb400e058460de994[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 23 15:56:38 2017 +0300
+
+    Update to 4.2.0
+    
+    source before release? how this even possible?
+
+[33mcommit bcc13a5cb9e488dd25b1c80ab5299fd4211dabd9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 8 19:37:48 2017 +0300
+
+    update submodules
+
+[33mcommit dd679bd7d1713896272016d4e53c3b4ead744683[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 8 19:32:04 2017 +0300
+
+    Update to 4.1.1
+
+[33mcommit 6a1cf64f6f45ba0d0e7ff898e8a6c677ddc3ef33[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Mar 31 02:58:05 2017 +0300
+
+    Update to 3.18.0
+
+[33mcommit 64e8ec3fbd26a876b7683f83a6f59c6b67316421[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Oct 11 14:46:48 2016 +0200
+
+    compile fix
+
+[33mcommit e313885ac540c31ea02c85122907a5845fc576d2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Oct 11 13:57:01 2016 +0200
+
+    Update to 3.13.1
+
+[33mcommit 55463a93db95dcc450c00af3918d9bbbebf4f8c1[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 24 13:27:15 2016 +0300
+
+    Update to 3.10.1
+    
+    Thanks to
+    https://github.com/DrKLO/Telegram/pull/1412
+
+[33mcommit f563fbbb0518f81c9055368d4f913915e7066a38[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed May 25 16:27:33 2016 -0700
+
+    Bug fixes
+
+[33mcommit 85239ed7cf30cab0333bd46310e8ddc1cf13868f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed May 25 14:49:47 2016 -0700
+
+    Update to 3.9.0
+
+[33mcommit 1c74ed4587f9a7e086067165eaea0532a6c33cae[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Apr 25 22:26:41 2016 +0300
+
+    Bug fixes
+
+[33mcommit fe9e23eccf3e7ca55e9b6d4dcdbd37e6a0276852[m
+Merge: 06473773 58a645b6
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Apr 25 11:39:13 2016 +0300
+
+    Merge pull request #1406 from abcdeiko/actionmenu_clear_fix
+    
+    Fix clearItemsMethod at ActionBarMenu
+
+[33mcommit 06473773a6f415c23fbd93d51996393b7e3ea626[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Apr 22 16:49:00 2016 +0300
+
+    Update to 3.8.1
+
+[33mcommit 58a645b6ed39d11fd8a5bf986a40c8f58c5a67f0[m
+Author: Yuriy Kolbasinskiy <yurka@kbshko.ru>
+Date:   Thu Apr 14 11:56:23 2016 +0700
+
+    Fix clearItemsMethod: now it clears all items
+
+[33mcommit a7513b3ba1923113840e78799c4c4132cc7f3116[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Mar 16 15:26:32 2016 +0300
+
+    Update to 3.7.0
+
+[33mcommit 6154c891bda4bc3651176b31463c9619a4793cba[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 6 02:49:31 2016 +0100
+
+    Update to 3.6.1
+
+[33mcommit 2114024ab1d9cf209916bcdb3a4a7d44e51a3b0c[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jan 11 20:19:48 2016 +0300
+
+    Update to 3.4.2
+    
+    Thanks to:
+    https://github.com/DrKLO/Telegram/pull/1374
+    https://github.com/DrKLO/Telegram/pull/1383
+
+[33mcommit 9b16959cab10c4f662272d12872cf7d794f80df9[m
+Merge: f21bac97 fd000ad7
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jan 11 19:55:05 2016 +0300
+
+    Merge pull request #1373 from drzix/ko_patch
+    
+    Edit korean SentSmsCode string:unnecessary br tag
+
+[33mcommit f21bac97b7d5d4aa112153f75c9b82d9e56193b5[m
+Merge: 3840a0ce 2391a60a
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jan 11 19:47:43 2016 +0300
+
+    Merge pull request #1385 from Kondra007/patch-1
+    
+    Increase limit to linkify phone numbers from 100 to 200
+
+[33mcommit 3840a0ce1cb276ff567c601a4b3d42fb40bff316[m
+Merge: 4b531f55 dcd7f75d
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jan 11 19:47:06 2016 +0300
+
+    Merge pull request #1387 from Spagy/spelling
+    
+    Correct spelling. "Unsuppoted -> Unsupported"
+
+[33mcommit 4b531f55714912a250bfe3887013eef2e948d2bd[m
+Merge: 6033ee2f 668fea41
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jan 11 19:46:38 2016 +0300
+
+    Merge pull request #1384 from astarcev/patch-1
+    
+    Make phone numbers in media captions clickable
+
+[33mcommit dcd7f75d15eab71a5d8dd7117a458e7ce3d24793[m
+Author: Spagy <Spagy@users.noreply.github.com>
+Date:   Sat Jan 9 17:40:23 2016 +0000
+
+    Correct spelling. "Unsuppoted -> Unsupported"
+
+[33mcommit 2391a60adaec140031fb692f626f19b98829fa09[m
+Author: Kondra007 <kondra007@yandex.ru>
+Date:   Mon Jan 4 15:33:40 2016 +0300
+
+    Increase limit to linkify phone numbers from 100 to 200
+    
+    100 symbols is too few to make sending phone cards (not telegram users' cards, but any phone cards).
+
+[33mcommit 668fea41f6c30a5038b4a8766236e451b6f9cb45[m
+Author: Andrey Startsev <astarcev@workle.ru>
+Date:   Mon Jan 4 13:55:21 2016 +0300
+
+    Make phone numbers in media captions clickable
+
+[33mcommit fd000ad7cab2674254d0d87647b5f9b152ebd158[m
+Author: drzix <korea.drzix@gmail.com>
+Date:   Mon Dec 14 19:46:00 2015 +0900
+
+    Edit korean SentSmsCode string:unnecessary br tag
+    
+    Although the strings of other languages in SentSmsCode don't
+    include '<!CDATA..', the Korean string does that.
+    Unfortunately, that string is not escaped by replaceTags().
+    So, the CDATA tag must be deleted.
+
+[33mcommit 6033ee2f5c48bb00879eab6d6d67ae5b516ff4a2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Dec 11 21:16:38 2015 +0300
+
+    Removing prebuilt libraries. The source code for all libraries is (and always was) available here: https://github.com/DrKLO/Telegram/tree/master/TMessagesProj/jni
+
+[33mcommit 512e404db7b917aaf8084541843f641938f3b12c[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Dec 9 21:27:52 2015 +0300
+
+    Update to 3.3.2
+
+[33mcommit 62068e188ce356af2422335623dfc7c486af92f2[m
+Merge: 74def222 57ada21a
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Nov 28 13:07:11 2015 +0300
+
+    Merge pull request #1368 from Bubu/patch-1
+    
+    Include missing unistd.h header.
+
+[33mcommit 57ada21a2dc1272c5c6e303dbe78a7f58482f019[m
+Author: Marcus Hoffmann <bubuiic@aol.com>
+Date:   Fri Nov 27 18:17:07 2015 +0100
+
+    Include missing unistd.h header.
+    
+    On Linux unistd.h is needed for fsync().
+    The native library does not compile otherwise.
+
+[33mcommit 74def22213846b1f90a26c86670035079dea032c[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 27 00:04:02 2015 +0300
+
+    Update to 3.3.1
+
+[33mcommit 496c336d5f80947ebce64087cc9740b3d28ee99d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 29 20:10:07 2015 +0300
+
+    Update to 3.2.6
+
+[33mcommit e0c9c4e6f46c1e2b2f3a7aac55b3f7e360f4b994[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Sep 30 01:50:53 2015 +0300
+
+    Using pipe instead of signal to interrupt epoll_wait
+
+[33mcommit 16af1b0fa7e0d7cb3519ad0ecd0b3a550741353c[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Sep 30 01:46:48 2015 +0300
+
+    Fixed release and debug AndroidManifest.xml
+
+[33mcommit 3d165f17ecf04d66023e6b37261c85772f59082e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Sep 25 17:37:43 2015 +0300
+
+    Fixed restore key generation after network becomes available
+
+[33mcommit 6bb7547f508d5d8effe8907f899adde95aeceb47[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Sep 24 23:52:02 2015 +0300
+
+    Update to 3.2.2
+
+[33mcommit 906746d573e73ab185f05dc919a65fa9d364da35[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Sep 2 01:14:21 2015 +0300
+
+    Update to 3.1.3
+
+[33mcommit 3e901772774515f3363d4c9894740e5b2e52641b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Aug 13 12:23:31 2015 +0300
+
+    Update to 3.1.2
+
+[33mcommit 82f9be238d6a7bfb961f3b4a77e811d3f81e3556[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 22 21:56:37 2015 +0300
+
+    Update to 3.1.1
+
+[33mcommit a93d2994842ef694442a7ddf4e9be29e31ff0080[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jun 29 20:12:11 2015 +0300
+
+    Update to 3.0.1
+
+[33mcommit 163461882d93b383f7ae0b482226a0f1c29309db[m
+Merge: 9d113ccb f8e8d089
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jun 25 02:17:35 2015 +0300
+
+    Merge branch 'dev'
+
+[33mcommit f8e8d089f7c7008288668f4f4cb053ea48d5df2f[m[33m ([m[1;31morigin/dev[m[33m)[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri May 22 04:45:27 2015 +0300
+
+    Bug fixes
+
+[33mcommit 4f929ceb4b837d4ef3bf1630629e76c4da0e9a18[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri May 22 00:27:47 2015 +0300
+
+    Missing file
+
+[33mcommit 2b81b7f01e12c1ad3f0442bace31a82eac00b01f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri May 22 00:27:27 2015 +0300
+
+    update to 2.9.1
+
+[33mcommit 2b8304ebf47b8e16b56fd2c1cfeb8fa3918ac1cb[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun May 3 14:48:36 2015 +0300
+
+    Update to 2.8.1
+    
+    Thanks to https://github.com/DrKLO/Telegram/issues/738 for smart
+    notifications
+
+[33mcommit 9d113ccb7a109954f73260ecfbe5cd8467e2f7a8[m
+Merge: 2f874619 f6655078
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Apr 9 21:03:23 2015 +0300
+
+    Merge branch 'dev'
+
+[33mcommit f6655078a11b8fb4b8447e9920c97b0a630176d6[m
+Merge: 1b913b2a b820e126
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Apr 9 21:00:30 2015 +0300
+
+    Merge branch 'sessions' into dev
+
+[33mcommit b820e126d2a2d65a1ba4fa96786b667125e65903[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Apr 9 21:00:14 2015 +0300
+
+    update to 2.7.0
+
+[33mcommit 525676eb1bd5358d9304ca458d8d49c76a40943a[m
+Merge: 08ac6a14 1b913b2a
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Mar 27 13:41:43 2015 +0300
+
+    Merge branch 'dev' into sessions
+
+[33mcommit 1b913b2a2f85c890ae1c7375c034bf370bf26245[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Mar 27 13:32:33 2015 +0300
+
+    Bug fixes
+
+[33mcommit 08ac6a14e723569e4d5b93357a1960d9e533dd98[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 26 20:34:47 2015 +0300
+
+    Update to 2.6.1
+
+[33mcommit f759ce5a6532b9cfe579f5e189d68deff254118a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Mar 20 02:03:19 2015 +0300
+
+    Bug fixes
+
+[33mcommit a484ab0d7fcb1b76c85ef74442f2cc0a914c3671[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 19 12:27:46 2015 +0300
+
+    Bug fixes
+
+[33mcommit 028f5d9c906cb02f864c288257b9a6726d3be01b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 19 04:17:02 2015 +0300
+
+    Bug fixes, locale update
+
+[33mcommit 901655c33baf3287e8e102f9a809d2f23d61ac35[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 19 02:09:57 2015 +0300
+
+    Missing image
+
+[33mcommit 300659e30cc3a7c6e4fe5a0b1aa2e4ed0741208b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 19 02:09:45 2015 +0300
+
+    Update to 2.6.0
+    
+    Replies
+    Mentions
+    Hashtags
+    New messages forward logic
+    Blur in photo editor
+
+[33mcommit 0f4b89015308ca85c5304dd6e16c0c4b4c3cad3f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Feb 27 22:57:58 2015 +0300
+
+    Update to 2.5.2
+
+[33mcommit 85bc7046bbf1064f1d527d5ea0fb8c314940196d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Feb 26 17:36:15 2015 +0300
+
+    Crash fixes
+
+[33mcommit f63c8b20bb6accb129852ae22eee5c5a0daf52eb[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Feb 26 04:36:17 2015 +0300
+
+    Missing image
+
+[33mcommit 93fa5019c3291345cf4fad44f88594873286f8c3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Feb 26 04:32:51 2015 +0300
+
+    Update to 2.5.0
+    
+    Photo editor
+    Passcode
+    Sections in shared media\files
+
+[33mcommit 2f874619264ac65213baf2300a3e53fdf34aec09[m
+Merge: 8c50d4d0 dff666fc
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Feb 19 14:26:59 2015 +0300
+
+    Merge branch 'dev'
+
+[33mcommit dff666fca14f4abb7726bf1c5f32cd672eac39ea[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Feb 1 21:51:02 2015 +0300
+
+    Update to 2.4.0
+
+[33mcommit 2fcef37b9ed73d1bee19eef8b06d73ddd7903274[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jan 24 00:59:15 2015 +0300
+
+    Bug fixes
+
+[33mcommit 213c2269c09cefedb3729a26d0cbe95dfa2e756f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jan 9 15:50:15 2015 +0300
+
+    Update to 2.3.2
+
+[33mcommit 4e03bc1a7530d55c892a7bdcae7845cca13666ee[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jan 3 06:21:11 2015 +0300
+
+    Crash fix
+
+[33mcommit 9c2ac64d14f45fe828fd0f3453e7021c51ca7f5e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jan 3 01:22:17 2015 +0300
+
+    Update BuildVars.java
+
+[33mcommit 2073ead37e554bdca42215129978ce46d36c45c8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jan 3 01:15:07 2015 +0300
+
+    Update to 2.3.0
+
+[33mcommit e5e31e20e46e437dc347e1eea74ec65fb71ddf5a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Dec 4 12:27:06 2014 -0800
+
+    Bug fixes
+
+[33mcommit 8c50d4d03bdda3839978e55ae1f0a2ca5492b0f6[m
+Merge: cd9d188f 8233e89d
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Dec 1 09:57:52 2014 -0800
+
+    Merge branch 'dev'
+
+[33mcommit 8233e89daa2f80efb3db8f6ac62a3ccbe5689568[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Dec 1 09:56:31 2014 -0800
+
+    Perfect forward secrecy in secret chats, phone change, telegram.me links support
+
+[33mcommit 95de265e1a8f13bc691710818db54059e30fe0ce[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Nov 24 17:14:40 2014 +0300
+
+    Bug fixes
+
+[33mcommit fdaf4555c5d1551c9a6914a3a8279f84e7ed1ea8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 21 22:36:21 2014 +0300
+
+    Bug fixes
+
+[33mcommit d69b5b3b36407f37e7723191e01e32c4bce52dbc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 21 13:59:05 2014 +0300
+
+    Bug fixes
+
+[33mcommit baed4120bc03b05bad536a84e8f27c3e7869b8b9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 21 03:14:44 2014 +0300
+
+    Bug fixes
+
+[33mcommit a38e46cd8bde13b708ce073544b8092906a53e63[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Nov 20 17:45:33 2014 +0300
+
+    Bug fixes
+
+[33mcommit dd61bbaa7ae798aa927f15a8446dd8824de05952[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 19 18:17:24 2014 +0300
+
+    Bug fixes
+
+[33mcommit ba4cf583b48d1848ad95c1a68315ab89384b3b80[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 19 13:32:27 2014 +0300
+
+    Bug fixes
+
+[33mcommit ea8760f9a2210e5eedf1019ed5b573afee661e7a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 19 06:46:45 2014 +0300
+
+    Bug fixes
+
+[33mcommit 77f239542883e3dbe428421e40f5211aa15a1efb[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 19 04:23:46 2014 +0300
+
+    Bug fixes
+
+[33mcommit a137f7a22ff238d9999bf2676d8d7fde0d0ad2df[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Nov 18 15:37:11 2014 +0300
+
+    Bug fixes
+
+[33mcommit 86dd93428e6071015eaa048d7c44079b669f38c9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Nov 18 08:01:12 2014 +0300
+
+    Missing images
+
+[33mcommit 6866004af5d0371f131e16f11a477608bcad8b4b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Nov 18 08:01:04 2014 +0300
+
+    Material everywhere
+
+[33mcommit ce33df07ad27f64ec578d7a0770e251f6fbffdfe[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Nov 18 01:04:31 2014 +0300
+
+    More Android L design
+
+[33mcommit f7b14c1e2365f0452ce76152e06492f909bbe51d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Nov 17 13:42:07 2014 +0300
+
+    Update locale
+
+[33mcommit 01ae07c3aa9cec2b4b89e56746992752b0c625c7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Nov 17 05:45:07 2014 +0300
+
+    Missing images
+
+[33mcommit f76fa00e121511e2ae57ada6cfc37b3a7520fa57[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Nov 17 05:44:57 2014 +0300
+
+    More Android L design
+
+[33mcommit 934408c73f7447260b05cf5a1e754309c1dca85e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 14 18:40:15 2014 +0300
+
+    More Android L design
+
+[33mcommit 5e51393b4bb3da302106fb42dcb260915742c0ab[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Nov 13 23:10:26 2014 +0300
+
+    missing images
+
+[33mcommit bfd8d13dcd694d143eb54e01d0ac0df85d6aad1f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Nov 13 23:10:14 2014 +0300
+
+    More Android L design
+
+[33mcommit ea0b86d023787b8c5ba7809423cd39c2521366dd[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Nov 13 01:16:59 2014 +0300
+
+    More Android L design
+
+[33mcommit 4104a21f6dd2f0503d8434ac32e781dcdadeeebd[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 12 13:41:46 2014 +0300
+
+    More Android L design
+
+[33mcommit 1fd3985ef05f4aec089b980ef484ef35f8214334[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 12 01:16:25 2014 +0300
+
+    Missing images
+
+[33mcommit ca46b69b38785a34e917ab9b367bfa9f68b13613[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Nov 12 01:16:17 2014 +0300
+
+    More Android L design
+
+[33mcommit 41359b14793e87a00b4709374726d87a7d40623b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Nov 10 14:05:22 2014 +0300
+
+    More Android L design
+
+[33mcommit a4d42cb97bb4f5b92232f01dd6633a9c2f0eac39[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 7 23:10:12 2014 +0300
+
+    More Android L design (still not usable)
+
+[33mcommit 65e93f91bb503a275b8b2795237411eabc4c1a07[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 7 13:23:17 2014 +0300
+
+    Different improvements
+
+[33mcommit 059035a54ca7d01a586a1ada6dc115b966ce8b11[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 7 00:35:05 2014 +0300
+
+    Missing images
+
+[33mcommit ab0ae72560100407da9d27cde8c8dfa0718e3313[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Nov 7 00:34:47 2014 +0300
+
+    Different improvements (not finished, not usable yet)
+
+[33mcommit 1add11177d01a38a86ffc8894d80ad6c30898c72[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 31 22:02:29 2014 +0300
+
+    Messages search (not finished)
+
+[33mcommit 6c4c5cf311d966bc9e2772b7c8e087e6c5d2015c[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 31 00:27:41 2014 +0300
+
+    Bug fixes
+
+[33mcommit 4ddfda63403e69c3c35f8c7f6bef850533af8599[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 29 17:28:54 2014 +0300
+
+    Bug fixes
+
+[33mcommit 5ddd8a094071f9288f338913c67a1c443f6061a9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 29 00:27:44 2014 +0300
+
+    Bug fixes
+
+[33mcommit a4af1fb2f7fb7eef97881cdee0573d71bde41cae[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Oct 28 20:07:44 2014 +0300
+
+    Bug fixes
+
+[33mcommit 3cd9b847e15a8d12927c7ecad57aa7e256c548b0[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Oct 25 11:16:21 2014 +0400
+
+    Fixed build with last mp4parser
+
+[33mcommit 6e386c58841f6b10d6db22e7192dfe800cb7b9e4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 24 18:04:53 2014 +0400
+
+    One more fix for native lib loader
+
+[33mcommit b33d5f078674667c917427b98de6242eb2b2a377[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 24 17:43:45 2014 +0400
+
+    Changed native lib loaded
+
+[33mcommit cd9d188fe2bed8e5df5a1b0f0bd34ab336c2892f[m
+Merge: fd69c56f abf8f6f6
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 23 19:31:55 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit abf8f6f6199dfcc0df3cc315ce5ba1e4edeb9991[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 23 19:30:35 2014 +0400
+
+    Bug fixes
+
+[33mcommit d03fa95568bfcb5bb98ae6c79fedc037eaf0903a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 23 11:55:32 2014 +0400
+
+    Bug fixes
+
+[33mcommit e5def002f7e81d6cb55357f82eef097b90dc3b01[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 23 00:01:07 2014 +0400
+
+    Different improvements
+
+[33mcommit e3d2b9cece6c8bcb5069cefdd7a835a1123dcc4f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 22 14:11:47 2014 +0400
+
+    Bug fixes
+
+[33mcommit ef2b368b6547526d5d3fedfa86069713bcd1c203[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 22 02:16:51 2014 +0400
+
+    Crash fix
+
+[33mcommit e8cc3bdd3ccb04d148a4c7c91b9215669a0d020d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 22 00:35:16 2014 +0400
+
+    Different improvements
+
+[33mcommit 08a49ea2eabd8954560b5b68a4a09d4b4f83d5d3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Oct 20 22:11:47 2014 +0400
+
+    Enable screenshot detection
+
+[33mcommit 15ac6cdb386c1e98f520774d153dcd5110c20df2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Oct 20 15:30:05 2014 +0400
+
+    Crash fixes
+
+[33mcommit 87cb843ea0e393961030064a16b4e616b9132e87[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Oct 18 03:06:51 2014 +0400
+
+    Fixed video compression in Android L, bug fixes
+
+[33mcommit bc76df2f9947a6e55a9defece97cdc5bae4d0458[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 17 22:29:13 2014 +0400
+
+    Update to layer 18, usernames support, UI improvements
+
+[33mcommit 5bbfba2092139b41bdd80ba4bf7e89961cff7bd7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 17 00:02:44 2014 +0400
+
+    UI improvements
+
+[33mcommit 288fceeb9fff8084f7c8494d25fea5a6bf73c54a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 15 22:43:52 2014 +0400
+
+    UI improvements
+
+[33mcommit 2f23635e4a78851356141c0d72014608dd22e723[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 15 00:36:15 2014 +0400
+
+    UI update
+
+[33mcommit b2ad802ba56ab67f90697b1988cff7ef6e1ad9af[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Oct 14 12:13:16 2014 +0400
+
+    Update secret chats layer
+
+[33mcommit a54300fb0aeacafd3215162016787fa2e32375a5[m
+Merge: 98a0a67c fd69c56f
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Oct 13 00:29:31 2014 +0800
+
+    Merge branch 'master' into dev
+
+[33mcommit fd69c56f08c1e39aad76f70a1308643b72b9f7ed[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Oct 11 15:37:47 2014 +0400
+
+    Updated readme
+
+[33mcommit 98a0a67c10732ddc4f8d0ec6348ea6ce588c72e3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Oct 11 15:30:32 2014 +0400
+
+    Stability improvements
+
+[33mcommit ad863779f799ea51c37d4a41e76fd7006339ef3e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 10 21:16:39 2014 +0400
+
+    Different improvements
+
+[33mcommit 22a0c2aca644d8f4c41f727a6c16a5401b191249[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 9 19:55:05 2014 +0400
+
+    Fixes (unstable, don't upload to markets)
+
+[33mcommit c6b1a3430bfb70523133ed871c64e69aaeb7aaa4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Oct 9 00:22:22 2014 +0400
+
+    Updated database structure, updated sqlite (don't use this source code, it may be changed)
+
+[33mcommit 9c4835e6cfbf9078871e99b1a6a8accc5f4d98a4[m
+Merge: 62635da2 43674c48
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 8 00:15:02 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 43674c486f92415e669a102d0c403fc94cac2cd3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 8 00:14:27 2014 +0400
+
+    Move to API layer 17, bug fixes
+
+[33mcommit a9e84c0e234d71c152ae6cfc31723ed1b5cf9f07[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Oct 6 14:38:00 2014 +0400
+
+    Added Korean locale, bug fixes
+
+[33mcommit 62635da258be3723dd5a6ba3b82fc59cdf04dcb2[m
+Merge: 7545dfe2 28270a87
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Oct 6 01:24:22 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 28270a87d163154e6a776f9d50279dc9c5c09481[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Oct 6 01:23:57 2014 +0400
+
+    Added open on phone button on Android Wear, bug fixes
+
+[33mcommit 4baa0f66a0f4c452d0cde5169b1fb547541f80a0[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Oct 4 19:56:09 2014 +0400
+
+    added Android Wear support
+
+[33mcommit 335434239099a48069cd25d9e05f5c160d19154b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 1 23:55:24 2014 +0400
+
+    Bug fixes
+
+[33mcommit 53ddefb818cd1443ea1a364f241e405fa4a316d6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Oct 1 02:36:18 2014 +0400
+
+    Bug fixes
+
+[33mcommit f7d3faab5aa9064bc6e705fe990296f172415ac2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Sep 30 02:48:11 2014 +0400
+
+    Service for video encoding, update locales, bug fixes
+
+[33mcommit f83a1b56ff1743f783ab05ad87c7f79c65ae6cb4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Sep 28 19:07:16 2014 +0400
+
+    Bug fixes
+    
+    https://github.com/DrKLO/Telegram/pull/581
+
+[33mcommit dff98476dd51c1d5f41982d8fa7348454fa4618a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Sep 28 17:37:26 2014 +0400
+
+    Video convert queue, bug fixes
+
+[33mcommit 27972c8ec54d55989b4d7486ac6f9de00007f522[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Sep 25 18:57:17 2014 +0400
+
+    Update locales, bug fixes
+
+[33mcommit ab44b870d8333cf61c95c9b8b4fa8ac116384cdf[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Sep 25 07:54:35 2014 +0400
+
+    Changed small Tablets portrait layout, changes media store path to sdcard/Telegram (need testing)
+
+[33mcommit 4d5b43f6d76a7b77a5b856f56f9caa4302e4a9a7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Sep 24 19:08:25 2014 +0400
+
+    Changed isTablet check
+
+[33mcommit 3eed85a31d19481d0551deb3d41c847fe6cd2cce[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Sep 24 06:17:27 2014 +0400
+
+    Video editing and compression on 4.1+ (please test it and send debug info to me), Tablet version, a lot of other things (don't upload to markets, it's unstable)
+
+[33mcommit 8d412f9eeaa005c56ef80b85ba4fd212632907c4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Sep 14 03:40:36 2014 +0400
+
+    Updated to 1.8.3, video compression with parallel upload to server (Android 4.3+ only now, disabled)
+
+[33mcommit 8eea00b7b4925fc6f41bb2fa88b64a6f4c50930d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Sep 1 19:43:03 2014 +0400
+
+    Added other upload queue for small files
+
+[33mcommit b8ecf4e083ff4337435560ff67cae09e167f83b6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Aug 31 12:02:28 2014 +0300
+
+    Fixed documents saving, changed long vibration pattern
+
+[33mcommit 9f7b47f5172e5df6143e2adecabc62e1bbff6523[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Aug 30 22:30:42 2014 +0300
+
+    Update locales, bug fixes
+
+[33mcommit 16150fe751d18dd1d08b13a450af49743ce934fe[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Aug 30 00:06:04 2014 +0300
+
+    New documents design, bug fixes
+
+[33mcommit 8bad65596615b6ce4b902b612b6c657f42fd82da[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Aug 27 09:53:26 2014 +0300
+
+    Bug fixes
+
+[33mcommit 2b15ac63f864c0c15a32e05c591cb4bb53ca432d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Aug 27 01:26:25 2014 +0300
+
+    Continue upload file after app restart, bug fixes
+
+[33mcommit 8b73d93d1a4e5854567bbad1a28ef199f4d259d7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Aug 24 00:51:53 2014 +0300
+
+    Fixed database update to new version
+
+[33mcommit 21273f822c542ddd4939fcb672beba794ce64641[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Aug 23 03:22:33 2014 +0400
+
+    Bug fixes
+
+[33mcommit fc46daa50ffa66956060df5f5ba3829591aba493[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Aug 22 18:24:33 2014 +0400
+
+    A lot of features (may be unstable, don't upload to markets)
+    
+    Blocked contacts
+    Media auto download
+    Repeat notifications every hour
+    Vibration patterns
+    Resend messages after app restart
+
+[33mcommit 7545dfe20a42007c93b8e7e1b05b1d6838d001c9[m
+Merge: 331a0bb7 8f7652bb
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Aug 8 14:18:21 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 8f7652bb7e319c5aefffe81a8211af6722bfc745[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Aug 8 14:17:06 2014 +0400
+
+    Bug fixes
+
+[33mcommit 5d042955cd6a42d42bff0acf430a1e0671c2ea43[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Aug 7 01:27:24 2014 +0400
+
+    Bug fixes
+
+[33mcommit 87612e006b1889205d532ee351249d32897dd4cc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Aug 6 03:17:40 2014 +0400
+
+    Bug fixes
+
+[33mcommit dbef14dfeb85878e461cef529f5a05b5327d09d4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Aug 2 00:31:15 2014 +0100
+
+    Bug fixes
+
+[33mcommit f7e0225f48ee3e7b521c6b8f89a3a4c1540282f1[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 31 01:50:12 2014 +0100
+
+    Bug fixes
+
+[33mcommit e27094b9632ac8c0f45fff913d8761fb98d47bac[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 30 08:49:39 2014 +0100
+
+    Bug fixes
+
+[33mcommit 755446e9bbd31354198cc266eea6148854e00afb[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 27 14:53:00 2014 +0400
+
+    Changed broadcast lists ids
+    
+    old broadcast lists will be broken
+
+[33mcommit 2eb84e23f616ddc284d648031d223776a2bafea2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 27 03:18:24 2014 +0400
+
+    Fixed internal push registration at first start, updated some locales
+
+[33mcommit 91ae97e257aaed7095266a4cf987035f7da95f23[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 27 02:28:33 2014 +0400
+
+    Broadcasts, updated gif lib, blur image\video preview
+    
+    Note: untested, don’t upload to market
+
+[33mcommit e5cb3685a0467f7f7cce5814cef583036b493371[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 23 20:53:14 2014 +0400
+
+    Fixed broken image resizing in last commit
+
+[33mcommit f92df091ef298aa909f08b4ee2f6ed67c4416309[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 23 03:27:00 2014 +0400
+
+    Bug fixes
+
+[33mcommit 331a0bb77e8483fe51dc2d28a6fec0a73c48cace[m
+Merge: 2cb6bb3e e2a6511f
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jul 21 01:54:18 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit e2a6511fbf1f45c9a934b895e22bf95032a7cff9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jul 21 01:49:33 2014 +0400
+
+    Fixed not working notifications in opened chat while app in background
+
+[33mcommit 5855dc05674ee9324f34d4da63714d020835c07a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 20 20:02:01 2014 +0400
+
+    Bug fixes
+
+[33mcommit 1c2010a428fda5a03a96b27a9be817bdac3d2b17[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 20 03:31:49 2014 +0400
+
+    Bug fixes
+
+[33mcommit d24578fe6bc2c585a0b1a5b40b3ca80a719f7ef9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 16 13:36:07 2014 +0400
+
+    Bug fixes
+
+[33mcommit 5bed3fb6cd3366f0d810b8c4532d368671d525b4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 16 02:14:13 2014 +0400
+
+    Try to login in different DC if current is unavailable
+
+[33mcommit feaf6c32d82a438f19b79103e90a2ceb3cab9c69[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jul 16 01:27:28 2014 +0400
+
+    Bug fixes
+
+[33mcommit ff7e6ab3c910cc0c7c6d106557c3912f23d0547d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Jul 15 23:57:09 2014 +0400
+
+    Fixed some bugs, upload locales
+
+[33mcommit a2a1868048817212ed92139bd5baf6c089b7fdb4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Jul 15 01:27:26 2014 +0400
+
+    Bug fixes
+
+[33mcommit 1a9632e042ae46cdc0b3fdcdd64933514a7ca4cb[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 13 14:50:31 2014 +0400
+
+    Fixed Alert EditText background on 2.x
+
+[33mcommit 1122ab85d16211888e90700ad7546e5ed8343cc7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jul 13 03:02:21 2014 +0400
+
+    Bug fixes
+
+[33mcommit f00aef78bdf914b684b48e87ab7e0a5a93b6be51[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 12 19:38:37 2014 +0400
+
+    Finally fix wrong unread count
+
+[33mcommit a0eb876c7bd5ebf4592cbc4f776362c6fa5dd715[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 12 18:50:12 2014 +0400
+
+    Bug fixes
+
+[33mcommit 9667a246b3c2da917a033b565716fabad025c256[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 12 14:23:36 2014 +0400
+
+    Attempt to fix wrong unread count in notification
+
+[33mcommit 780ca63d8d0575917c028d3de2701f84290800d5[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 12 02:14:13 2014 +0400
+
+    Fixed broken photo viewer after main activity destroy
+
+[33mcommit fa1734518d8df5746d4bbbffe87dc9cd8dc40899[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jul 12 01:47:50 2014 +0400
+
+    Bug fixes
+
+[33mcommit adbe66c860a975d7bbe8d813c6ec1bcd3da477ec[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jul 11 17:54:17 2014 +0400
+
+    Restore unread count after app close
+
+[33mcommit f44955380fb7a063a9b327dfa3ca7f2457e87dec[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jul 11 01:15:39 2014 +0400
+
+    Fix some issues
+    
+    https://github.com/DrKLO/Telegram/issues/468
+    https://github.com/DrKLO/Telegram/issues/464
+    https://github.com/DrKLO/Telegram/issues/394
+    https://github.com/DrKLO/Telegram/issues/334
+
+[33mcommit 172ded5ea551325b0761643da2c5155a16379b26[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 10 16:14:36 2014 +0400
+
+    FIxed android 2.x crashes
+
+[33mcommit d9b9a721a6c5620381d87e27f982e146587afeb0[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 10 15:30:55 2014 +0400
+
+    Bug fixes
+
+[33mcommit d3afc8362e85a05a84b73cb048e73efd8208fdea[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 10 04:15:58 2014 +0400
+
+    Notification improvements
+
+[33mcommit c549e8bc57495797f6a55480e5d92ca75359e061[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jul 4 02:41:59 2014 +0400
+
+    Bug fixes
+
+[33mcommit 97ac030a650968b6ef77457add9d9f6528492d59[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 3 18:55:04 2014 +0400
+
+    Added Plural Rules
+
+[33mcommit d29eabd16359a4433c37216ea251a7f8fb3c398a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jul 3 02:39:05 2014 +0400
+
+    Popup notifications (not finished), removed in-app notifications, DB performance optimisations (fixes for Android L), separate app logic from network logic (not finished)
+    
+    Note: don’t upload to any markets, it’s may be unstable
+
+[33mcommit 91f207378075b291c58ec236c2112bb22cad2590[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jun 23 01:15:10 2014 +0400
+
+    Restored wrongly deleted code
+
+[33mcommit 2cb6bb3e62d9cee8350390b939c07f2f196c4ef9[m
+Merge: d1c9175b d728d9c4
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jun 22 13:49:42 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit d728d9c405d28dafa72d9f94f2c89fcb3674e3ef[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jun 22 13:49:25 2014 +0400
+
+    Previous commit fix
+
+[33mcommit 9cbbe999e133645c6edd6ea48c9e544521cc1315[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jun 22 13:36:52 2014 +0400
+
+    Bug fixes
+
+[33mcommit b85b6c1068b45a4306d00e38837982bdc7bf08d7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jun 22 01:46:11 2014 +0400
+
+    Added white color to color picker, decelerating scrolling in photo viewer
+
+[33mcommit 458517e4a4d9d078841e7648dea27d46e4f5d057[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 20 23:34:16 2014 +0400
+
+    Improved files download speed
+
+[33mcommit 70882c5d28b501d6f6cbf6ad0ead14b5105ab788[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 20 04:18:13 2014 +0400
+
+    Avoid sending file twice (photos, documents, videos), move notifications settings from profiles to other view
+
+[33mcommit f6eac5cbceb25ddc7ade8a6fbe58ae39a9e709b8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 18 00:43:57 2014 +0400
+
+    Fixed resuming network when it not need
+
+[33mcommit 99bdc317accdece6e3dd0b909e81ede49853f1e7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Jun 17 19:10:02 2014 +0400
+
+    Disable swipe back in google map view
+
+[33mcommit 0b0d485093dc427a04b8173e6dad6a5f1ac8859a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Jun 17 18:45:21 2014 +0400
+
+    Some new features and bug fixes
+    
+    https://github.com/DrKLO/Telegram/pull/200
+    https://github.com/DrKLO/Telegram/issues/455
+
+[33mcommit 69c3c6066ed85f32a94d1b6d1aa7110995fabdf6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jun 16 18:31:12 2014 +0400
+
+    Partly revert last commit
+
+[33mcommit 358a067accf0732cda8793eb3c62f97e71276df6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Jun 16 16:36:54 2014 +0400
+
+    Avoid uploading same file twice, bug fixes
+
+[33mcommit a87968cefc568d265d29b1b696c2ed351182ecc1[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jun 15 12:03:43 2014 +0400
+
+    Log and send native lib load error with HA crashes, fixed emoji scale with custom font size, removed all lib dependency in native code
+
+[33mcommit 68aeaeefc363998f64c01b786b8ce3ded6acc4e6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Jun 15 03:23:36 2014 +0400
+
+    Removed jnigraphics use from native lib(not found on some devices), bug fixes
+
+[33mcommit 8c9616cb00e879d80fcf7d2b2fbcdf816fdcf597[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jun 14 16:18:58 2014 +0400
+
+    Catch native lib load errors
+
+[33mcommit 02a20acc4c7746f1de3628a74d095c4cf83b63a3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jun 14 12:36:01 2014 +0400
+
+    Possible crash fixes, fixed gif selection from new photo picker, added button to select documents from external apps
+
+[33mcommit 19ba20cdabb314de51b6771a588d7becfa4f5ff4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 13 22:26:05 2014 +0400
+
+    Fixed screen orientation lock on tablets, more bug fixes
+    
+    https://github.com/DrKLO/Telegram/pull/453
+
+[33mcommit fc14e8b4f79407dd134ef79390d6f5e57491e1d8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 13 19:03:06 2014 +0400
+
+    Bug fixes
+
+[33mcommit ad0188baea5d747b946fad4f6dcb3439fb28518e[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 13 14:42:21 2014 +0400
+
+    Update locales, bug fixes
+
+[33mcommit d1c9175b3dcc6f9403896af5705618ea8df2971e[m
+Merge: 419969f7 01e0b7ae
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 13 02:59:59 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 01e0b7ae81e6a0f16306004b751e582e404a12b2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jun 13 02:37:05 2014 +0400
+
+    More bug fixes, new locales
+
+[33mcommit 1cda12c76abed7c7d9c30d74158bcacdf192a4c5[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jun 12 23:55:13 2014 +0400
+
+    Bug fixes
+
+[33mcommit 69f8bb4f4033998da22c855e32ba3c9515775027[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jun 12 19:53:20 2014 +0400
+
+    Bug fixes, locales update
+    
+    https://github.com/DrKLO/Telegram/issues/451
+
+[33mcommit 55ccb7c9e237c7dfb7f75aac4f4563cb5961bc2b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Jun 12 05:13:15 2014 +0400
+
+    New photo picker in chats
+
+[33mcommit db64b2f6981738aa970fd06dd61c5c87df0936eb[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 11 04:22:42 2014 +0400
+
+    Photo viewer bug fixes
+
+[33mcommit 512aeaf2bbeed0ee3ea026d98c32231f0cf1ae22[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 11 03:33:45 2014 +0400
+
+    Fixed image stuck after zoom end between max and min
+
+[33mcommit 0c49c20656fdeca6a98fca1bb1ca2c063701dec6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 11 03:05:54 2014 +0400
+
+    New photo viewer(close by swipe down, not tested on 2.x), optimize emoji load, fixed audio notes and typing in secret chats
+    
+    https://github.com/DrKLO/Telegram/pull/443
+
+[33mcommit 92e1b0503b378251acb3c2a6d76b473e082abafc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Jun 7 03:35:21 2014 +0400
+
+    Improved back swipe, new photo viewer(not finished, disabed) bug fixes
+
+[33mcommit cdb39ac30fe03ea8740573664ba155d27bab7914[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 23:27:43 2014 +0400
+
+    Ask confirmation when starting secret chat and sharing contact info
+    
+    Thanks to https://github.com/DrKLO/Telegram/pull/401
+
+[33mcommit 63ba8a5ac1de99f948b19c5cd756e7643c4a44cd[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 22:57:11 2014 +0400
+
+    Let swipe back from any place
+
+[33mcommit 231999ed1073cd9e53fc4d7b8f6c0d1da0882487[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 20:02:46 2014 +0400
+
+    One more crash fix
+
+[33mcommit 2c61da0001b57fe7a39229021123a1fe82e3e4b4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 20:00:42 2014 +0400
+
+    Fixed app startup on Android 2.x, crash fixes
+
+[33mcommit c1896e97c3c61128665c44cfbd73bc9ed6c9df51[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 04:24:06 2014 +0400
+
+    removed one more ActionBarActivity
+
+[33mcommit e657c4f01066790192a471002466190278bc91f2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 03:57:30 2014 +0400
+
+    Previous commit fixes
+
+[33mcommit 3fecce964594ebc32af5bdd98f170ffceb0df0fa[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Jun 4 03:31:48 2014 +0400
+
+    Implemented own ActionBar and Fragments, swipe back navigation, https://github.com/DrKLO/Telegram/issues/424
+
+[33mcommit 644fc7ccea9deee3686dc9c824893baa4ce4bef6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun May 25 02:47:05 2014 +0400
+
+    Optimized battery consumption, fixed blurry photos on some devices, added option to auto download media only via WiFi, changed way of contacts changes monitoring
+    
+    https://github.com/DrKLO/Telegram/pull/422
+    https://github.com/rubenlagus/Telegram/commit/d96ce3c140bd49c5c8c63cea2b
+    c9afad8a16b8bb
+
+[33mcommit f68ace0fd66d81ad5885139a56cea8e4dac9ee68[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed May 21 00:22:44 2014 +0400
+
+    Start app on system launch, NotificationsService that will keep app running in background, special connection to receive update only about new messages, option to disable NotificationsService
+
+[33mcommit ee38ecec5696d60b0326e778e9772784f03137cd[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon May 19 01:44:30 2014 +0400
+
+    fixed untouchable links
+
+[33mcommit e3594f37d8120c3acb9bfb13c77ddd5377c3e097[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun May 18 15:46:02 2014 +0400
+
+    Added missing emoji
+
+[33mcommit 8a8940871f745278d65bda51b4eb02d043f4d5da[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat May 17 12:51:36 2014 +0400
+
+    Added sdk version check for executeOnExecutor
+
+[33mcommit 0065ca64f5b020ac4644f0a5b3854c5c60ed3ea5[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat May 17 03:32:05 2014 +0400
+
+    Hide emoji popup by pressing text message area, fixed that some links were untouchable
+    
+    https://github.com/DrKLO/Telegram/pull/272
+    https://github.com/DrKLO/Telegram/issues/392
+
+[33mcommit 5ebe60a00de3047d6f745094b06cce67d2d5a127[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat May 17 03:05:49 2014 +0400
+
+    Improved notifications settings, 3x emoji, libjpeg, code refactoring, bug fixes
+    
+    https://github.com/DrKLO/Telegram/pull/418
+
+[33mcommit 4beb03dd560f81bd4ef0642bdab3d9296c796154[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 21:11:44 2014 +0400
+
+    Fixed sharing gif files from picasa and G+ albums
+
+[33mcommit c4e113dc67d5cffb982f3eeb9bc8b7aa5e5271cc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 17:27:42 2014 +0400
+
+    Fixed native library checking, fixed preview sending for gif documents
+
+[33mcommit 2f191225b7cdf2cc9a23a179e91f563314272c02[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 09:55:51 2014 +0400
+
+    Fixed null pointer exceptions
+
+[33mcommit 0aea8f1532f8510c09062e3d841976496764f04f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 04:39:06 2014 +0400
+
+    fixed previous commit
+
+[33mcommit 1321d9d6d659db36880f14532603902ff24a339a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 04:38:10 2014 +0400
+
+    Fixed lock position in secret chat placeholder for long strings
+
+[33mcommit d0a686fccbd0ff8745e454029b87e6e01f7084e8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 04:00:47 2014 +0400
+
+    Added some additional checks
+
+[33mcommit e8b3375df04813eaac6f2bb6e512def163ccba10[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 03:00:38 2014 +0400
+
+    restore login activity even if app was killed
+
+[33mcommit c783e25d6968bc137cdef6ba444846e26b6c2dd4[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Apr 5 00:18:46 2014 +0400
+
+    partly revert last commit, fixed infinite updating
+
+[33mcommit afeb66b18c8df702f97102e83a5e1a09f108577d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Apr 4 23:35:35 2014 +0400
+
+    fixed forwarded messages name position, fixed login activity state restore
+
+[33mcommit 0b01da670a004f6cd26ddbd59165ee66022ed5a1[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Apr 4 21:58:33 2014 +0400
+
+    Attempt to detect screenshots(not perfect now, disabled)
+
+[33mcommit cea585cd39c934bfd4b4f55f882b345b8bd4f525[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Apr 4 03:22:09 2014 +0400
+
+    Fixed files uploading in secret chats, allow move application to sd card(not tested)
+
+[33mcommit 05471c43951383964dae87f07546dbd656c69819[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Apr 4 01:56:42 2014 +0400
+
+    Fixed sharing gif files from gallery
+
+[33mcommit ec533c5fff68ed8649c7f02cfbbd05c50f62c14b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Apr 4 01:18:54 2014 +0400
+
+    Optimize files upload, gif auto play after download, crash and bug fixes
+
+[33mcommit 419969f721b44ce16e2e28b26e5ea03eaa166c54[m
+Merge: 1eeb12f6 51aa4141
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Apr 3 15:04:00 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 51aa4141a41a811e87b829f587753f0b20158a9b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Apr 3 14:23:39 2014 +0400
+
+    Bug fixes
+
+[33mcommit ebedf3c367639d43e6d1c63e2529d4d47ff59468[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Apr 2 21:36:57 2014 +0400
+
+    Save localization files applyed from document, fixed forwarded name position in group chats, added links to telegram FAQ and support alert message, move all menus creation to code for localization purposes
+
+[33mcommit bd4152dc814925e0c82d11d6ac577c83156a1857[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Apr 1 05:00:35 2014 +0400
+
+    restore photo attach long press, bug fixes
+
+[33mcommit ebe7ab78a3cbd8e12461914a6313241308157670[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Mar 31 18:14:49 2014 +0400
+
+    Gif support, applying localization files from document messages
+
+[33mcommit 5323e87ba379d25ee4c232f1e0011eb5d03adbaa[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 27 18:25:53 2014 +0400
+
+    Add giflib and GifDrawable
+
+[33mcommit 22918f143a5d54cc56282575246e686d3baac3db[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 27 00:16:28 2014 +0400
+
+    Fixed photo sharing on devices with low memory
+
+[33mcommit 0e9d92e8f9bb227e2cad8d01c64d06255de936fe[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Mar 26 16:24:54 2014 +0400
+
+    Fixed possible crashes
+
+[33mcommit fc8f91a3b7ef1bc44a258995a1ff16e6dff66f54[m
+Merge: 8351b066 1eeb12f6
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Mar 26 03:39:51 2014 +0400
+
+    Merge branch 'master' into dev
+
+[33mcommit 1eeb12f666c2bd88755023b59c1925879e1b903d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Mar 26 03:38:23 2014 +0400
+
+    Icon for group chats in messages list
+    
+    (DEBUG) Option in settings to switch to test datacenters
+    Update some images
+
+[33mcommit d4854101923a68d0f25d875adc8f9490dde42389[m
+Merge: d4703e32 8351b066
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Mar 25 14:59:40 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 8351b066ac66ff1a0f30c5884e3374e05cfe3b13[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Mar 25 14:58:47 2014 +0400
+
+    Addition to previous commit
+
+[33mcommit 0f53d75a807ea3cbc466ddd9083ceb9ed50ad1a6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Mar 25 04:25:32 2014 +0400
+
+    Ability to set language in settings
+
+[33mcommit 9523311674d919efbaab278f2b2670e7bda15fb8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Mar 25 01:10:35 2014 +0400
+
+    Update group chat creation interface
+
+[33mcommit 585ba77ea7a6534dbb01333483dc0e9c45b03675[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Mar 24 00:03:38 2014 +0400
+
+    Check if native lib loaded before opening db
+
+[33mcommit d8c2966efc20483786124256c0decfe2682c26d2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Mar 24 00:01:07 2014 +0400
+
+    Revert italian localization to previous release, add some new strings
+
+[33mcommit d4703e32b0278903b8317a902fc126eff06ab911[m
+Merge: e7e0e67d c125097b
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 16:24:04 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit c125097b9ce42e23816efbe51963366ec253b157[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 16:22:04 2014 +0400
+
+    Fixed previous commit
+
+[33mcommit e7e0e67d51de76472a4100f293ec2b0d8bc83ed4[m
+Merge: 433f59c5 4b6fb69f
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 16:12:45 2014 +0400
+
+    Merge branch 'dev'
+
+[33mcommit 4b6fb69f309dc24714d0b0d025c047c5d6e4e2cf[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 16:12:13 2014 +0400
+
+    update to 1.4.7
+    
+    Pebble notifications (thanks to
+    https://github.com/DrKLO/Telegram/pull/318)
+    Fixed native lib load on android 4.0
+
+[33mcommit 6be743c9c29402fc1438bac6a587fe021b9bfe8a[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 04:24:19 2014 +0400
+
+    fixed previous commit
+
+[33mcommit e53824306292f69f2fc354faa92a6d02c78868fa[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 04:09:24 2014 +0400
+
+    remove main thread block before recording audio
+
+[33mcommit 433f59c5b9ed17543d8e206c83f0bc7c7edb43a6[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 03:29:02 2014 +0400
+
+    one more gitignore
+
+[33mcommit 5141fc1cb2bc16ef81cc80414efe0687c6568538[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 03:20:13 2014 +0400
+
+    Preparation to move dev branch to github
+    
+    yep, it's finally here
+
+[33mcommit 4ede31105599d0af566f4143c85b35767f98b59f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 23 02:31:55 2014 +0400
+
+    Update to 1.4.6
+    
+    Audio notes (opus codec)
+    A lot of different improvements and bug fixes
+    
+    Thanks to:
+    https://github.com/DrKLO/Telegram/issues/293
+    https://github.com/DrKLO/Telegram/issues/256
+    
+    FOSS configuration not ready yet
+    
+    I will move main dev branch to github in next couple commits
+
+[33mcommit d3e2ae18e8a2532ecba84ddd58ea998b67d023f2[m
+Merge: dc00cb3c 110dc6fe
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Mar 14 12:57:27 2014 +0300
+
+    Merge pull request #308 from ruival/patch-1
+    
+    Update README.md refering transifex localization platform
+
+[33mcommit 110dc6fe5de098a52edc31284db82b73bb054002[m
+Author: ruival <brunoruival@gmail.com>
+Date:   Thu Mar 13 18:21:38 2014 +0000
+
+    Update README.md
+
+[33mcommit dc00cb3c212209b430856a7b7f2469ddda50ed48[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Mar 10 22:04:48 2014 +0400
+
+    Fixed 1.3.30 compilation
+
+[33mcommit 01103c6e94a827f1aca4050581f84051b054f7bc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Mar 10 13:27:49 2014 +0400
+
+    Update to 1.3.30
+
+[33mcommit 8ecb9e97c92d607af78850cd2d9685ab24b38100[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Thu Mar 6 00:18:25 2014 +0400
+
+    Fixed blurry images in secret chats on some devices
+
+[33mcommit ddd022ef6f6db0c02923b9efef38ab68b5e643bc[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Mar 5 20:42:10 2014 +0400
+
+    Update to 1.3.26 (184)
+    
+    https://github.com/DrKLO/Telegram/pull/216
+    Bug fixes
+
+[33mcommit 2518d0e91f65e8e442575787c1cc6ad54288f290[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Mar 5 00:04:57 2014 +0400
+
+    Rename ApplicationActivity -> LaunchActivity
+    
+    Don’t want to lose app shortcut (who knew about it)
+
+[33mcommit ba726700a1f888e24f0efd610e44db86b21281e2[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Mar 4 23:29:32 2014 +0400
+
+    Update to 1.3.26 (181)
+    
+    Thanks to:
+    https://github.com/DrKLO/Telegram/pull/218
+    https://github.com/DrKLO/Telegram/pull/267
+
+[33mcommit 6e63dee546704a721f3ee106b53c25b48709a9e3[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Mar 4 10:23:08 2014 +0400
+
+    Fixed incorrect messages drawing
+
+[33mcommit 3316f25e35a288a927c116b7e0f94d4cc1a076d5[m
+Merge: ea8f9244 9f63be65
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Mar 3 23:07:51 2014 +0300
+
+    Merge pull request #247 from slp/sql-secure_delete
+    
+    Enable SQLite secure_delete pragma.
+
+[33mcommit 9f63be65bc28234950ccd7615bf16e00a860b0e6[m
+Author: Sergio Lopez <slp@sinrega.org>
+Date:   Sun Mar 2 12:42:50 2014 +0100
+
+    Enable SQLite secure_delete pragma.
+
+[33mcommit ea8f92441c58ed6b3deaa9ef1b9a2500543b1ef8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Mar 2 13:23:06 2014 +0400
+
+    Fixed RTL name position in messages
+
+[33mcommit aa5ff577c48668c5ada2d5dbd778feeb875bf8e9[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Mar 1 15:01:48 2014 +0400
+
+    Fixed wrong German localization file
+
+[33mcommit a21494ade639e2e270b448ec6c5325b4be0ec7c5[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sat Mar 1 02:28:25 2014 +0400
+
+    Update to 1.3.26
+    
+    Applied patch from https://github.com/DrKLO/Telegram/pull/99 . Thanks.
+    Added German localization. Thanks to all from
+    https://github.com/DrKLO/Telegram/pull/129
+    Experimental audio (will not go to market yet, we will switch to opus
+    codec)
+    Improved text drawing perfomance (now Telegram can draw even «War and
+    Peace» in one message)
+    Ability to send multiple photos and documents from external apps
+    Contacts fixes
+    Memory usage optimizations in network code (receiving data)
+    Partly switched to native ByteBuffers (decoding received data)
+    Added support of Telegram API Layer 12
+    Bug fixes
+
+[33mcommit 9aeb8be8938e6083376142a782166a15edf46743[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Feb 24 13:36:05 2014 +0300
+
+    Delete ConnectionsManager2.java
+    
+    Sorry, it shouldn't be there.
+
+[33mcommit ff85d74b85bf33aa661e34b6a9e2bf037924fe0f[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Feb 11 18:44:02 2014 +0400
+
+    Fixed datacenter port switch condition
+
+[33mcommit 507d05aaf1855320bc09863264f457756593d476[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Feb 11 18:32:09 2014 +0400
+
+    update to 1.3.21
+    
+    Ability to delete add rename contacts, proper handling of new contacts
+    in phone book
+    New photo crop
+    Ability to disable automatic photo download
+    Ability to disable notifications about new registered contacts
+    Updated Spanish localization
+    Bug fixes
+
+[33mcommit 9814a6e927fa087794ec8b6776ea63e3877772c7[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Tue Feb 4 22:36:55 2014 +0400
+
+    update to 1.3.19
+    
+    Spanish localization by Borja Campina
+    Applied pull request by Yuri Orlov
+    (https://github.com/DrKLO/Telegram/pull/27)
+
+[33mcommit 1a4d0786ec1e28507e35c544094a7c463ec7ef09[m
+Merge: 404b2c1a 48957212
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Jan 24 08:58:14 2014 -0800
+
+    Merge pull request #14 from yorlov/ignore
+    
+    add and config .gitignore
+
+[33mcommit 48957212c21536d50844209ba9da412cadff6e6a[m
+Author: Yuri Orlov <yuri.n.orlov@gmail.com>
+Date:   Sat Jan 4 03:45:33 2014 +0300
+
+    add and config .gitignore
+
+[33mcommit 404b2c1a40cc3f335d8554d80b224908a7ecd640[m
+Merge: 9d2dfd33 38d3b367
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Dec 27 03:33:37 2013 -0800
+
+    Merge pull request #11 from Dacainiao/master
+    
+    remove unused code
+
+[33mcommit 38d3b3671ccb026714b98ac10a67af3905f1a029[m
+Author: Dacainiao <chijiabao@gmail.com>
+Date:   Fri Dec 27 15:35:25 2013 +0800
+
+    remove unused code
+
+[33mcommit 6a37e3b109d85f4323406e02e9a65a8491d3bc28[m
+Author: Dacainiao <chijiabao@gmail.com>
+Date:   Fri Dec 27 12:30:04 2013 +0800
+
+    delete unused code
+
+[33mcommit 9d2dfd33eed31446632eac95119290e9c2d79d06[m
+Author: DrKLO <DrKLO@iMac-Nikolay.local>
+Date:   Thu Dec 26 20:46:13 2013 +0400
+
+    update to 1.3.7
+
+[33mcommit 51add404effb8952ae285fe1cdb19faef6dc8c16[m
+Author: DrKLO <DrKLO@iMac-Nikolay.local>
+Date:   Thu Dec 26 15:43:37 2013 +0400
+
+    update to 1.3.6
+
+[33mcommit a65f5f9feefae2d9a2907243c9f9c6f36351a17d[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Dec 25 02:25:13 2013 +0400
+
+    more security checks
+
+[33mcommit 4f9384afee0cf8e3e6c981f3242534f8d3e932e8[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Wed Dec 25 00:38:40 2013 +0400
+
+    download map preview via https
+
+[33mcommit d2a6fa4d6d02cc1acff27d3284845bf8a18b72dd[m
+Author: DrKLO <DrKLO@iMac-Nikolay.local>
+Date:   Mon Dec 23 15:54:31 2013 +0400
+
+    fixed last commit
+
+[33mcommit 50a92dc44a7e6f85d55bccede4607394ccd5b378[m
+Author: DrKLO <DrKLO@iMac-Nikolay.local>
+Date:   Mon Dec 23 15:05:57 2013 +0400
+
+    update to 1.3.5
+
+[33mcommit 02c8efb0df36a50185a36a03c1af862a9f130392[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Dec 23 03:47:35 2013 +0400
+
+    update to 1.3.4
+
+[33mcommit 5aee72ee33fd960df9173ab17942dd1a2ce912b5[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Dec 22 16:12:41 2013 +0400
+
+    Fixed issue with secret chats
+
+[33mcommit d52ade4855d3e939daa815c766bab427a22ada61[m
+Author: DrKLO <DrKLO@iMac-Nikolay.local>
+Date:   Fri Dec 20 23:25:49 2013 +0400
+
+    update to 1.3.2
+
+[33mcommit 90d8e8a370fba504eadf40f410781c6f4085967b[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Mon Nov 4 16:31:01 2013 +0400
+
+    update to 1.2.7
+
+[33mcommit 27b74b537eb74ecbe02c068a6e03940b2fa87334[m
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Sun Oct 27 02:34:39 2013 +0400
+
+    update to 2.3.6
+
+[33mcommit c824df619a0367105ca485dc8828f2a498e2d667[m
+Merge: 4622ba91 bd54deea
+Author: DrKLO <drklo.2kb@gmail.com>
+Date:   Fri Oct 25 08:55:57 2013 -0700
+
+    Merge pull request #1 from zhukov/patch-1
+    
+    Added readme
+
+[33mcommit bd54deea1fa3f32c29e2825065d560e6ac80313c[m
+Author: Igor Zhukov <Igor.beatle@gmail.com>
+Date:   Fri Oct 25 19:55:11 2013 +0400
+
+    Added readme
+
+[33mcommit 4622ba9186020d01bfc20c6636f863c9e856f5ca[m
+Author: DrKLO <DrKLO@iMac-Nikolay.local>
+Date:   Fri Oct 25 19:19:00 2013 +0400
+
+    first commit

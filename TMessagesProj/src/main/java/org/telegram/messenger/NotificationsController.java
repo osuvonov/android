@@ -65,7 +65,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
  import org.rooms.messenger.R;
 import org.telegram.irooms.database.Task;
-import org.telegram.irooms.task.TaskRepository;
+import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -3671,7 +3671,7 @@ public class NotificationsController extends BaseController {
         Task task = null;
         try {
 
-            TaskRepository repository = TaskRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext());
+            RoomsRepository repository = RoomsRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext());
             task = repository.getTask(taskId);
         } catch (Exception x) {
         }

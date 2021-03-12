@@ -21,7 +21,7 @@ import java.util.List;
  * Abstracted Repository as promoted by the Architecture Guide.
  * https://developer.android.com/topic/libraries/architecture/guide.html
  */
-public class TaskRepository {
+public class RoomsRepository {
 
     private final RequestHistoryDao requestHistoryDao;
 
@@ -90,20 +90,20 @@ public class TaskRepository {
 
     private CompanyDao companyDao;
 
-    private static TaskRepository instance;
+    private static RoomsRepository instance;
 
-    public static TaskRepository getInstance(Application application) {
+    public static RoomsRepository getInstance(Application application) {
         if (instance == null) {
-            synchronized (TaskRepository.class) {
+            synchronized (RoomsRepository.class) {
                 if (instance == null) {
-                    instance = new TaskRepository(application);
+                    instance = new RoomsRepository(application);
                 }
             }
         }
         return instance;
     }
 
-    private TaskRepository(Application application) {
+    private RoomsRepository(Application application) {
         TaskDatabase db = TaskDatabase.getDatabase(application);
         taskDao = db.taskDao();
         companyDao = db.companyDao();

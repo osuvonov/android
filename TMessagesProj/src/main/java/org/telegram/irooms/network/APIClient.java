@@ -159,6 +159,9 @@ public class APIClient {
 
     private void makeSocketEmit(Socket socket, String eventName, JSONObject postData, final VolleyCallback callback) {
         if (postData != null) {
+            if (!socket.connected()){
+                return;
+            }
              socket.emit(eventName, postData, (Ack) response -> {
                 JSONObject jsonObject = null;
                 try {

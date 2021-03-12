@@ -2081,7 +2081,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     if (getParentActivity() == null) {
                         return;
                     }
-                    final boolean isChat = (int) dialog_id < 0 && (int) (dialog_id >> 32) != 1;
 
                     AlertsCreator.createClearOrDeleteDialogAlert(ChatActivity.this, id == clear_history, currentChat, currentUser, currentEncryptedChat != null, (param) -> {
                         if (id == clear_history && ChatObject.isChannel(currentChat) && (!currentChat.megagroup || !TextUtils.isEmpty(currentChat.username))) {
@@ -7360,7 +7359,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         if (realChatId != 0) {
             chatType = "group";
         }
-
         final BottomSheet bottomSheet = AlertsCreator.createTaskEditorDialogBySocket(socket, getParentActivity(), selectedUser,
                 text, getTaskMemberList(), chatId, chatType, new TaskManagerListener() {
                     @Override
@@ -19780,7 +19778,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                             final int messageId = selectedObject.getId();
                             final int senderId = selectedObject.getSenderId();
-                            createTask(getSelectedUser(), selectedObject.messageText.toString(), selectedObject.getChatId() == 0 ? (int) dialog_id : selectedObject.getChatId(), messageId, senderId);
+                            createTask(getSelectedUser(), selectedObject.messageText.toString(), selectedObject.getChatId() == 0 ? dialog_id : selectedObject.getChatId(), messageId, senderId);
                         }
 
                         @Override
@@ -21886,8 +21884,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                                     if (localTaskId.length() >= 19) {
                                         if (message.getId() > 0 && taskItem.getId() > 1) {
-                                            messageIds.add(message.getId());
-                                            MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, 0, true, false);
+                                            messageIds.add((int)message.getId());
+                                            MessagesController.getInstance(currentAccount).deleteMessages(messageIds, null, null, dialog_id, message.messageOwner.peer_id.channel_id, true, false);
+
                                             notifyDataSetChanged();
                                             return;
                                         }
@@ -21923,7 +21922,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlTaskedit.setOnClickListener(view -> {
 
                                         final BottomSheet bottomSheet = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                                finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? (int) dialog_id : (int) finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                                finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? dialog_id : finalTaskItem1.getChatId(), new TaskManagerListener() {
                                                     @Override
                                                     public void onCreate(Task task) {
                                                     }
@@ -22021,7 +22020,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 layout.tlTaskedit.setOnClickListener(view -> {
 
                                     final BottomSheet bottomSheet = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                            finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? (int) dialog_id : (int) finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                            finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? dialog_id :  finalTaskItem1.getChatId(), new TaskManagerListener() {
                                                 @Override
                                                 public void onCreate(Task task) {
 
@@ -22107,7 +22106,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlTaskedit.setOnClickListener(view -> {
 
                                         final BottomSheet bottomSheet = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                                finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? (int) dialog_id : (int) finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                                finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? dialog_id : finalTaskItem1.getChatId(), new TaskManagerListener() {
                                                     @Override
                                                     public void onCreate(Task task) {
 
@@ -22845,7 +22844,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
 
                     final BottomSheet bottomSheet = AlertsCreator.editTaskDialogBySocket(getParentActivity(), taskItem,
-                            taskItem.getDescription(), getTaskMemberList(), taskItem.getChatId() == 0 ? (int) dialog_id : (int) taskItem.getChatId(), new TaskManagerListener() {
+                            taskItem.getDescription(), getTaskMemberList(), taskItem.getChatId() == 0 ? dialog_id : taskItem.getChatId(), new TaskManagerListener() {
                                 @Override
                                 public void onCreate(Task task) {
 

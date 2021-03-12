@@ -3,32 +3,23 @@ package org.telegram.irooms.company;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
-import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.telegram.irooms.database.Company;
-import org.telegram.irooms.task.TaskRepository;
+import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.messenger.AndroidUtilities;
-import org.telegram.messenger.LocaleController;
-import org.telegram.messenger.MessagesController;
 import org.rooms.messenger.R;
-import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
-import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
 import org.telegram.ui.Cells.LoadingCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
-import org.telegram.ui.Components.EditTextBoldCursor;
-import org.telegram.ui.Components.EmptyTextProgressView;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.voip.VoIPHelper;
@@ -38,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class CompanyFragment extends BaseFragment {
@@ -132,7 +122,7 @@ public class CompanyFragment extends BaseFragment {
 
         runner.executeAsync((Callable<List<Company>>) () -> {
 
-            TaskRepository repository = TaskRepository.getInstance(getParentActivity().getApplication());
+            RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
             return repository.getCompanyList();
 
         }, result -> {

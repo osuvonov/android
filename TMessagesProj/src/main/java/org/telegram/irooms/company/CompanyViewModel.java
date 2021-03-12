@@ -3,25 +3,22 @@ package org.telegram.irooms.company;
 import android.app.Application;
 
 import org.telegram.irooms.database.Company;
-import org.telegram.irooms.task.TaskRepository;
-
-import java.util.List;
+import org.telegram.irooms.task.RoomsRepository;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 
 public class CompanyViewModel extends AndroidViewModel {
 
-    private TaskRepository taskRepository;
+    private RoomsRepository roomsRepository;
 
 
     public CompanyViewModel(@NonNull Application application) {
         super(application);
-        taskRepository = TaskRepository.getInstance(application);
+        roomsRepository = RoomsRepository.getInstance(application);
      }
     public void insert(Company task) {
-        taskRepository.insert(task);
+        roomsRepository.insert(task);
     }
 
 }
