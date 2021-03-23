@@ -37,7 +37,7 @@ public class RoomsRepository {
 
     public String getLastRequestDateForChat(long chat_id) {
         RequestHistory requestHistory = requestHistoryDao.getLastRequestDateForChat(chat_id);
-        if (requestHistory==null){
+        if (requestHistory == null) {
             return "";
         }
         String lastRequest = requestHistory.getLastRequest();
@@ -49,7 +49,7 @@ public class RoomsRepository {
         requestHistoryDao.insertRequestHistory(requestHistory);
     }
 
-    public void getChatRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getChatRelatedTasks(long[] chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatId(chatID);
 
         arrayListIRoomCallback.onSuccess(list);
@@ -61,9 +61,9 @@ public class RoomsRepository {
         arrayListIRoomCallback.onSuccess(list);
     }
 
-    public void getPrivateChatTasks(int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getPrivateChatTasks(int companyID, int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         if (getCompanyList().size() > 0) {
-            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksTeam(selectedAccountUserId, ownerId));
+            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksTeam(companyID, selectedAccountUserId, ownerId));
         } else {
             arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId));
         }
@@ -148,27 +148,23 @@ public class RoomsRepository {
     }
 
     public void updateLocalTask(Task task) {
-
-        if (localTaskChangeListener != null && task.getLocalStatus() != 1) {
-            localTaskChangeListener.onLocalTaskUpdated(task);
-        }
         TaskDatabase.databaseWriteExecutor.execute(() -> {
             if (task.getLocalStatus() == 1) {
                 Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
                 if (task1 != null)
                     task.setpId(task1.getpId());
-                taskDao.updateTask(task);
-                return;
-            }
-
-            Task task1 = taskDao.getTask(task.getId());
-            if (task1 != null) {
-                task.setLocalStatus(2);
-                task.setpId(task1.getpId());
+            } else {
+                Task task1 = taskDao.getTask(task.getId());
+                if (task1 != null) {
+                    task.setLocalStatus(2);
+                    task.setpId(task1.getpId());
+                }
             }
             taskDao.updateTask(task);
+            if (localTaskChangeListener != null && task.getLocalStatus() != 1) {
+                localTaskChangeListener.onLocalTaskUpdated(task);
+            }
         });
-
     }
 
     public void updateOnlineTask(Task task) {
@@ -211,7 +207,9 @@ public class RoomsRepository {
     public void updateCompanyMembers(int companyId, String members, boolean addMembers) {
         TaskDatabase.databaseWriteExecutor.execute(() -> {
             Company company = companyDao.getCompany(companyId);
-
+            if (company==null){
+                return;
+            }
             if (!addMembers) {
                 ArrayList<Long> membersToBeDeleted = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
                 }.getType());
@@ -225,7 +223,7 @@ public class RoomsRepository {
                 }
                 companyDao.updateCompany(company);
             } else {
-                ArrayList<Integer> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
+                ArrayList<Integer> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Integer>>() {
                 }.getType());
                 if (company.getMembers() == null || company.getMembers().size() == 0) {
                     company.setMembers(membersToBeAdded);

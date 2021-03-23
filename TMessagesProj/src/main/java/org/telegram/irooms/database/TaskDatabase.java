@@ -13,7 +13,7 @@ import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @TypeConverters(Converters.class)
-@Database(entities = {Task.class, Company.class, RequestHistory.class}, version = 19, exportSchema = false)
+@Database(entities = {Task.class, Company.class, RequestHistory.class}, version = 21, exportSchema = false)
 public abstract class TaskDatabase extends RoomDatabase {
 
     public abstract TaskDao taskDao();
@@ -60,6 +60,8 @@ public abstract class TaskDatabase extends RoomDatabase {
                 dao.deleteAll();
                 CompanyDao companyDao = INSTANCE.companyDao();
                 companyDao.deleteAll();
+                RequestHistoryDao requestHistory=INSTANCE.requestHistoryDao();
+                requestHistory.deleteAll();
             });
         }
 

@@ -340,7 +340,7 @@ public class APIClient {
         company.company_id = companyId;
         company.members = members_;
 
-        JSONObject postData = null;
+        JSONObject postData ;
         try {
             postData = new JSONObject(new Gson().toJson(company));
             makeSocketEmit(socket, "deleteCompanyMembers", postData, callback);

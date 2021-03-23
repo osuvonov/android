@@ -46,8 +46,8 @@ public abstract class TaskDao {
     @Query("select * from tbl_tasks where company_id=:company_id and chat_id=:chatId")
     public abstract List<Task> getTasksByChatIdAndCompanyId(int company_id, long chatId);
 
-    @Query("select * from tbl_tasks where (chat_id in (:chatId)) ")
-    public abstract List<Task> getTasksByChatId(long chatId);
+    @Query("select * from tbl_tasks where chat_id in (:chatId) ")
+    public abstract List<Task> getTasksByChatId(long [] chatId);
 
     @Query("select * from tbl_tasks where (chat_id in (:chatId)) and (company_id in (:companyId)) ")
     public abstract List<Task> getTasksByChatAndCompanyId(long chatId, int companyId);
@@ -70,8 +70,11 @@ public abstract class TaskDao {
     @Query("Select * from tbl_tasks where (members like '%' || :chatId  || '%' and company_id=:companyId) or (members like '%' || :accountId  ||  '%' and creator_id=:chatId and company_id=:companyId) or(chat_id =:accountId and creator_id=:chatId and company_id=:companyId) or(chat_id=:chatId and creator_id=:accountId and company_id=:companyId)")
     public abstract List<Task> getPrivateChatTasksByCompany(int accountId, int chatId, int companyId);
 
-    @Query("Select * from tbl_tasks where (members like '%' || :chatId  || '%') or (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or(chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and creator_id=:accountId)")
-    public abstract List<Task> getPrivateChatTasksTeam(int accountId, int chatId);
+    @Query("Select * from tbl_tasks where ((members like '%' || :chatId  || '%') or" +
+            " (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or" +
+            "(chat_id =:accountId and creator_id=:chatId) or" +
+            "(chat_id=:chatId and creator_id=:accountId) and company_id in (:companyId,0))")
+    public abstract List<Task> getPrivateChatTasksTeam(int companyId, int accountId, int chatId);
 
     @Query("Select * from tbl_tasks where (chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and creator_id=:accountId)")
     public abstract List<Task> getPrivateChatTasksNoTeam(int accountId, int chatId);

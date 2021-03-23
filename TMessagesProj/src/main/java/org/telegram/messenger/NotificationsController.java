@@ -3501,7 +3501,7 @@ public class NotificationsController extends BaseController {
             PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
             mBuilder.setContentTitle(name)
-                    .setSmallIcon(R.drawable.notification)
+                    .setSmallIcon(R.drawable.ic_notification_rooms)
                     .setAutoCancel(true)
                     .setNumber(total_unread_count)
                     .setContentIntent(contentIntent)
@@ -3730,7 +3730,7 @@ public class NotificationsController extends BaseController {
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ApplicationLoader.applicationContext, channel)
                 .setContentTitle(builder)
-                .setSmallIcon(R.drawable.notification)
+                .setSmallIcon(R.drawable.ic_notification_rooms)
                 .setAutoCancel(true)
                 .setContentText(body)
                 .setNumber(total_unread_count)
@@ -4301,7 +4301,7 @@ public class NotificationsController extends BaseController {
 
             NotificationCompat.Builder builder = new NotificationCompat.Builder(ApplicationLoader.applicationContext)
                     .setContentTitle(name)
-                    .setSmallIcon(R.drawable.notification)
+                    .setSmallIcon(R.drawable.ic_notification_rooms)
                     .setContentText(text.toString())
                     .setAutoCancel(true)
                     .setNumber(messageObjects.size())

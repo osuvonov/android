@@ -1,6 +1,7 @@
 package org.telegram.irooms.company;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -8,13 +9,19 @@ import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.json.JSONObject;
+import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
+import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.messenger.AndroidUtilities;
 import org.rooms.messenger.R;
+import org.telegram.messenger.UserConfig;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.ActionBar.ThemeDescription;
@@ -30,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
+import io.socket.client.Socket;
 
 public class CompanyFragment extends BaseFragment {
 
@@ -41,13 +49,6 @@ public class CompanyFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         initCompaniesInfo();
-    }
-
-    @Override
-    public boolean onFragmentCreate() {
-        super.onFragmentCreate();
-
-        return true;
     }
 
     @Override
@@ -127,6 +128,39 @@ public class CompanyFragment extends BaseFragment {
 
         }, result -> {
             companyViewAdapter.submitList(result);
+            if (((LaunchActivity) getParentActivity()).getmSocket().connected()) {
+                fillCompanyList(((LaunchActivity) getParentActivity()).getmSocket());
+            }
+        });
+    }
+
+    public void fillCompanyList(Socket socket) {
+        IRoomsManager.getInstance().getMyCompanies(getParentActivity(), socket, new IRoomsManager.IRoomsCallback() {
+            @Override
+            public void onSuccess(String success) {
+                try {
+                    TaskRunner runner = new TaskRunner();
+                    runner.executeAsync((Callable<List<Company>>) () -> {
+
+                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+                        return repository.getCompanyList();
+
+                    }, result -> {
+                        try {
+                            companyViewAdapter.submitList(result);
+                            ((LaunchActivity) getParentActivity()).companyList.clear();
+                            ((LaunchActivity) getParentActivity()).companyList.addAll(result);
+                        } catch (Exception x) {
+                        }
+                    });
+                } catch (Exception x) {
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -165,16 +199,6 @@ public class CompanyFragment extends BaseFragment {
     public ArrayList<ThemeDescription> getThemeDescriptions() {
         ArrayList<ThemeDescription> themeDescriptions = new ArrayList<>();
 
-        ThemeDescription.ThemeDescriptionDelegate cellDelegate = () -> {
-            if (listView != null) {
-                int count = listView.getChildCount();
-                for (int a = 0; a < count; a++) {
-                    View child = listView.getChildAt(a);
-
-                }
-            }
-        };
-
 
         themeDescriptions.add(new ThemeDescription(btnCreateCompany, ThemeDescription.FLAG_TEXTCOLOR, null, null, null, null, Theme.key_featuredStickers_buttonText));
         themeDescriptions.add(new ThemeDescription(btnCreateCompany, ThemeDescription.FLAG_USEBACKGROUNDDRAWABLE | ThemeDescription.FLAG_DRAWABLESELECTEDSTATE, null, null, null, null, Theme.key_featuredStickers_addButtonPressed));
@@ -195,13 +219,6 @@ public class CompanyFragment extends BaseFragment {
 
         themeDescriptions.add(new ThemeDescription(listView, ThemeDescription.FLAG_BACKGROUNDFILTER, new Class[]{TextInfoPrivacyCell.class}, null, null, null, Theme.key_windowBackgroundGrayShadow));
         themeDescriptions.add(new ThemeDescription(listView, 0, new Class[]{TextInfoPrivacyCell.class}, new String[]{"textView"}, null, null, null, Theme.key_windowBackgroundWhiteGrayText4));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundRed));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundOrange));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundViolet));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundGreen));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundCyan));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundBlue));
-        themeDescriptions.add(new ThemeDescription(null, 0, null, null, null, cellDelegate, Theme.key_avatar_backgroundPink));
 
         return themeDescriptions;
     }

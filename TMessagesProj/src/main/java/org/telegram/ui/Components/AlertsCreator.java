@@ -55,6 +55,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -274,6 +275,15 @@ public class AlertsCreator {
             String userName = ((selectedUser.first_name == null ? "" : selectedUser.first_name) + " " + (selectedUser.last_name == null ? "" : selectedUser.last_name));
             bottomSheet.tvSelectMembers.setText(userName);
         }
+
+        String[] list = {"No team","Some team"};
+
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_spinner_item,list);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        bottomSheet.teamSpinner.setAdapter(spinnerAdapter);
+
         bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
             boolean tomorrowSelected = selectedDeadLineView[0] == 2;
             if (tomorrowSelected) {
@@ -329,7 +339,7 @@ public class AlertsCreator {
             task.setLocal_id(Utils.generateLocalId());
             task.setLocalStatus(1);
 
-            ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
+            List<Integer> receiverIds =  userList.stream().map(user -> user.id).collect(Collectors.toList());
             task.setReceivers(receiverIds);
             task.setChat_type(chatType);
 
@@ -444,7 +454,7 @@ public class AlertsCreator {
             AlertDialog dialog = builder1.create();
             dialog.show();
         });
-        bottomSheet.etTaskStatus.setText(task.getStatus());
+        bottomSheet.etTaskStatus.setText(Utils.getStatuses()[task.getStatus_code()]);
         selectedState[0] = task.getStatus_code();
 
         CharSequence[] memberList = new CharSequence[userList.size()];

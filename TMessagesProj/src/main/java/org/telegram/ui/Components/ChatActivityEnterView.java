@@ -2083,7 +2083,7 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
             //-------7
             addTaskButton = new ImageView(context);
             addTaskButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
-            addTaskButton.setImageResource(R.drawable.ic_plus_1);
+            addTaskButton.setImageResource(R.drawable.ic_plus_2);
             addTaskButton.setScaleType(ImageView.ScaleType.CENTER);
             if (Build.VERSION.SDK_INT >= 21) {
                 addTaskButton.setBackgroundDrawable(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector)));

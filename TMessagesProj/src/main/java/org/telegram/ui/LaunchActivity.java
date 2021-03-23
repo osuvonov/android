@@ -75,7 +75,9 @@ import com.google.android.gms.common.api.Status;
 import com.google.firebase.appindexing.Action;
 import com.google.firebase.appindexing.FirebaseUserActions;
 import com.google.firebase.appindexing.builders.AssistActionBuilder;
+import com.google.gson.Gson;
 
+import org.checkerframework.checker.signedness.qual.Constant;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.PhoneFormat.PhoneFormat;
@@ -85,6 +87,7 @@ import org.telegram.irooms.company.AddMembersToCompanyActivity;
 import org.telegram.irooms.company.CompanyFragment;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
+import org.telegram.irooms.models.SocketAuthObject;
 import org.telegram.irooms.network.APIClient;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.network.SocketSSL;
@@ -162,6 +165,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import io.socket.client.IO;
 
@@ -335,115 +339,86 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     private void initCompanies(String json) {
-        String name = IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this);
+        TaskRunner runner = new TaskRunner();
+        runner.executeAsync(() -> {
+            String name = IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this);
 
-        try {
+            try {
 
-            ArrayList<Company> companies = IRoomJsonParser.getCompaniesFromSocketAuth(json);
+                ArrayList<Company> companies = IRoomJsonParser.getCompaniesFromSocketAuth(json);
 
-//            if (companies.size() == 0) {
-//                try {
-//                    IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, new Company(), false);
-//                    PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).edit().putBoolean(Constants.HAS_COMPANY, false).commit();
-//                    if (!IRoomsManager.getInstance().isCompanyCreateRequestBeen(LaunchActivity.this)) {
-//
-//                        runOnUiThread(() -> {
-//
-//                            IRoomsManager.getInstance().setCompanyRequestAsked(LaunchActivity.this, true);
-//                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    switch (which) {
-//                                        case DialogInterface.BUTTON_POSITIVE:
-//                                            Bundle args = new Bundle();
-//                                            args.putString("action", "add");
-//                                            args.putBoolean("create_company", true);
-//                                            presentFragment(new AddMembersToCompanyActivity(args));
-//                                            break;
-//
-//                                        case DialogInterface.BUTTON_NEGATIVE:
-//                                            dialog.dismiss();
-//                                            break;
-//                                    }
-//                                }
-//                            };
-//
-//                            AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-//                            builder.create().setCanceledOnTouchOutside(false);
-//                            builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
-//                                    .setNegativeButton("Пропустить", dialogClickListener).show();
-//                        });
-//
-//                    }
-//                } catch (Exception x) {
-//                    x.printStackTrace();
-//                }
-//            }
-            RoomsRepository.getInstance(getApplication()).deleteCompanies();
-            if (companies.size() > 0) {
-                try {
-                    for (Company company : companies) {
-                        if (company.getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
-                            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
-                            prefs.edit().putBoolean(Constants.HAS_COMPANY, true).commit();
-                            if (prefs.getInt(Constants.SELECTED_COMPANY_ID, 0) == company.getId()) {
-                                prefs.edit().putBoolean(Constants.IS_OWNER, true).commit();
+                // dynamic company list
+                companyList.clear();
+                companyList.addAll(companies);
+
+                RoomsRepository.getInstance(getApplication()).deleteCompanies();
+                if (companies.size() > 0) {
+                    try {
+                        for (Company company : companies) {
+                            if (company.getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
+                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
+                                prefs.edit().putBoolean(Constants.HAS_COMPANY, true).commit();
+                                if (prefs.getInt(Constants.SELECTED_COMPANY_ID, 0) == company.getId()) {
+                                    prefs.edit().putBoolean(Constants.IS_OWNER, true).commit();
+                                }
                             }
+                            RoomsRepository.getInstance(getApplication()).insert(company);
                         }
-                        RoomsRepository.getInstance(getApplication()).insert(company);
+                    } catch (Exception x) {
                     }
-                } catch (Exception x) {
+                } else {
+                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
+                    prefs.edit().putBoolean(Constants.HAS_COMPANY, false).commit();
+                    prefs.edit().putBoolean(Constants.IS_OWNER, false).commit();
+                    prefs.edit().putInt(Constants.SELECTED_COMPANY_ID, 0).commit();
+                    prefs.edit().putString(Constants.SELECTED_COMPANY_NAME, "").commit();
                 }
-            } else {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
-                prefs.edit().putBoolean(Constants.HAS_COMPANY, false).commit();
-                prefs.edit().putBoolean(Constants.IS_OWNER, false).commit();
-                prefs.edit().putInt(Constants.SELECTED_COMPANY_ID, 0).commit();
-                prefs.edit().putString(Constants.SELECTED_COMPANY_NAME, "").commit();
-            }
 
-            if ((name.equals("") || name.equals("Создать команду")) && companies.size() > 1) {
+                if ((name.equals("") || name.equals("Создать команду")) && companies.size() > 1) {
 
-                if (!PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getBoolean("do_not_show_company_list", false)) {
-                    runOnUiThread(() -> {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
+                    if (!PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getBoolean("do_not_show_company_list", false)) {
+                        runOnUiThread(() -> {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
 
-                        builder.setTitle("Выбрать команду");
-                        // add a list
-                        String[] names = new String[companies.size()];
+                            builder.setTitle("Выбрать команду");
+                            // add a list
+                            String[] names = new String[companies.size()];
 
-                        int i = 0;
+                            int i = 0;
 
-                        for (Company member : companies) {
-                            names[i] = member.getName();
-                            i++;
-                        }
-
-                        builder.setItems(names, (dialog, which) -> {
-                            IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
-                                    companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                            drawerLayoutAdapter.notifyDataSetChanged();
-                            dialog.dismiss();
-                        });
-                        builder.setNegativeButton("Больше не показывать", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).edit().putBoolean("do_not_show_company_list", true).apply();
+                            for (Company member : companies) {
+                                names[i] = member.getName();
+                                i++;
                             }
-                        });
 
-                        // create and show the alert dialog
-                        AlertDialog dialog = builder.create();
-                        dialog.setCanceledOnTouchOutside(false);
-                        dialog.show();
-                    });
+                            builder.setItems(names, (dialog, which) -> {
+                                IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
+                                        companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                                drawerLayoutAdapter.notifyDataSetChanged();
+                                dialog.dismiss();
+                            });
+                            builder.setNegativeButton("Больше не показывать", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).edit().putBoolean("do_not_show_company_list", true).apply();
+                                }
+                            });
+
+                            // create and show the alert dialog
+                            AlertDialog dialog = builder.create();
+                            dialog.setCanceledOnTouchOutside(false);
+                            dialog.show();
+                        });
+                    }
                 }
+                Log.e("init comapesines", "size: " + companies.size());
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            Log.e("init comapesines", "size: " + companies.size());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        runOnUiThread(() -> drawerLayoutAdapter.notifyDataSetChanged());
+            runOnUiThread(() -> drawerLayoutAdapter.notifyDataSetChanged());
+            return null;
+        }, result -> {
+        });
     }
 
     public Socket getmSocket() {
@@ -517,13 +492,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     @Override
                     public void onToken(String token) {
                         if (token != null && !"".equals(token)) {
-                            mSocket.emit("auth", Collections.singletonList(token), (Ack) args1 -> {
-                                syncOfflineTasks();
-
-                                RoomsRepository.getInstance(LaunchActivity.this.getApplication()).deleteCompanies();
-
-                                initCompanies(args1[0].toString());
-                            });
+                            String platform = "android";
+                            String version = BuildVars.BUILD_VERSION_STRING;
+                            SocketAuthObject authObject = new SocketAuthObject(token, platform, version);
+                            try {
+                                JSONObject postData = new JSONObject(new Gson().toJson(authObject));
+                                mSocket.emit("auth", postData, (Ack) args1 -> {
+                                    syncOfflineTasks();
+                                    initCompanies(args1[0].toString());
+                                });
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
                         } else {
                             mSocket.disconnect();
                         }
@@ -548,32 +528,41 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     Log.e("offline tasks length ", "length: " + offlineTasks.size());
                     for (Task task : offlineTasks) {
                         if (task.getLocalStatus() == 1) {
+                            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+                            if (user.id == task.getCreatorId()) {
+                                if ("group".equals(task.getChat_type())) {
+                                    TLRPC.ChatFull info = MessagesController.getInstance(UserConfig.selectedAccount).getChatFull((int) task.getChatId());
+                                    if (info == null) {
+                                        return null;
+                                    }
+                                }
+                                IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
+                                    @Override
+                                    public void onCreate(Task task) {
+                                        createdTasks.add(task);
+                                        if (taskListener != null) {
+                                            taskListener.onTaskCreated(task);
+                                        }
 
-                            IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
-                                @Override
-                                public void onCreate(Task task) {
-                                    createdTasks.add(task);
-                                    if (taskListener != null) {
-                                        taskListener.onTaskCreated(task);
+                                        String message = "Task #" + task.getId() + "\n";
+                                        message += "Вы получили новое задание.\n" +
+                                                "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US";
+
+                                        Log.e("offline task message ", "length: " + offlineTasks.size());
+                                        long chatID = task.getChatId();
+                                        if (task.getChat_type() != null && task.getChat_type().equals("group")) {
+                                            chatID = -chatID;
+                                        }
+                                        SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message, chatID, null, null, null, false, null, null, null, true, 0);
                                     }
 
-                                    String message = "Task #" + task.getId() + "\n";
-                                    message += "Вы получили новое задание.\n" +
-                                            "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US";
+                                    @Override
+                                    public void onUpdate(Task task) {
 
-                                    Log.e("offline task message ", "length: " + offlineTasks.size());
-                                    long chatID = task.getChatId();
-                                    if (task.getChat_type() != null && task.getChat_type().equals("group")) {
-                                        chatID = -chatID;
                                     }
-                                    SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message, chatID, null, null, null, false, null, null, null, true, 0);
-                                }
+                                });
 
-                                @Override
-                                public void onUpdate(Task task) {
-
-                                }
-                            });
+                            }
                         } else if (task.getLocalStatus() == 2) {
                             IRoomsManager.getInstance().editTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
                                 @Override
@@ -622,7 +611,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
             RoomsRepository.getInstance(getApplication()).insert(task);
 
-            runOnUiThread(() -> taskCreated(task));
+            taskCreated(task);
         } catch (Exception x) {
             return;
         }
@@ -674,6 +663,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     private ArrayList<Task> createdTasks = new ArrayList<>();
+    public ArrayList<Company> companyList = new ArrayList<>();
+
+    private void loadTeams() {
+        TaskRunner runner = new TaskRunner();
+        runner.executeAsync(() -> {
+                    companyList.clear();
+                    companyList.addAll(RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getCompanyList());
+                    return null;
+                },
+                result -> {
+                });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -684,7 +685,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             mSocket = IO.socket(Constants.SOCKET_ENDPOINT, options);
         } catch (URISyntaxException e) {
         }
+        loadTeams();
         ApplicationLoader.postInitApplication();
+
         RoomsRepository.getInstance(LaunchActivity.this.getApplication()).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
             @Override
             public void onLocalTaskCreated(Task task) {
@@ -719,6 +722,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 });
             }
         });
+
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;
         if (!UserConfig.getInstance(currentAccount).isClientActivated()) {

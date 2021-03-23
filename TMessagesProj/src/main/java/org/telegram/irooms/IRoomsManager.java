@@ -3,6 +3,7 @@ package org.telegram.irooms;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.widget.Toast;
 
 import androidx.preference.PreferenceManager;
 
@@ -22,6 +23,7 @@ import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.irooms.task.TaskUtil;
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.UserConfig;
 
 import java.util.ArrayList;
@@ -203,6 +205,7 @@ public class IRoomsManager {
 
             @Override
             public void onError(String error) {
+         //       AndroidUtilities.runOnUIThread(() -> Toast.makeText(context, error, Toast.LENGTH_SHORT).show());
                 // callback.onError(error);
             }
         });
@@ -234,11 +237,6 @@ public class IRoomsManager {
                         } else {
                             setSelectedCompany(context, new Company(), false);
                         }
-                        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
-                        if (preferences.getString(Constants.SELECTED_COMPANY_NAME, "").equals("") && companies.size() == 1) {
-                            IRoomsManager.getInstance().setSelectedCompany(context, companies.get(0), companies.get(0).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                        }
                         return null;
                     }, (TaskRunner.TaskCompletionListener<String>) result -> callback.onSuccess(response));
 
@@ -266,8 +264,15 @@ public class IRoomsManager {
     public void getMyTasks(Context context, Socket socket, TaskSocketQuery query, IRoomCallback<ArrayList<Task>> callback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
+
             String date = RoomsRepository.getInstance((Application) context.getApplicationContext()).getLastRequestDateForChat(query.getChat_id());
             query.setFrom_date("".equals(date) ? null : date);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(calendar.getTime());
+            calendar.add(Calendar.MINUTE, -1);
+
+            String currentISODate = TaskUtil.getISODate(calendar.getTime());
 
             APIClient.getInstance().getTasksBySocket(socket, query, new VolleyCallback() {
                 @Override
@@ -283,7 +288,7 @@ public class IRoomsManager {
                             taskRunner.executeAsync(() -> {
                                 RoomsRepository repo = RoomsRepository.getInstance((Application) context.getApplicationContext());
 
-                                RequestHistory history = new RequestHistory(query.getChat_id(), TaskUtil.getISODate(Calendar.getInstance().getTime()));
+                                RequestHistory history = new RequestHistory(query.getChat_id(), currentISODate);
                                 repo.insert(history);
 
                                 long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
@@ -347,7 +352,7 @@ public class IRoomsManager {
         return name.equals("") ? "" : name;
     }
 
-    public void getGroupChatRelatedTasks(Context context, long chatId, int companyId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+    public void getGroupChatRelatedTasks(Context context, long[] chatId, int companyId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
@@ -367,11 +372,9 @@ public class IRoomsManager {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
-//                    if (companyId >= 0) {
-//                        repository.getPrivateChatTasksByCompany(selectedAccountUserId, id, arrayListIRoomCallback, companyId);
-//                    } else {
-                    repository.getPrivateChatTasks(selectedAccountUserId, id, arrayListIRoomCallback);
-//                    }
+
+                    repository.getPrivateChatTasks(companyId, selectedAccountUserId, id, arrayListIRoomCallback);
+
                     return "";
                 }, result -> {
                 }

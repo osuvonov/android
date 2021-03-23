@@ -15,6 +15,7 @@ import androidx.room.TypeConverters;
 public class Task {
     public Task(long id, long company_id) {
         this.id = id;
+        this.platform = "android";
         this.message_id = -1;
         this.company_id = company_id;
         this.local_id = "";
@@ -79,11 +80,23 @@ public class Task {
     @ColumnInfo(name = "members")
     private List<Integer> members;
 
-    @Ignore
-    private ArrayList<Integer> receivers;
+    @ColumnInfo(name = "receivers")
+    private List<Integer> receivers;
 
-    @ColumnInfo(name="chat_type")
+    @ColumnInfo(name = "chat_type")
     private String chat_type;
+
+    public String getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
+    @ColumnInfo(name = "platform")
+    private String platform;
+
 
     public String getChat_type() {
         return chat_type;
@@ -93,11 +106,11 @@ public class Task {
         this.chat_type = chat_type;
     }
 
-    public ArrayList<Integer> getReceivers() {
+    public List<Integer> getReceivers() {
         return receivers;
     }
 
-    public void setReceivers(ArrayList<Integer> receivers) {
+    public void setReceivers(List<Integer> receivers) {
         this.receivers = receivers;
     }
 

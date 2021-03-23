@@ -113,48 +113,55 @@ public class IRoomJsonParser {
             JSONArray taskArray = jsonObject.getJSONArray("result");
 
             for (int i = 0; i < taskArray.length(); i++) {
+                try {
+                    JSONObject jsonTask = taskArray.getJSONObject(i);
 
-                JSONObject jsonTask = taskArray.getJSONObject(i);
+                    long id = jsonTask.getLong("id");
+                    String description = jsonTask.getString("description");
+                    String logo = !jsonTask.isNull("logo") ? jsonTask.getString("logo") : "";
+                    long creator_id = !jsonTask.isNull("creator_id") ? jsonTask.getLong("creator_id") : 0;
+                    long lastUpdater = !jsonTask.isNull("last_updated_by") ? jsonTask.getLong("last_updated_by") : 0;
+                    long company_id = !jsonTask.isNull("company_id") ? jsonTask.getLong("company_id") : 0;
+                    long chat_id = !jsonTask.isNull("chat_id") ? jsonTask.getLong("chat_id") : 0;
+                    long message_id = !jsonTask.isNull("message_id") ? jsonTask.getLong("message_id") : -1;
+                    String created_at = !jsonTask.isNull("created_at") ? jsonTask.getString("created_at") : "";
+                    String updated_at = !jsonTask.isNull("updated_at") ? jsonTask.getString("updated_at") : "";
+                    String expires_at = !jsonTask.isNull("expires_at") ? jsonTask.getString("expires_at") : "";
+                    String completed_at = !jsonTask.isNull("completed_at") ? jsonTask.getString("completed_at") : "";
+                    String localID = !jsonTask.isNull("local_id") ? jsonTask.getString("local_id") : "";
+                    String status = !jsonTask.isNull("status") ? jsonTask.getString("status") : "";
+                    String chatType = !jsonTask.isNull("chat_type") ? jsonTask.getString("chat_type") : "";
+                    String platform = !jsonTask.isNull("platform") ? jsonTask.getString("platform") : "";
 
-                long id = jsonTask.getLong("id");
-                String description = jsonTask.getString("description");
-                String logo = !jsonTask.isNull("logo") ? jsonTask.getString("logo") : "";
-                long creator_id = !jsonTask.isNull("creator_id") ? jsonTask.getLong("creator_id") : 0;
-                long lastUpdater = !jsonTask.isNull("last_updated_by") ? jsonTask.getLong("last_updated_by") : 0;
-                long company_id = !jsonTask.isNull("company_id") ? jsonTask.getLong("company_id") : 0;
-                long chat_id = !jsonTask.isNull("chat_id") ? jsonTask.getLong("chat_id") : 0;
-                long message_id = !jsonTask.isNull("message_id") ? jsonTask.getLong("message_id") : -1;
-                String created_at = !jsonTask.isNull("created_at") ? jsonTask.getString("created_at") : "";
-                String updated_at = !jsonTask.isNull("updated_at") ? jsonTask.getString("updated_at") : "";
-                String expires_at = !jsonTask.isNull("expires_at") ? jsonTask.getString("expires_at") : "";
-                String completed_at = !jsonTask.isNull("completed_at") ? jsonTask.getString("completed_at") : "";
-                String localID = !jsonTask.isNull("local_id") ? jsonTask.getString("local_id") : "";
-                String status = !jsonTask.isNull("status") ? jsonTask.getString("status") : "";
-                String chatType = !jsonTask.isNull("chat_type") ? jsonTask.getString("chat_type") : "";
+                    int status_code = !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code") : 0;
+                    ArrayList<Integer> members =
+                            new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Integer>>() {
+                            }.getType());
 
-                int status_code = !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code") : 0;
-                ArrayList<Integer> members =
-                        new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Integer>>() {
-                        }.getType());
+                    Task task = new Task(id, company_id);
+                    task.setChatId(chat_id);
+                    task.setCompletedAt(completed_at);
+                    task.setCreatedAt(created_at);
+                    task.setMessageId(message_id);
+                    task.setDescription(description);
+                    task.setUpdatedAt(updated_at);
+                    task.setExpiresAt(expires_at);
+                    task.setCreatorId(creator_id);
+                    task.setLogo(logo);
+                    task.setMembers(members);
+                    task.setStatus_code(status_code);
+                    task.setStatus(status);
+                    task.setLocal_id(localID);
+                    task.setLocalStatus(3);
+                    task.setLastUpdater(lastUpdater);
+                    task.setChat_type(chatType);
+                    task.setPlatform(platform);
+                    taskList.add(task);
 
-                Task task = new Task(id, company_id);
-                task.setChatId(chat_id);
-                task.setCompletedAt(completed_at);
-                task.setCreatedAt(created_at);
-                task.setMessageId(message_id);
-                task.setDescription(description);
-                task.setUpdatedAt(updated_at);
-                task.setExpiresAt(expires_at);
-                task.setCreatorId(creator_id);
-                task.setLogo(logo);
-                task.setMembers(members);
-                task.setStatus_code(status_code);
-                task.setStatus(status);
-                task.setLocal_id(localID);
-                task.setLocalStatus(3);
-                task.setLastUpdater(lastUpdater);
-                task.setChat_type(chatType);
-                taskList.add(task);
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+
             }
 
         } catch (JSONException e) {
@@ -189,6 +196,7 @@ public class IRoomJsonParser {
             String localID = !jsonTask.isNull("local_id") ? jsonTask.getString("local_id") : "";
             String status = !jsonTask.isNull("status") ? jsonTask.getString("status") : "";
             String chatType = !jsonTask.isNull("chat_type") ? jsonTask.getString("chat_type") : "";
+            String platform = !jsonTask.isNull("platform") ? jsonTask.getString("platform") : "";
 
             int status_code = !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code") : 0;
             ArrayList<Integer> members =
@@ -205,6 +213,7 @@ public class IRoomJsonParser {
             task.setExpiresAt(expires_at);
             task.setCreatorId(creator_id);
             task.setLogo(logo);
+            task.setPlatform(platform);
             task.setStatus_code(status_code);
             task.setStatus(status);
             task.setMembers(members);

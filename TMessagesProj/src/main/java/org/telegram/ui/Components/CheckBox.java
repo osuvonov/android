@@ -19,11 +19,16 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.drawable.Drawable;
+
 import androidx.annotation.Keep;
+import androidx.annotation.Nullable;
+
 import android.text.TextPaint;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import org.rooms.messenger.R;
 import org.telegram.messenger.AndroidUtilities;
 
 public class CheckBox extends View {
@@ -58,8 +63,17 @@ public class CheckBox extends View {
 
     private final static float progressBounceDiff = 0.2f;
 
-    public CheckBox(Context context, int resId) {
-        super(context);
+    public CheckBox(Context context) {
+        this(context, -1);
+    }
+
+    public CheckBox(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        init(context, -1);
+
+    }
+
+    private void init(Context context, int resId) {
         if (paint == null) {
             paint = new Paint(Paint.ANTI_ALIAS_FLAG);
             eraser = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -80,7 +94,16 @@ public class CheckBox extends View {
         textPaint.setTextSize(AndroidUtilities.dp(18));
         textPaint.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
 
-        checkDrawable = context.getResources().getDrawable(resId).mutate();
+        if (resId==-1){
+            checkDrawable = context.getResources().getDrawable(R.drawable.round_check2).mutate();
+        }else{
+            checkDrawable = context.getResources().getDrawable(resId).mutate();
+        }
+    }
+
+    public CheckBox(Context context, int resId) {
+        super(context);
+        init(context, resId);
     }
 
     @Override

@@ -548,6 +548,10 @@
             android:name="com.google.android.actions"
             android:resource="@xml/actions" />
 
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification_rooms" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_blue_color" />
     </application>
 
 </manifest>

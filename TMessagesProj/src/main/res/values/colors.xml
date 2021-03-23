@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="notification_blue_color">#ff11acfa</color>
     <!-- Dark theme task messaging-->
 
     <color name="task_text_color_dark">#f9ffffff</color>
