@@ -2851,9 +2851,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             args.putBoolean("destroyAfterSelect", true);
             //            presentFragment(new ContactsActivity(args));
             presentFragment(new DialogsActivity2(args));
+            ((LaunchActivity) getParentActivity()).addTaskButtonClicked();
         });
 
-        TestBinding binding = TestBinding.inflate(LayoutInflater.from(getParentActivity()),null,false);
+        TestBinding binding = TestBinding.inflate(LayoutInflater.from(getParentActivity()), null, false);
+        binding.testText.setText(LocaleController.getInstance().getRoomsString("create_task"));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             binding.getRoot().setElevation(12);
             binding.getRoot().setClipToPadding(false);
@@ -4481,7 +4483,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateFloatingButtonOffset() {
-    //    floatingButtonContainer.setTranslationY(floatingButtonTranslation - additionalFloatingTranslation * (1f - floatingButtonHideProgress));
+        //    floatingButtonContainer.setTranslationY(floatingButtonTranslation - additionalFloatingTranslation * (1f - floatingButtonHideProgress));
     }
 
     private boolean hasHiddenArchive() {
@@ -5900,7 +5902,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         animatorSet.playTogether(valueAnimator);
         animatorSet.setDuration(300);
         animatorSet.setInterpolator(floatingInterpolator);
-     //   floatingButtonContainer.setClickable(!hide);
+        //   floatingButtonContainer.setClickable(!hide);
         animatorSet.start();
     }
 

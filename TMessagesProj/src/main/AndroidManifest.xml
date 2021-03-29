@@ -547,11 +547,24 @@
         <meta-data
             android:name="com.google.android.actions"
             android:resource="@xml/actions" />
-
+        <meta-data
+            android:name="firebase_analytics_collection_enabled"
+            android:value="true" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification_rooms" />
         <meta-data android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/notification_blue_color" />
+
+        <service android:name="com.google.android.gms.measurement.AppMeasurementService"
+            android:enabled="true"
+            android:exported="false"/>
+
+        <receiver android:name="com.google.android.gms.measurement.AppMeasurementReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.measurement.UPLOAD" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

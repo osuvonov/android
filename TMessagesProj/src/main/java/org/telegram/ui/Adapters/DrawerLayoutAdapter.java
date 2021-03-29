@@ -306,17 +306,17 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         } else {
             TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
             String name = (user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name);
-            name = name.concat("\nЛичные задачи");
+            name = name.concat("\n"+LocaleController.getInstance().getRoomsString("no_team"));
             items.add(new Item(1, name, companyIcon));
         }
 
         if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.IS_OWNER, false)) {
-            items.add(new Item(21, "Добавить участников в команду", newGroupIcon));
+            items.add(new Item(21, LocaleController.getInstance().getRoomsString("add_members"), newGroupIcon));
         }
         if (!PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.HAS_COMPANY, false)) {
-            items.add(new Item(13, "Создать команду", companyIcon));
+            items.add(new Item(13, LocaleController.getInstance().getRoomsString("create_team"), companyIcon));
         }
-        items.add(new Item(11, "Saved Tasks/Messages", savedIcon));
+        items.add(new Item(11, LocaleController.getInstance().getRoomsString("saved_tasks"), savedIcon));
         items.add(new Item(2, LocaleController.getString("NewGroup", R.string.NewGroup), newGroupIcon));
         //items.add(new Item(3, LocaleController.getString("NewSecretChat", R.string.NewSecretChat), newSecretIcon));
         //items.add(new Item(4, LocaleController.getString("NewChannel", R.string.NewChannel), newChannelIcon));

@@ -205,7 +205,7 @@ public class IRoomsManager {
 
             @Override
             public void onError(String error) {
-         //       AndroidUtilities.runOnUIThread(() -> Toast.makeText(context, error, Toast.LENGTH_SHORT).show());
+                //       AndroidUtilities.runOnUIThread(() -> Toast.makeText(context, error, Toast.LENGTH_SHORT).show());
                 // callback.onError(error);
             }
         });
@@ -222,6 +222,7 @@ public class IRoomsManager {
                         RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
                         JSONObject jsonObject = new JSONObject(response);
                         ArrayList<Company> companies = IRoomJsonParser.getCompanies(jsonObject.toString());
+                        repository.deleteCompanies();
 
                         if (companies.size() > 0) {
                             for (Company company : companies) {

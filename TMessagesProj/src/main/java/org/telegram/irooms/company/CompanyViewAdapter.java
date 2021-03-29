@@ -23,11 +23,14 @@ import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
 import org.rooms.messenger.R;
+import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
@@ -64,7 +67,7 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
     @Override
     public void onBindViewHolder(@NonNull CompanyViewHolder holder, int position) {
 
-        int selectedCompanyId = PreferenceManager.getDefaultSharedPreferences(mContext).getInt(Constants.SELECTED_COMPANY_ID, -1);
+        int selectedCompanyId = PreferenceManager.getDefaultSharedPreferences(mContext).getInt(Constants.SELECTED_COMPANY_ID, 0);
 
         Company company = getItem(position);
 
@@ -80,9 +83,10 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
 
     @Override
     public void submitList(@Nullable List<Company> list) {
-        if (list != null)
-            list.add(new Company());
-        super.submitList(list);
+        ArrayList<Company> localList = new ArrayList<>(list);
+        if (localList != null)
+            localList.add(new Company());
+        super.submitList(localList);
     }
 
     private void setFadeAnimation(View view) {
@@ -143,18 +147,16 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
 
         public void bind(String companyName, boolean selected, int members) {
             if ("".equals(companyName)) {
-                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-                String name = (user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name);
-                companyName = name;
+                companyName = LocaleController.getInstance().getRoomsString("no_team");
 
                 companyNameTextView.setText(companyName);
                 companySelectedCheckBox.setChecked(selected);
-                companyMembersCount.setText("Личные задачи");//Личные задачи,  Индивидуальный пользователь, Для собственных целей
+                companyMembersCount.setText("");
                 return;
             }
             companyNameTextView.setText(companyName);
             companySelectedCheckBox.setChecked(selected);
-            companyMembersCount.setText(members + " участников");
+            companyMembersCount.setText(members + LocaleController.getInstance().getRoomsString("participants"));
         }
     }
 

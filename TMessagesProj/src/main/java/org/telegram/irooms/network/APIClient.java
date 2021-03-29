@@ -3,7 +3,9 @@ package org.telegram.irooms.network;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
- import androidx.preference.PreferenceManager;
+
+import androidx.preference.PreferenceManager;
+
 import android.util.Base64;
 import android.widget.Toast;
 
@@ -14,6 +16,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.exoplayer2.util.Log;
 import com.google.gson.Gson;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.Constants;
@@ -103,6 +107,7 @@ public class APIClient {
                 JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, hostNameCloud, postData,
                         response -> {
                             try {
+                                Log.e("responsssssss", response.toString());
                                 JSONObject jsonObject = new JSONObject(response.toString());
                                 String success = jsonObject.getString("success");
                                 if (success.equals("true")) {
@@ -159,10 +164,10 @@ public class APIClient {
 
     private void makeSocketEmit(Socket socket, String eventName, JSONObject postData, final VolleyCallback callback) {
         if (postData != null) {
-            if (!socket.connected()){
+            if (!socket.connected()) {
                 return;
             }
-             socket.emit(eventName, postData, (Ack) response -> {
+            socket.emit(eventName, postData, (Ack) response -> {
                 JSONObject jsonObject = null;
                 try {
                     jsonObject = new JSONObject(response[0].toString());
@@ -340,7 +345,7 @@ public class APIClient {
         company.company_id = companyId;
         company.members = members_;
 
-        JSONObject postData ;
+        JSONObject postData;
         try {
             postData = new JSONObject(new Gson().toJson(company));
             makeSocketEmit(socket, "deleteCompanyMembers", postData, callback);
@@ -399,16 +404,26 @@ public class APIClient {
                             preferences.edit().putString("token" + UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone, token).commit();
                             callback.onSuccess(response.toString());
                             String subscToken = preferences.getString("subscription_token", "");
-                            APIClient.getInstance().subscribeTaskNotification(context, subscToken, token, new VolleyCallback() {
+                            long recordId = preferences.getLong("record_id", -1);
+
+                            APIClient.getInstance().subscribeTaskNotification(context, subscToken, recordId, new VolleyCallback() {
                                 @Override
                                 public void onSuccess(String response) {
+                                    try {
+                                        JSONObject jsonObject = new JSONObject(response);
+                                        long recordId = jsonObject.optLong("result");
+                                        if (recordId > 0) {
+                                            preferences.edit().putLong("record_id", recordId).commit();
+                                        }
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
 
                                 @Override
                                 public void onError(String error) {
                                 }
                             });
-
                         } else {
                             String errorDesc = "Unknown error occurred ";
                             JSONObject error = jsonObject.opt("error") == null ? null : jsonObject.getJSONObject("error");
@@ -438,9 +453,12 @@ public class APIClient {
         requestQueue.add(jsonObjectRequest);
     }
 
-    public void subscribeTaskNotification(Context context, String subscripttoken, String token, final VolleyCallback callback) {
+    public void subscribeTaskNotification(Context context, String subscripttoken, long recorID, final VolleyCallback callback) {
 
         String hostNameCloud = BASE_URL + "/push-subscription/save";
+        if (recorID > 0) {
+            hostNameCloud = BASE_URL + "/push-subscription/update";
+        }
 
         try {
             JSONObject postData = new JSONObject();
@@ -451,17 +469,14 @@ public class APIClient {
 
             postData.put("subscription", tokenJson);
 
+            if (recorID > 0) {
+                postData.put("record_id", recorID);
+            }
+
             makePostRequest(context, postData, hostNameCloud, callback);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public void getTasks(Context context, final VolleyCallback callback) {
-
-        String url = BASE_URL + "/tasks?full=true";
-
-        makeGetRequest(context, url, callback);
     }
 
     public void getTasksBySocket(Socket socket, TaskSocketQuery query, final VolleyCallback callback) {
@@ -474,7 +489,7 @@ public class APIClient {
 
             e.printStackTrace();
         }
-         makeSocketEmit(socket, "getTasks", jsonObject, callback);
+        makeSocketEmit(socket, "getTasks", jsonObject, callback);
     }
 
     public void getTask(Context context, long taskId, final VolleyCallback callback) {

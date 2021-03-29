@@ -98,17 +98,16 @@ public class IntroActivity extends Activity implements NotificationCenter.Notifi
 
         titles = new String[]{
                 "Rooms",
-                "Быстрый",
-                "Задачи",
-                "Оповещения",
-                "Безопасный"
+                LocaleController.getInstance().getRoomsString("fast"),
+                LocaleController.getInstance().getRoomsString("tasks"),
+                LocaleController.getInstance().getRoomsString("notifications"),
+                LocaleController.getInstance().getRoomsString("secure")
         };
-        messages = new String[]{"Rooms это корпоративный мессенджер с возможностью постановки задач и управления проектами.",
-                "Rooms доставляет сообщения быстрее других мессенджеров.",
-                "Создавайте задачи в два клика.",
-                "Будьте в курсе о выполненных или просроченных работах.",
-                "**Rooms** хранит ваши сообщения в безопасности \n от хакерских атак."
-        };
+        messages = new String[]{LocaleController.getInstance().getRoomsString("intro1"),
+                LocaleController.getInstance().getRoomsString("intro2"),
+                LocaleController.getInstance().getRoomsString("intro3"),
+                LocaleController.getInstance().getRoomsString("intro4"),
+                LocaleController.getInstance().getRoomsString("intro5")};
 
         ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(true);

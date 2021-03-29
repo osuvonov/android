@@ -28,9 +28,16 @@
         android:maxWidth="260dp"
         android:minWidth="260dp"
         android:orientation="vertical"
-        android:padding="10dp">
-
-
+        android:padding="5dp">
+        <TextView
+            android:ellipsize="end"
+            android:textSize="8sp"
+            android:textColor="@color/notification_blue_color"
+            android:id="@+id/team_title"
+            android:layout_gravity="top|left"
+            android:gravity="left|top"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

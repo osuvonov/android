@@ -1557,7 +1557,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
 
 
 
-        actionBar.setTitle("Выберите чат или группу");
+        actionBar.setTitle(LocaleController.getInstance().getRoomsString("choose_chat"));
 
         if (!onlySelect) {
             actionBar.setAddToContainer(false);

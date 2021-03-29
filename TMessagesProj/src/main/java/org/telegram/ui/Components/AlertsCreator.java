@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -50,6 +51,7 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -59,10 +61,13 @@ import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.C;
+
 import org.rooms.messenger.databinding.AddTaskBottomSheetBinding;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
+import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.TaskManagerListener;
 import org.telegram.irooms.task.RoomsRepository;
@@ -136,6 +141,26 @@ public class AlertsCreator {
         if (context == null) {
             return null;
         }
+        final int[] companyId = {PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.SELECTED_COMPANY_ID, 0)};
+
+        ArrayList<Company> companies = new ArrayList<>(((LaunchActivity) context).getCompanyList());
+
+        Company noTeam = new Company(0, LocaleController.getInstance().getRoomsString("no_team"));
+        companies.add(noTeam);
+
+        ArrayList<Company> teamList = new ArrayList<>(companies);
+
+        final int[] selectedTeamPosition = {0};
+
+        for (int i = 0; i < teamList.size(); i++) {
+            if (teamList.get(i).getId() == companyId[0]) {
+                selectedTeamPosition[0] = i;
+                break;
+            }
+        }
+
+        ArrayAdapter<Company> spinnerAdapter = new ArrayAdapter<Company>(context,
+                android.R.layout.simple_spinner_item, teamList);
 
         final String[] deadline = {TaskUtil.getMaxDate()};
         ArrayList<Integer> selectedMembers = new ArrayList<>();
@@ -153,13 +178,13 @@ public class AlertsCreator {
             AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
         });
         bottomSheet.etTaskDescription.setText(text);
+
         int textColor = context.getResources().getColor(android.R.color.black);
         if (IRoomsManager.getInstance().isDarkMode(context)) {
             textColor = context.getResources().getColor(R.color.white);
         }
         bottomSheet.etTaskDescription.setTextColor(textColor);
         bottomSheet.etTaskDescription.requestFocus();
-        AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
 
         bottomSheet.btnTaskDeadlineToday.setOnClickListener(today -> {
             boolean todaySelected = selectedDeadLineView[0] == 1;
@@ -182,7 +207,7 @@ public class AlertsCreator {
         bottomSheet.etTaskStatus.setTextColor(textColor);
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-            builder1.setTitle("Выберите статус");
+            builder1.setTitle(LocaleController.getInstance().getRoomsString("choose_status"));
 
             builder1.setItems(Utils.getStatuses(), (dialog, which) -> {
                 selectedState[0] = which;
@@ -221,7 +246,7 @@ public class AlertsCreator {
             if (IRoomsManager.getInstance().isDarkMode(context)) {
                 builder12 = new android.app.AlertDialog.Builder(context, android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK);
             }
-            builder12.setTitle("Выбрать участников");
+            builder12.setTitle(LocaleController.getInstance().getRoomsString("choose_participants"));
 
             ListView listview = new ListView(context);
 
@@ -250,16 +275,76 @@ public class AlertsCreator {
                         }
                     }
                     if (selectedUsers.toString().length() == 0) {
-                        bottomSheet.tvSelectMembers.setText("Выбрать участников");
+                        bottomSheet.tvSelectMembers.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
                     } else {
                         bottomSheet.tvSelectMembers.setText(selectedUsers);
                     }
+
+                    // filter teams
+                    boolean clearList = false;
+                    for (Company company : companies) {
+                        if (company != null) {
+                            for (int c = 0; c < selectedMembers.size(); c++) {
+                                if (company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
+                                    companyId[0] = 0;
+                                    teamList.clear();
+                                    teamList.add(noTeam);
+                                    spinnerAdapter.notifyDataSetChanged();
+                                    clearList = true;
+                                    selectedTeamPosition[0] = 0;
+                                    bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (!clearList) {
+                        teamList.clear();
+                        teamList.addAll(companies);
+                        for (int j = 0; j < teamList.size(); j++) {
+                            if (teamList.get(j).getId() == companyId[0]) {
+                                selectedTeamPosition[0] = j;
+                                break;
+                            }
+                        }
+                        bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+                    }
                 }
             });
-            builder12.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int j) {
-                    //
+            builder12.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), (dialogInterface, j) -> {
+
+                boolean clearList = false;
+                for (Company company : companies) {
+                    if (company != null) {
+                        for (int c = 0; c < selectedMembers.size(); c++) {
+                            if (company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
+                                companyId[0] = 0;
+                                teamList.clear();
+                                teamList.add(noTeam);
+                                spinnerAdapter.notifyDataSetChanged();
+                                clearList = true;
+                                selectedTeamPosition[0] = 0;
+                                bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                if (!clearList) {
+                    teamList.clear();
+                    teamList.addAll(companies);
+                    for (int j1 = 0; j1 < teamList.size(); j1++) {
+                        if (teamList.get(j1).getId() == companyId[0]) {
+                            selectedTeamPosition[0] = j1;
+                            break;
+                        }
+                    }
+                    bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+
                 }
             });
 
@@ -276,13 +361,31 @@ public class AlertsCreator {
             bottomSheet.tvSelectMembers.setText(userName);
         }
 
-        String[] list = {"No team","Some team"};
-
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(context,
-                android.R.layout.simple_spinner_item,list);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         bottomSheet.teamSpinner.setAdapter(spinnerAdapter);
+        bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+        bottomSheet.teamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                companyId[0] = teamList.get(position).getId();
+                selectedTeamPosition[0] = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        bottomSheet.tvTeamEmptyRow.setVisibility(View.VISIBLE);
+        bottomSheet.teamSpinner.setVisibility(View.VISIBLE);
+        bottomSheet.tvLabelTeam.setVisibility(View.VISIBLE);
+        bottomSheet.tvLabelPersonInCharge.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
+        bottomSheet.tvLabelTask.setText(LocaleController.getInstance().getRoomsString("description"));
+        bottomSheet.tvLabelTeam.setText(LocaleController.getInstance().getRoomsString("team"));
+        bottomSheet.tvLabelStatus.setText(LocaleController.getInstance().getRoomsString("status"));
+        bottomSheet.tvLabelDeadline.setText(LocaleController.getInstance().getRoomsString("deadline"));
+        bottomSheet.btnTaskDeadlineToday.setText(LocaleController.getInstance().getRoomsString("today"));
+        bottomSheet.btnTaskDeadlineTomorrow.setText(LocaleController.getInstance().getRoomsString("tomorrow"));
 
         bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
             boolean tomorrowSelected = selectedDeadLineView[0] == 2;
@@ -318,13 +421,12 @@ public class AlertsCreator {
                         bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
                     }, year, month, day).show();
         });
-
+        bottomSheet.btnTaskSave.setText(LocaleController.getInstance().getRoomsString("save"));
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
-            int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.SELECTED_COMPANY_ID, 0);
-            Task task = new Task(-1, companyId);
-            String description=bottomSheet.etTaskDescription.getText().toString();
-            if ("".equals(description)||description==null){
+            Task task = new Task(-1, companyId[0]);
+            String description = bottomSheet.etTaskDescription.getText().toString();
+            if ("".equals(description) || description == null) {
                 bottomSheet.btnTaskSave.setEnabled(true);
                 return;
             }
@@ -335,11 +437,11 @@ public class AlertsCreator {
             task.setStatus(Utils.getStatuses()[selectedState[0]]);
             task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
-            task.setCompanyId(companyId);
+            task.setCompanyId(companyId[0]);
             task.setLocal_id(Utils.generateLocalId());
             task.setLocalStatus(1);
 
-            List<Integer> receiverIds =  userList.stream().map(user -> user.id).collect(Collectors.toList());
+            List<Integer> receiverIds = userList.stream().map(user -> user.id).collect(Collectors.toList());
             task.setReceivers(receiverIds);
             task.setChat_type(chatType);
 
@@ -351,6 +453,13 @@ public class AlertsCreator {
                     @Override
                     public void onCreate(Task task) {
                         callback.onCreate(task);
+                        try {
+                            Bundle bundle = new Bundle();
+                            bundle.putString("task_id", task.getId() + "");
+                            bundle.putString("description", task.getDescription());
+                            ((LaunchActivity) context).mFirebaseAnalytics.logEvent("task_created", bundle);
+                        } catch (Exception x) {
+                        }
                     }
 
                     @Override
@@ -438,11 +547,12 @@ public class AlertsCreator {
             bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
         }
+        bottomSheet.btnTaskSave.setText(LocaleController.getInstance().getRoomsString("save"));
 
         bottomSheet.etTaskStatus.setText(Utils.getStatuses()[0]);
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-            builder1.setTitle("Выберите статус");
+            builder1.setTitle(LocaleController.getInstance().getRoomsString("choose_status"));
 
             builder1.setItems(Utils.getStatuses(), (dialog, which) -> {
                 selectedState[0] = which;
@@ -480,7 +590,7 @@ public class AlertsCreator {
         }
 
         if (selectedUsers.toString().length() == 0) {
-            bottomSheet.tvSelectMembers.setText("Выбрать участников");
+            bottomSheet.tvSelectMembers.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
         } else {
             bottomSheet.tvSelectMembers.setText(selectedUsers);
         }
@@ -492,7 +602,7 @@ public class AlertsCreator {
             if (IRoomsManager.getInstance().isDarkMode(context)) {
                 builder12 = new android.app.AlertDialog.Builder(context, android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK);
             }
-            builder12.setTitle("Выбрать участников");
+            builder12.setTitle(LocaleController.getInstance().getRoomsString("choose_participants"));
 
             ListView listview = new ListView(context);
             listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
@@ -518,12 +628,12 @@ public class AlertsCreator {
                     }
                 }
                 if (selectedUsers.toString().length() == 0) {
-                    bottomSheet.tvSelectMembers.setText("Выбрать участников");
+                    bottomSheet.tvSelectMembers.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
                 } else {
                     bottomSheet.tvSelectMembers.setText(selectedUsers);
                 }
             });
-            builder12.setPositiveButton("Ok", (dialogInterface, j) -> {
+            builder12.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), (dialogInterface, j) -> {
             });
 
             // create and show the alert dialog
@@ -549,7 +659,13 @@ public class AlertsCreator {
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
-
+        bottomSheet.tvLabelPersonInCharge.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
+        bottomSheet.tvLabelTask.setText(LocaleController.getInstance().getRoomsString("description"));
+        bottomSheet.tvLabelTeam.setText(LocaleController.getInstance().getRoomsString("team"));
+        bottomSheet.tvLabelStatus.setText(LocaleController.getInstance().getRoomsString("status"));
+        bottomSheet.tvLabelDeadline.setText(LocaleController.getInstance().getRoomsString("deadline"));
+        bottomSheet.btnTaskDeadlineToday.setText(LocaleController.getInstance().getRoomsString("today"));
+        bottomSheet.btnTaskDeadlineTomorrow.setText(LocaleController.getInstance().getRoomsString("tomorrow"));
         bottomSheet.btnTaskCalendar.setOnClickListener(select -> {
             final Calendar cldr = Calendar.getInstance();
             int day = cldr.get(Calendar.DAY_OF_MONTH);
@@ -571,8 +687,8 @@ public class AlertsCreator {
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
             int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", -1);
-            String description=bottomSheet.etTaskDescription.getText().toString();
-            if ("".equals(description)||description==null){
+            String description = bottomSheet.etTaskDescription.getText().toString();
+            if ("".equals(description) || description == null) {
                 bottomSheet.btnTaskSave.setEnabled(true);
                 return;
             }

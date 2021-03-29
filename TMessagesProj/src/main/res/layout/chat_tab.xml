@@ -19,7 +19,6 @@
             android:background="@drawable/btn_click2"
             android:gravity="center"
             android:padding="1dp"
-            android:text="Чат"
             android:textAllCaps="false"
             android:textColor="@color/white" />
 

@@ -271,13 +271,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     protected TLRPC.User currentUser;
     protected TLRPC.EncryptedChat currentEncryptedChat;
     private boolean userBlocked;
-
     private int chatInviterId;
-
     private ArrayList<ChatMessageCell> chatMessageCellsCache = new ArrayList<>();
-
     private HashMap<MessageObject, Boolean> alredyPlayedStickers = new HashMap<>();
-
     private Dialog closeChatDialog;
     private boolean showCloseChatDialogLater;
     private FrameLayout progressView;
@@ -802,7 +798,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                     @Override
                     public void onError(String error) {
-                        AndroidUtilities.runOnUIThread(() -> Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show());
+                        try {
+                            AndroidUtilities.runOnUIThread(() -> Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show());
+                        } catch (Exception x) {
+                        }
                     }
                 });
             }
@@ -1662,9 +1661,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                                 @Override
                                                 public void onCreate(Task task) {
                                                     String message = "Task #" + task.getId() + "\n";
-                                                    message += "Вы получили новое задание.\n" +
-                                                            "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US";
-
+                                                    message += LocaleController.getInstance().getRoomsString("you_got_task");
                                                     long chatID = task.getChatId();
                                                     if (task.getChat_type() != null && task.getChat_type().equals("group")) {
                                                         chatID = -chatID;
@@ -5150,6 +5147,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             BottomTaskSortBinding bottomTaskSort = BottomTaskSortBinding.inflate(LayoutInflater.from(getParentActivity()));
             bottomTaskSort.getRoot().fullScroll(View.FOCUS_RIGHT);
             ChatTabBinding chatTab = ChatTabBinding.inflate(LayoutInflater.from(getParentActivity()));
+            chatTab.chatActivityChat.setText(LocaleController.getInstance().getRoomsString("chat"));
+            chatTab.chatActivityTask.setText(LocaleController.getInstance().getRoomsString("tasks"));
+
             if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
                 chatTab.getRoot().setBackgroundResource(R.color.background_dark);
                 bottomTaskSort.bottomChatTabContainer.setBackgroundResource(R.color.background_dark);
@@ -5224,7 +5224,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         }
 
                         if (emptyView != null) {
-                            emptyView.setText("No tasks here yet");
+                            emptyView.setText(LocaleController.getInstance().getRoomsString("no_task_yet"));
                         } else if (emptyViewContainer != null) {
                             try {
                                 emptyViewContainer.setVisibility(View.GONE);
@@ -5246,6 +5246,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
                 }
             });
+            bottomTaskSort.taskAll.setText(LocaleController.getInstance().getRoomsString("all"));
+            bottomTaskSort.taskTodo.setText(LocaleController.getInstance().getRoomsString("todo"));
+            bottomTaskSort.taskDoing.setText(LocaleController.getInstance().getRoomsString("doing"));
+            bottomTaskSort.taskDone.setText(LocaleController.getInstance().getRoomsString("done"));
+            bottomTaskSort.taskArchive.setText(LocaleController.getInstance().getRoomsString("archive"));
+
             contentView.addView(chatTab.getRoot(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.TOP | Gravity.LEFT));
             int selectedColor = getParentActivity().getResources().getColor(R.color.key_chat_emojiPanelStickerSetNameHighlight);
             if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
@@ -7379,36 +7385,53 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     }
 
     private void createTask(TLRPC.User selectedUser, String text, long chatId, int messageId, int senderId) {
-        Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
+        try {
+            ((LaunchActivity) getParentActivity()).addTaskButtonClicked();
 
-        final int realChatId = arguments.getInt("chat_id", 0);
-        String chatType = "private";
-        if (realChatId != 0) {
-            chatType = "group";
+            Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
+
+            final int realChatId = arguments.getInt("chat_id", 0);
+            String chatType = "private";
+            if (realChatId != 0) {
+                chatType = "group";
+            }
+            bottomSheetTask = AlertsCreator.createTaskEditorDialogBySocket(socket, getParentActivity(), selectedUser,
+                    text, getTaskMemberList(), chatId, chatType, new TaskManagerListener() {
+                        @Override
+                        public void onCreate(Task task) {
+                            // adding task to {taskList} in order to show task card view
+                            taskList.add(task);
+                            String message = "Task #" + (task.getId() > 0 ? task.getId() : task.getLocal_id()) + "\n";
+                            message += LocaleController.getInstance().getRoomsString("you_got_task");
+                            SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, false, 0);
+
+                            moveScrollToBottom();
+                        }
+
+                        @Override
+                        public void onUpdate(Task task) {
+                        }
+                    }).create();
+            bottomSheetTask.setFocusable(true);
+            bottomSheetTask.setOnShowListener(
+                    dialog -> {
+//                        if (bottomSheetTask.isShowing()) {
+//                            AndroidUtilities.showKeyboard(bottomSheetTask.getCurrentFocus());
+//                        } else {
+                        AndroidUtilities.runOnUIThread(() -> {
+                                    if (bottomSheetTask.isShowing()) {
+                                        AndroidUtilities.showKeyboard(bottomSheetTask.getCurrentFocus());
+                                    }
+                                }, 50
+                        );
+//                        }
+                    }
+            );
+
+            showDialog(bottomSheetTask);
+
+        } catch (Exception x) {
         }
-        bottomSheetTask = AlertsCreator.createTaskEditorDialogBySocket(socket, getParentActivity(), selectedUser,
-                text, getTaskMemberList(), chatId, chatType, new TaskManagerListener() {
-                    @Override
-                    public void onCreate(Task task) {
-                        // adding task to {taskList} in order to show task card view
-                        taskList.add(task);
-                        String message = "Task #" + (task.getId() > 0 ? task.getId() : task.getLocal_id()) + "\n";
-                        message += "Вы получили новое задание.\n" +
-                                "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US";
-                        SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, false, 0);
-
-                        ArrayList<Integer> messageIds = new ArrayList<>();
-                        messageIds.add(messageId);
-
-                        moveScrollToBottom();
-                    }
-
-                    @Override
-                    public void onUpdate(Task task) {
-                    }
-                }).create();
-        bottomSheetTask.setFocusable(true);
-        showDialog(bottomSheetTask);
     }
 
     private boolean isChannel() {
@@ -18428,7 +18451,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 } else {
                     if (currentEncryptedChat == null) {
                         if (allowChatActions) {
-                            items.add("Создать задачу");
+                            items.add(LocaleController.getInstance().getRoomsString("create_task"));
                             options.add(99);
                             icons.add(R.drawable.ic_add_task);
 
@@ -19218,7 +19241,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 } else {
                     if (currentEncryptedChat == null) {
                         if (allowChatActions) {
-                            items.add("Создать задачу");
+                            items.add(LocaleController.getInstance().getRoomsString("create_task"));
                             options.add(99);
                             icons.add(R.drawable.ic_add_task);
 
@@ -20762,35 +20785,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
             case 98:
             case 99:
-//                String name = IRoomsManager.getInstance().getSelectedCompanyName(getParentActivity());
-//
-//                if (name.equals("")) {
-//                    try {
-//                        DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
-//                            switch (which) {
-//                                case DialogInterface.BUTTON_POSITIVE:
-//                                    Bundle args = new Bundle();
-//                                    args.putString("action", "add");
-//                                    args.putBoolean("create_company", true);
-//                                    presentFragment(new AddMembersToCompanyActivity(args));
-//                                    break;
-//
-//                                case DialogInterface.BUTTON_NEGATIVE:
-//                                    dialog.dismiss();
-//                                    break;
-//                            }
-//                        };
-//
-//                        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-//                        builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
-//                                .setNegativeButton("Пропустить", dialogClickListener).show();
-//
-//                    } catch (Exception x) {
-//                    }
-//                    return;
-//                }
                 if (selectedCompany == null) {
-                    int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1);
+                    int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, 0);
                     IRoomsManager.getInstance().getCompany(getParentActivity(), companyId, new IRoomsManager.IRoomCallback<Company>() {
                         @Override
                         public void onSuccess(Company company) {
@@ -20837,7 +20833,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
         } else {
             TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-            int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1);
+            int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, 0);
             if (companyId == 0) {
                 return user;
             } else if (user != null && selectedCompany != null && selectedCompany.getId() > 0) {
@@ -22064,7 +22060,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
     private void showStatusSelectPopup(Task finalTaskItem1, CheckBox checkbox, TextView statusText, ImageView arrow) {
         AlertDialog.Builder builder1 = new AlertDialog.Builder(getParentActivity());
-        builder1.setTitle("Выберите статус");
+        builder1.setTitle(LocaleController.getInstance().getRoomsString("choose_status"));
 
         builder1.setItems(Utils.getStatuses(), (dialog, which) -> {
             finalTaskItem1.setStatus_code(which);
@@ -23005,6 +23001,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     } else {
                                         layout.msgUnsent.setVisibility(View.GONE);
                                     }
+                                    String teamName = LocaleController.getInstance().getRoomsString("no_team");
+                                    for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
+                                        if (company.getId() == taskItem.getCompany_id()) {
+                                            teamName = company.getName();
+                                            break;
+                                        }
+                                    }
+                                    layout.teamTitle.setText(teamName);
                                     String deadline = getDeadLine(taskItem.getExpires_at());
                                     layout.tlDeadline.setText(deadline);
                                     if (deadline.equals("")) {
@@ -23142,7 +23146,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
 
                                 taskItem.setMessageId(message.getId());
-
+                                String teamName = LocaleController.getInstance().getRoomsString("no_team");
+                                for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
+                                    if (company.getId() == taskItem.getCompany_id()) {
+                                        teamName = company.getName();
+                                        break;
+                                    }
+                                }
+                                layout.teamTitle.setText(teamName);
                                 deadline = getDeadLine(taskItem.getExpires_at());
                                 layout.tlDeadline.setText(deadline);
                                 if (deadline.equals("")) {
@@ -23266,7 +23277,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         layout.taskArrow.setVisibility(View.VISIBLE);
                                     }
                                     layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
-
+                                    String teamName = LocaleController.getInstance().getRoomsString("no_team");
+                                    for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
+                                        if (company.getId() == taskItem.getCompany_id()) {
+                                            teamName = company.getName();
+                                            break;
+                                        }
+                                    }
+                                    layout.teamTitle.setText(teamName);
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     layout.tlTaskedit.setOnClickListener(view -> {
@@ -24000,7 +24018,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
 
             AndroidUtilities.runOnUIThread(this::notifyDataSetChanged);
-
         }
 
         public void updateWithCurrentSort() {
@@ -24043,7 +24060,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             if (taskItem != null) {
 
                 TasklistTaskLayoutBinding layout = TasklistTaskLayoutBinding.bind(holder.itemView);
-
+                String teamName = LocaleController.getInstance().getRoomsString("no_team");
+                for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
+                    if (company.getId() == taskItem.getCompany_id()) {
+                        teamName = company.getName();
+                        break;
+                    }
+                }
+                layout.teamTitle.setText(teamName);
                 if (taskItem.getMembers().size() == 0) {
                     layout.taskArrow.setVisibility(View.INVISIBLE);
                 } else {

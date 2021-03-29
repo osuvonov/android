@@ -17,8 +17,8 @@ public class CompanyViewModel extends AndroidViewModel {
         super(application);
         roomsRepository = RoomsRepository.getInstance(application);
      }
-    public void insert(Company task) {
-        roomsRepository.insert(task);
+    public void insert(Company company) {
+        roomsRepository.insert(company);
     }
 
 }

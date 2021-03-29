@@ -22,7 +22,6 @@
             android:layout_height="match_parent"
             android:background="@color/key_chat_emojiPanelStickerSetNameHighlight"
             android:padding="5dp"
-            android:text="Все"
             android:textColor="@color/white"
             android:textSize="10sp" />
 
@@ -33,7 +32,6 @@
             android:padding="5dp"
             android:background="@null"
             android:singleLine="true"
-            android:text="Надо сделать"
             android:textColor="@color/white"
             android:textSize="10sp" />
 
@@ -44,7 +42,6 @@
             android:background="@drawable/btn_click"
             android:padding="5dp"
             android:singleLine="true"
-            android:text="В работе"
             android:textColor="@color/white"
 
             android:textSize="10sp" />
@@ -56,7 +53,6 @@
             android:background="@drawable/btn_click"
             android:padding="5dp"
             android:singleLine="true"
-            android:text="Выполнено"
             android:textColor="@color/white"
             android:textSize="10sp" />
 
@@ -67,7 +63,6 @@
             android:background="@drawable/btn_click"
             android:padding="5dp"
             android:singleLine="true"
-            android:text="Архив"
             android:textColor="@color/white"
             android:textSize="10sp" />
     </LinearLayout>

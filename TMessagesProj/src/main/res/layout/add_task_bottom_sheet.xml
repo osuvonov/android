@@ -17,7 +17,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:padding="8dp"
-            android:text="Описание"
+            android:text=""
             android:textColor="@color/holo_blue_bright"
             android:textSize="14sp"
             android:textStyle="bold"
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/btn_click_add_task_top"
             android:padding="8dp"
-            android:text="Сохранить"
+            android:text=""
             android:textAllCaps="true"
             android:textColor="@color/disabled_save_task_color"
             android:textSize="14sp"
@@ -63,7 +63,6 @@
                     android:layout_height="wrap_content"
                     android:background="@null"
                     android:focusable="true"
-
                     android:focusableInTouchMode="true"
                     android:imeOptions="actionNone"
                     android:inputType="textCapSentences|text|textMultiLine"
@@ -71,7 +70,7 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <TextView
+                <View
                     android:id="@+id/tv_first_empty_row"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
@@ -87,7 +86,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
-                    android:text="Oтветственное лицо"
+                    android:text=""
                     android:textColor="@color/holo_blue_bright"
                     android:textSize="14sp"
                     android:textStyle="bold"
@@ -109,6 +108,16 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/tv_label_person_in_charge" />
+                <View
+                    android:visibility="gone"
+                    android:id="@+id/tv_team_empty_row"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@color/lighter_gray"
+                    android:textSize="14sp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_select_members" />
 
                 <TextView
                     android:visibility="gone"
@@ -116,15 +125,15 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
-                    android:text="Команда"
                     android:textColor="@color/holo_blue_bright"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintBottom_toTopOf="@+id/team_spinner"
-                    app:layout_constraintTop_toBottomOf="@+id/tv_select_members" />
+                    app:layout_constraintTop_toBottomOf="@+id/tv_team_empty_row" />
 
                 <Spinner
+                    android:layout_marginBottom="5dp"
                     android:visibility="gone"
                     android:id="@+id/team_spinner"
                     android:layout_width="match_parent"
@@ -132,9 +141,9 @@
                     app:layout_constraintBottom_toTopOf="@+id/tv_second_empty_row"
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tv_select_members" />
+                    app:layout_constraintTop_toBottomOf="@+id/tv_label_team" />
 
-                <TextView
+                <View
                     android:id="@+id/tv_second_empty_row"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"
@@ -168,7 +177,7 @@
                     app:layout_constraintLeft_toLeftOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tv_label_status" />
 
-                <TextView
+                <View
                     android:id="@+id/tv_third_empty_row"
                     android:layout_width="match_parent"
                     android:layout_height="2dp"

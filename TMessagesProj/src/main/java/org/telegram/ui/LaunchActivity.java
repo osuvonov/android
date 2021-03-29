@@ -72,12 +72,12 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 import com.google.android.gms.common.api.Status;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.appindexing.Action;
 import com.google.firebase.appindexing.FirebaseUserActions;
 import com.google.firebase.appindexing.builders.AssistActionBuilder;
 import com.google.gson.Gson;
 
-import org.checkerframework.checker.signedness.qual.Constant;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.PhoneFormat.PhoneFormat;
@@ -161,15 +161,16 @@ import org.telegram.ui.Components.voip.VoIPHelper;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import io.socket.client.IO;
 
 public class LaunchActivity extends Activity implements ActionBarLayout.ActionBarLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
+    public FirebaseAnalytics mFirebaseAnalytics;
 
     private static final String EXTRA_ACTION_TOKEN = "actions.fulfillment.extra.ACTION_TOKEN";
 
@@ -267,39 +268,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     JSONObject jsonObject = new JSONObject(success);
 
                     ArrayList<Company> companies = IRoomJsonParser.getCompanies(jsonObject.toString());
-                    if (companies.size() == 0) {
-                        try {
-                            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case DialogInterface.BUTTON_POSITIVE:
-                                            Bundle args = new Bundle();
-                                            args.putString("action", "add");
-                                            args.putBoolean("create_company", true);
-                                            presentFragment(new AddMembersToCompanyActivity(args));
-                                            break;
 
-                                        case DialogInterface.BUTTON_NEGATIVE:
-                                            dialog.dismiss();
-                                            break;
-                                    }
-                                }
-                            };
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-                            builder.setMessage("Для добавления задачи создайте команду или попросите Вашего администратора добавить Вас в команду.").setPositiveButton("Создать команду", dialogClickListener)
-                                    .setNegativeButton("Пропустить", dialogClickListener).show();
-
-                        } catch (Exception x) {
-                        }
-                    }
-
-                    if ((name == null || name.equals("") || name.equals("Создать команду")) && companies.size() > 1) {
+                    if ((name == null || name.equals("")) && companies.size() > 1) {
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
 
-                        builder.setTitle("Выбрать команду");
+                        builder.setTitle(LocaleController.getInstance().getRoomsString("choose_team"));
                         // add a list
                         String[] names = new String[companies.size()];
 
@@ -338,18 +312,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         });
     }
 
+    private Object taskListSynchronizer = new Object();
+
     private void initCompanies(String json) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
             String name = IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this);
 
             try {
-
                 ArrayList<Company> companies = IRoomJsonParser.getCompaniesFromSocketAuth(json);
 
                 // dynamic company list
-                companyList.clear();
-                companyList.addAll(companies);
+                setCompanyList(companies);
 
                 RoomsRepository.getInstance(getApplication()).deleteCompanies();
                 if (companies.size() > 0) {
@@ -374,13 +348,13 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     prefs.edit().putString(Constants.SELECTED_COMPANY_NAME, "").commit();
                 }
 
-                if ((name.equals("") || name.equals("Создать команду")) && companies.size() > 1) {
+                if (name.equals("") && companies.size() > 1) {
 
                     if (!PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getBoolean("do_not_show_company_list", false)) {
                         runOnUiThread(() -> {
                             AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
 
-                            builder.setTitle("Выбрать команду");
+                            builder.setTitle(LocaleController.getInstance().getRoomsString("choose_team"));
                             // add a list
                             String[] names = new String[companies.size()];
 
@@ -397,7 +371,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 drawerLayoutAdapter.notifyDataSetChanged();
                                 dialog.dismiss();
                             });
-                            builder.setNegativeButton("Больше не показывать", new DialogInterface.OnClickListener() {
+                            builder.setNegativeButton(LocaleController.getInstance().getRoomsString("do_not_show"), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).edit().putBoolean("do_not_show_company_list", true).apply();
@@ -539,16 +513,21 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
                                     @Override
                                     public void onCreate(Task task) {
+                                        Bundle bundle = new Bundle();
+                                        bundle.putString("task_id", task.getId() + "");
+                                        bundle.putString("description", task.getDescription());
+                                        bundle.putString("type", "offline");
+
+                                        mFirebaseAnalytics.logEvent("task_created", bundle);
+
                                         createdTasks.add(task);
                                         if (taskListener != null) {
                                             taskListener.onTaskCreated(task);
                                         }
 
                                         String message = "Task #" + task.getId() + "\n";
-                                        message += "Вы получили новое задание.\n" +
-                                                "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US";
+                                        message += LocaleController.getInstance().getRoomsString("yout_got_task");
 
-                                        Log.e("offline task message ", "length: " + offlineTasks.size());
                                         long chatID = task.getChatId();
                                         if (task.getChat_type() != null && task.getChat_type().equals("group")) {
                                             chatID = -chatID;
@@ -561,7 +540,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
                                     }
                                 });
-
                             }
                         } else if (task.getLocalStatus() == 2) {
                             IRoomsManager.getInstance().editTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
@@ -663,17 +641,37 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     private ArrayList<Task> createdTasks = new ArrayList<>();
-    public ArrayList<Company> companyList = new ArrayList<>();
+    private ArrayList<Company> companyList = new ArrayList<>();
+
+    public void setCompanyList(ArrayList<Company> list) {
+        synchronized (taskListSynchronizer) {
+            companyList.clear();
+            companyList.addAll(list);
+        }
+    }
+
+    public ArrayList<Company> getCompanyList() {
+        synchronized (taskListSynchronizer) {
+        }
+        return companyList;
+    }
 
     private void loadTeams() {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
-                    companyList.clear();
-                    companyList.addAll(RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getCompanyList());
+                    synchronized (taskListSynchronizer) {
+                        setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getCompanyList());
+                    }
                     return null;
                 },
                 result -> {
                 });
+    }
+
+    public void addTaskButtonClicked() {
+        Bundle bundle = new Bundle();
+        bundle.putString("date", Calendar.getInstance().getTime().toString());
+        mFirebaseAnalytics.logEvent("start_task", bundle);
     }
 
     @Override
@@ -686,6 +684,13 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         } catch (URISyntaxException e) {
         }
         loadTeams();
+        // init firebase analytics
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        Bundle bundle = new Bundle();
+        bundle.putString("date", Calendar.getInstance().getTime().toString());
+        mFirebaseAnalytics.logEvent("start_app", bundle);
+
+
         ApplicationLoader.postInitApplication();
 
         RoomsRepository.getInstance(LaunchActivity.this.getApplication()).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
@@ -697,6 +702,11 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                         if (backendTaskListener != null) {
                             backendTaskListener.onBackendTaskForLocalTaskCreated(task);
                         }
+                        Bundle bundle = new Bundle();
+                        bundle.putString("task_id", task.getId() + "");
+                        bundle.putString("description", task.getDescription());
+
+                        mFirebaseAnalytics.logEvent("task_created", bundle);
                     }
 
                     @Override
@@ -3934,6 +3944,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     public ActionBarLayout getRightActionBarLayout() {
         return rightActionBarLayout;
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {

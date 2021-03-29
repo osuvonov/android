@@ -19,6 +19,7 @@ import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskRunner;
 import org.telegram.messenger.AndroidUtilities;
 import org.rooms.messenger.R;
+import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -65,7 +66,7 @@ public class CompanyFragment extends BaseFragment {
 
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
-        actionBar.setTitle("Команды");
+        actionBar.setTitle(LocaleController.getInstance().getRoomsString("teams"));
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
             public void onItemClick(int id) {
@@ -93,6 +94,9 @@ public class CompanyFragment extends BaseFragment {
             @Override
             public void onClick(Company company) {
                 try {
+                    if (company.getId()==0){
+                        return;
+                    }
                     CompanyInfo companyInfo = new CompanyInfo(company);
                     presentFragment(companyInfo);
                 } catch (Exception x) {
@@ -125,7 +129,6 @@ public class CompanyFragment extends BaseFragment {
 
             RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
             return repository.getCompanyList();
-
         }, result -> {
             companyViewAdapter.submitList(result);
             if (((LaunchActivity) getParentActivity()).getmSocket().connected()) {
@@ -148,8 +151,7 @@ public class CompanyFragment extends BaseFragment {
                     }, result -> {
                         try {
                             companyViewAdapter.submitList(result);
-                            ((LaunchActivity) getParentActivity()).companyList.clear();
-                            ((LaunchActivity) getParentActivity()).companyList.addAll(result);
+                            ((LaunchActivity) getParentActivity()).setCompanyList((ArrayList<Company>) result);
                         } catch (Exception x) {
                         }
                     });
@@ -159,7 +161,7 @@ public class CompanyFragment extends BaseFragment {
 
             @Override
             public void onError(String error) {
-                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+             //   Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
             }
         });
     }

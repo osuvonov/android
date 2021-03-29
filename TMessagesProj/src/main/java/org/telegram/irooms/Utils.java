@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.util.TypedValue;
 
+import org.telegram.messenger.LocaleController;
 import org.telegram.tgnet.TLRPC;
 
 import java.util.ArrayList;
@@ -16,11 +17,11 @@ import java.util.stream.Stream;
 public class Utils {
     public static List<Integer> intersectionMembers(List<Integer> companyMembers, List<Integer> groupMembers) {
         List<Integer> temp = new ArrayList<>();
-        if (companyMembers==null){
+        if (companyMembers == null) {
             return temp;
         }
 
-        for (int  i : groupMembers) {
+        for (int i : groupMembers) {
             if (companyMembers.contains(i)) {
                 temp.add(i);
             }
@@ -98,6 +99,11 @@ public class Utils {
     }
 
     public static String[] getStatuses() {
-        return new String[]{"Надо сделать", "В работе", "Выполнено", "Архив"};
+        return new String[]{
+                LocaleController.getInstance().getRoomsString("todo"),
+                LocaleController.getInstance().getRoomsString("doing"),
+                LocaleController.getInstance().getRoomsString("done"),
+                LocaleController.getInstance().getRoomsString("archive")
+        };
     }
 }

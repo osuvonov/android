@@ -106,4 +106,10 @@ public class Company {
     public void setMembers(List<Integer> members) {
         this.members = members;
     }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return name;
+    }
 }

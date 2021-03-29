@@ -248,7 +248,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
         if (createCompany) {
-            actionBar.setTitle("Создать команду");
+            actionBar.setTitle(LocaleController.getInstance().getRoomsString("create_team"));
         } else {
             actionBar.setTitle(PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getString(Constants.SELECTED_COMPANY_NAME, ""));
         }
@@ -524,7 +524,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                             for (Integer integer : members) {
                                                 SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
                                             }
-                                            Toast.makeText(getParentActivity(), "Команда успешно добавлена.", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getParentActivity(), LocaleController.getInstance().getRoomsString("team_added"), Toast.LENGTH_SHORT).show();
                                             ((LaunchActivity) getParentActivity()).refreshCompany();
 
                                             getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
