@@ -96,7 +96,10 @@ public class IRoomsManager {
         runner.executeAsync(() -> {
             RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
             return repository.getCompanyList();
-        }, result -> callback.onSuccess(new Gson().toJson(result)));
+        }, result -> {
+            String json = new Gson().toJson(result);
+            callback.onSuccess(json);
+        });
     }
 
     public void addMembersToCompanyBySocket(Context context, Socket socket, int companyId, ArrayList<Integer> members, IRoomsCallback callback) {
@@ -106,8 +109,8 @@ public class IRoomsManager {
                 try {
                     new TaskRunner().executeAsync(() -> {
                         RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
-
-                        roomsRepository.updateCompanyMembers(companyId, new Gson().toJson(members), true);
+                        String json = new Gson().toJson(members);
+                        roomsRepository.updateCompanyMembers(companyId, json, true);
                         return "1";
                     }, result -> callback.onSuccess(response));
                 } catch (Exception x) {
@@ -129,8 +132,8 @@ public class IRoomsManager {
                 try {
                     new TaskRunner().executeAsync(() -> {
                         RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
-
-                        roomsRepository.updateCompanyMembers(companyId, new Gson().toJson(members), false);
+                        String json = new Gson().toJson(members);
+                        roomsRepository.updateCompanyMembers(companyId, json, false);
                         return "1";
                     }, result -> callback.onSuccess(response));
                 } catch (Exception x) {
@@ -159,7 +162,6 @@ public class IRoomsManager {
                             myTask.setLocalStatus(3);
 
                             roomsRepository.createOnlineTask(myTask, UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId());
-                            android.util.Log.e("offline tasks create ", "created task on database: " + myTask.getId());
                             callback.onCreate(myTask);
                         }
                         return myTask;
@@ -167,7 +169,6 @@ public class IRoomsManager {
                     });
                 } catch (Exception x) {
                     x.printStackTrace();
-                    //callback.onError(x.getMessage());
                 }
             }
 
@@ -199,7 +200,6 @@ public class IRoomsManager {
                     });
                 } catch (Exception x) {
                     x.printStackTrace();
-                    // callback.onError(x.getMessage());
                 }
             }
 
@@ -222,7 +222,7 @@ public class IRoomsManager {
                         RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
                         JSONObject jsonObject = new JSONObject(response);
                         ArrayList<Company> companies = IRoomJsonParser.getCompanies(jsonObject.toString());
-                        repository.deleteCompanies();
+                        //     repository.deleteCompanies();
 
                         if (companies.size() > 0) {
                             for (Company company : companies) {
@@ -300,6 +300,8 @@ public class IRoomsManager {
                             }, result -> {
                                 callback.onSuccess(tasks);
                             });
+                        } else {
+                            callback.onSuccess(tasks);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();

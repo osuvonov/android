@@ -4,6 +4,7 @@ public interface Constants {
     String API_KEY = "dXAtFhOy7f00kZ0wA02zzA==";
     String TAG = "TASK_TASK";
     int CREATE_COMPANY = 1120;
+    String SELECTED_COMPANY="selected_company";
     String SELECTED_COMPANY_ID = "selected_company_id";
     String SELECTED_COMPANY_NAME = "selected_company_name";
     String COMPANY_REGISTER_REQUEST_ASKED = "company_register_request_asked";

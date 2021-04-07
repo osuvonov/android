@@ -13,6 +13,7 @@ import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
 import org.telegram.messenger.AndroidUtilities;
 import org.rooms.messenger.R;
+import org.telegram.messenger.LocaleController;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -79,17 +80,17 @@ public class CompanyInfo extends BaseFragment {
             @Override
             public void removeUserFromCompany(int position, TLRPC.User user) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                builder.setTitle("Вы уверены, что хотите удалить этого участника?");
+                builder.setTitle(LocaleController.getInstance().getRoomsString("sure_to_delete_member"));
                 TextView info = new TextView(getParentActivity());
                 info.setPadding(54, 0, 0, 0);
                 String fullName = user.first_name != null ? user.first_name : "" + user.last_name != null ? user.last_name : "";
 
                 info.setText(fullName);
                 builder.setView(info);
-                builder.setPositiveButton("Да", (dialogInterface, i) -> {
+                builder.setPositiveButton(LocaleController.getInstance().getRoomsString("yes"), (dialogInterface, i) -> {
                     removeMemberFromCompany(position, user.id);
                 });
-                builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(LocaleController.getInstance().getRoomsString("cancel"), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         dialogInterface.dismiss();

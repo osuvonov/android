@@ -19,6 +19,7 @@ public class Converters {
 
     @TypeConverter
     public static String fromNumberList(List<Integer> list) {
-        return new Gson().toJson(list);
+        String json  = new Gson().toJson(list);
+        return json;
     }
 }

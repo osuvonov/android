@@ -67,9 +67,6 @@ public abstract class TaskDao {
         insertAll(list);
     }
 
-    @Query("Select * from tbl_tasks where (members like '%' || :chatId  || '%' and company_id=:companyId) or (members like '%' || :accountId  ||  '%' and creator_id=:chatId and company_id=:companyId) or(chat_id =:accountId and creator_id=:chatId and company_id=:companyId) or(chat_id=:chatId and creator_id=:accountId and company_id=:companyId)")
-    public abstract List<Task> getPrivateChatTasksByCompany(int accountId, int chatId, int companyId);
-
     @Query("Select * from tbl_tasks where ((members like '%' || :chatId  || '%') or" +
             " (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or" +
             "(chat_id =:accountId and creator_id=:chatId) or" +

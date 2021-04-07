@@ -11,6 +11,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.util.Log;
+
 import org.json.JSONObject;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.Company;
@@ -47,12 +49,6 @@ public class CompanyFragment extends BaseFragment {
     private CompanyViewAdapter companyViewAdapter;
 
     @Override
-    public void onResume() {
-        super.onResume();
-        initCompaniesInfo();
-    }
-
-    @Override
     public boolean onBackPressed() {
         try {
             ((LaunchActivity) getParentActivity()).refreshCompany();
@@ -63,7 +59,6 @@ public class CompanyFragment extends BaseFragment {
 
     @Override
     public View createView(Context context) {
-
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
         actionBar.setTitle(LocaleController.getInstance().getRoomsString("teams"));
@@ -122,11 +117,8 @@ public class CompanyFragment extends BaseFragment {
     }
 
     private void initCompaniesInfo() {
-
         TaskRunner runner = new TaskRunner();
-
         runner.executeAsync((Callable<List<Company>>) () -> {
-
             RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
             return repository.getCompanyList();
         }, result -> {
@@ -146,6 +138,7 @@ public class CompanyFragment extends BaseFragment {
                     runner.executeAsync((Callable<List<Company>>) () -> {
 
                         RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+
                         return repository.getCompanyList();
 
                     }, result -> {
@@ -177,7 +170,6 @@ public class CompanyFragment extends BaseFragment {
         buttonTextView.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(4), Theme.getColor(Theme.key_featuredStickers_addButton), Theme.getColor(Theme.key_featuredStickers_addButtonPressed)));
         return buttonTextView;
     }
-
 
     @Override
     public void onRequestPermissionsResultFragment(int requestCode, String[] permissions,

@@ -1578,7 +1578,14 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
             protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
                 super.onLayout(changed, left, top, right, bottom);
                 if (scheduledButton != null) {
-                    int x = getMeasuredWidth() - AndroidUtilities.dp(botButton != null && botButton.getVisibility() == VISIBLE ? 96 : 48) - AndroidUtilities.dp(48);
+                    int extraButtonsWidth = 48;
+                    if (botButton != null && botButton.getVisibility() == VISIBLE) {
+                        extraButtonsWidth += 48;
+                    }
+                    if (addTaskButton != null && addTaskButton.getVisibility() == VISIBLE) {
+                        extraButtonsWidth += 48;
+                    }
+                    int x = getMeasuredWidth() - AndroidUtilities.dp(extraButtonsWidth) - AndroidUtilities.dp(48);
                     scheduledButton.layout(x, scheduledButton.getTop(), x + scheduledButton.getMeasuredWidth(), scheduledButton.getBottom());
                 }
             }
@@ -2080,7 +2087,7 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
                     updateFieldHint();
                 }
             });
-            //-------7
+            //-------
             addTaskButton = new ImageView(context);
             addTaskButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
             addTaskButton.setImageResource(R.drawable.ic_plus_2);

@@ -17,6 +17,7 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -72,6 +73,14 @@ import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.play.core.appupdate.AppUpdateInfo;
+import com.google.android.play.core.appupdate.AppUpdateManager;
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory;
+import com.google.android.play.core.install.model.ActivityResult;
+import com.google.android.play.core.install.model.AppUpdateType;
+import com.google.android.play.core.install.model.InstallStatus;
+import com.google.android.play.core.install.model.UpdateAvailability;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.appindexing.Action;
 import com.google.firebase.appindexing.FirebaseUserActions;
@@ -83,6 +92,7 @@ import org.json.JSONObject;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.Utils;
 import org.telegram.irooms.company.AddMembersToCompanyActivity;
 import org.telegram.irooms.company.CompanyFragment;
 import org.telegram.irooms.database.Company;
@@ -164,10 +174,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import io.socket.client.IO;
+
+import static com.google.android.play.core.install.model.AppUpdateType.IMMEDIATE;
 
 public class LaunchActivity extends Activity implements ActionBarLayout.ActionBarLayoutDelegate, NotificationCenter.NotificationCenterDelegate, DialogsActivity.DialogsActivityDelegate {
     public FirebaseAnalytics mFirebaseAnalytics;
@@ -233,6 +244,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private boolean loadingThemeAccent;
     private AlertDialog loadingThemeProgressDialog;
 
+    private static final String socketTag = "SocketDebug";
     private Runnable lockRunnable;
 
     private static final int PLAY_SERVICES_REQUEST_CHECK_SETTINGS = 140;
@@ -245,6 +257,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     }
 
+    public ArrayList<Task> globalTaskList = new ArrayList<>();
+
     private BackendForOfflineTaskListener backendTaskListener;
 
     public void setBackendTaskListener(BackendForOfflineTaskListener s) {
@@ -252,9 +266,10 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     public void initFirstTimeSocket() {
+
         if (mSocket != null) {
-            mSocket.disconnect();
-            mSocket.connect();
+            disconnectSocket();
+            connectSocket();
         }
     }
 
@@ -284,16 +299,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             i++;
                         }
 
-                        builder.setItems(names, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
-                                        companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                                drawerLayoutAdapter.notifyDataSetChanged();
+                        builder.setItems(names, (dialog, which) -> {
+                            IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
+                                    companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+                            drawerLayoutAdapter.notifyDataSetChanged();
 
-                                dialog.dismiss();
-
-                            }
+                            dialog.dismiss();
                         });
 
                         // create and show the alert dialog
@@ -385,7 +396,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                         });
                     }
                 }
-                Log.e("init comapesines", "size: " + companies.size());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -395,30 +405,65 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         });
     }
 
+    volatile boolean authorized = false;
+
+    public boolean isAuthorized() {
+        return authorized;
+    }
+
     public Socket getmSocket() {
         return mSocket;
     }
 
     private void initSocket() {
-        mSocket.on(Socket.EVENT_CONNECT, onConnect);
-        mSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.on("error", onConnectError);
-        mSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        Socket localSocket;
+        try {
+            IO.Options options = new IO.Options();
+            options.forceNew = true;
+            SocketSSL.set(options);
+            localSocket = IO.socket(Constants.SOCKET_ENDPOINT, options);
 
-        mSocket.on("update", onUpdate);
+            localSocket.on(Socket.EVENT_CONNECT, onConnect);
+            localSocket.on(Socket.EVENT_DISCONNECT, onDisconnect);
+            localSocket.on("error", onConnectError);
+            localSocket.on(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
 
+            localSocket.on("update", onUpdate);
 
-        mSocket.connect();
+            this.mSocket = localSocket;
+            connectSocket();
+
+        } catch (URISyntaxException e) {
+
+        }
+    }
+
+    public void connectSocket() {
+        if (mSocket != null && !mSocket.connected()) {
+
+            mSocket.connect();
+        }
+    }
+
+    public void disconnectSocket() {
+        if (mSocket != null) {
+            mSocket.disconnect();
+        }
+        connectSocket();
     }
 
     private void destroySocket() {
-        mSocket.disconnect();
-        mSocket.off(Socket.EVENT_CONNECT, onConnect);
-        mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
-        mSocket.off("error", onConnectError);
-        mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+        try {
 
-        mSocket.off("update", onUpdate);
+            mSocket.disconnect();
+            mSocket.off(Socket.EVENT_CONNECT, onConnect);
+            mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
+            mSocket.off("error", onConnectError);
+            mSocket.off(Socket.EVENT_CONNECT_TIMEOUT, onConnectError);
+
+            mSocket.off("update", onUpdate);
+        } catch (Exception x) {
+        }
     }
 
     private Emitter.Listener onUpdate = args -> {
@@ -457,59 +502,79 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     }
 
+    private void socketAuth() {
+
+        try {
+            APIClient.getInstance().getToken(LaunchActivity.this, new APIClient.TokenListener() {
+                @Override
+                public void onToken(String token) {
+
+                    if (token != null && !"".equals(token)) {
+
+                        try {
+                            JSONObject postData = new JSONObject();
+                            postData.put("platform", "android");
+                            postData.put("token", token);
+                            postData.put("version", BuildVars.BUILD_VERSION_STRING);
+
+                            mSocket.emit("auth", postData, (Ack) args1 -> {
+
+                                authorized = true;
+
+                                if (taskListener != null) {
+                                    taskListener.connectionRestored();
+                                }
+                                syncOfflineTasks();
+                                initCompanies(args1[0].toString());
+                            });
+                        } catch (Exception e) {
+
+                            e.printStackTrace();
+                        }
+                    } else {
+                        disconnectSocket();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                    try {
+                        AndroidUtilities.runOnUIThread(() -> {
+                            Toast.makeText(LaunchActivity.this, error, Toast.LENGTH_SHORT).show();
+                        });
+                    } catch (Exception x) {
+
+                    }
+                }
+            });
+        } catch (Exception x) {
+        }
+    }
+
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            Log.e("onconnect", args.toString());
-            try {
-                APIClient.getInstance().getToken(LaunchActivity.this, new APIClient.TokenListener() {
-                    @Override
-                    public void onToken(String token) {
-                        if (token != null && !"".equals(token)) {
-                            String platform = "android";
-                            String version = BuildVars.BUILD_VERSION_STRING;
-                            SocketAuthObject authObject = new SocketAuthObject(token, platform, version);
-                            try {
-                                JSONObject postData = new JSONObject(new Gson().toJson(authObject));
-                                mSocket.emit("auth", postData, (Ack) args1 -> {
-                                    syncOfflineTasks();
-                                    initCompanies(args1[0].toString());
-                                });
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            mSocket.disconnect();
-                        }
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        mSocket.disconnect();
-                    }
-                });
-            } catch (Exception x) {
-            }
+            socketAuth();
         }
     };
 
     private void syncOfflineTasks() {
-        if (mSocket.connected()) {
+        if (mSocket.connected() && authorized) {
             TaskRunner taskRunner = new TaskRunner();
             taskRunner.executeAsync(() -> {
                 List<Task> offlineTasks = RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getOfflineTasks();
                 if (offlineTasks.size() > 0 && mSocket != null) {
                     Log.e("offline tasks length ", "length: " + offlineTasks.size());
                     for (Task task : offlineTasks) {
-                        if (task.getLocalStatus() == 1) {
+                        if (task.getLocalStatus() == 1 || task.getId() < 0) {
                             TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
                             if (user.id == task.getCreatorId()) {
-                                if ("group".equals(task.getChat_type())) {
-                                    TLRPC.ChatFull info = MessagesController.getInstance(UserConfig.selectedAccount).getChatFull((int) task.getChatId());
-                                    if (info == null) {
-                                        return null;
-                                    }
-                                }
+//                                if ("group".equals(task.getChat_type())) {
+//                                    TLRPC.ChatFull info = MessagesController.getInstance(UserConfig.selectedAccount).getChatFull((int) task.getChatId());
+//                                    if (info == null) {
+//                                        return null;
+//                                    }
+//                                }
                                 IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
                                     @Override
                                     public void onCreate(Task task) {
@@ -564,11 +629,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     }
 
-    private Emitter.Listener onDisconnect = args -> Log.e("ondisconnect", args[0].toString());
+    private Emitter.Listener onDisconnect = args -> {
+        authorized = false;
+    };
 
     private void onTaskUpdated(String json) {
         try {
-
             JSONObject data = new JSONObject(json);
 
             Task task = IRoomJsonParser.getTask(data.toString(), true);
@@ -582,7 +648,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     private void onTaskCreated(String json) {
         try {
-
             JSONObject data = new JSONObject(json);
 
             Task task = IRoomJsonParser.getTask(data.toString(), true);
@@ -610,6 +675,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     public TaskListener taskListener;
 
     interface TaskListener {
+        void connectionRestored();
+
         void onTaskUpdated(Task task);
 
         void onTaskCreated(Task task);
@@ -622,6 +689,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
+            authorized = false;
             Log.e("onconnnect error", args.toString());
         }
     };
@@ -662,10 +730,17 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     synchronized (taskListSynchronizer) {
                         setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getCompanyList());
                     }
+                    loadTasks();
                     return null;
                 },
                 result -> {
                 });
+    }
+
+
+    private void loadTasks() {
+        globalTaskList.clear();
+        globalTaskList.addAll(RoomsRepository.getInstance(getApplication()).getTasks());
     }
 
     public void addTaskButtonClicked() {
@@ -674,15 +749,87 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         mFirebaseAnalytics.logEvent("start_task", bundle);
     }
 
+    private static final int IMMEDIATE_UPDATE_REQUEST = 9999;
+    private static final int FLEXIBLE_UPDATE_REQUEST = 9998;
+    private boolean immediateUpdateStarted = false;
+    private AppUpdateManager appUpdateManager;
+
+    // Displays the snackbar notification and call to action.
+    private void popupSnackbarForCompleteUpdate() {
+        try {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Rooms");
+            builder.setMessage(LocaleController.getInstance().getRoomsString("update_downloaded"));
+            builder.setPositiveButton(LocaleController.getInstance().getRoomsString("restart"), (dialog, which) -> appUpdateManager.completeUpdate());
+            builder.show();
+        } catch (Exception x) {
+        }
+    }
+
+    private void checkRoomsUpdate() {
+        try {
+            final int HIGH_PRIORITY_UPDATE = 5;
+            final int MEDIUM_PRIORITY_UPDATE = 3;
+            final int LOW_PRIORITY_UPDATE = 0;
+
+            // Creates instance of the manager.
+            appUpdateManager = AppUpdateManagerFactory.create(LaunchActivity.this);
+
+            // Returns an intent object that you use to check for an update.
+            com.google.android.play.core.tasks.Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+            // Checks that the platform will allow the specified type of update.
+            appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    switch (appUpdateInfo.updatePriority()) {
+                        case HIGH_PRIORITY_UPDATE:
+                            if (appUpdateInfo.isUpdateTypeAllowed(IMMEDIATE)) {
+                                try {
+                                    immediateUpdateStarted = true;
+                                    appUpdateManager.startUpdateFlowForResult(
+                                            // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                                            appUpdateInfo,
+                                            // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                                            IMMEDIATE,
+                                            // The current activity making the update request.
+                                            this,
+                                            // Include a request code to later monitor this update request.
+                                            IMMEDIATE_UPDATE_REQUEST);
+                                } catch (IntentSender.SendIntentException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            break;
+                        case MEDIUM_PRIORITY_UPDATE:
+                        case LOW_PRIORITY_UPDATE:
+                            if (appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)) {
+                                try {
+                                    appUpdateManager.startUpdateFlowForResult(
+                                            // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                                            appUpdateInfo,
+                                            // Or 'AppUpdateType.FLEXIBLE' for flexible updates.
+                                            AppUpdateType.FLEXIBLE,
+                                            // The current activity making the update request.
+                                            this,
+                                            // Include a request code to later monitor this update request.
+                                            FLEXIBLE_UPDATE_REQUEST);
+                                } catch (IntentSender.SendIntentException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            break;
+                    }
+                }
+            });
+        } catch (Exception x) {
+            Log.e("in app update", x.getMessage());
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        try {
-            IO.Options options = new IO.Options();
-            options.forceNew = true;
-            SocketSSL.set(options);
-            mSocket = IO.socket(Constants.SOCKET_ENDPOINT, options);
-        } catch (URISyntaxException e) {
-        }
+        checkRoomsUpdate();
+        initSocket();
         loadTeams();
         // init firebase analytics
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
@@ -1389,7 +1536,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         MediaController.getInstance().setBaseActivity(this, true);
         AndroidUtilities.startAppCenter(this);
 
-        initSocket();
     }
 
     private void openSettings(boolean expanded) {
@@ -1468,8 +1614,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         updateCurrentConnectionState(currentAccount);
 
         try {
-            mSocket.disconnect();
-            mSocket.connect();
+            disconnectSocket();
+            connectSocket();
         } catch (Exception x) {
         }
 
@@ -3959,6 +4105,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             drawerLayoutAdapter.notifyDataSetChanged();
             return;
         }
+        if (requestCode == FLEXIBLE_UPDATE_REQUEST || requestCode == IMMEDIATE_UPDATE_REQUEST) {
+            if (resultCode != RESULT_OK) {
+            } else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
+                checkRoomsUpdate();
+            }
+        }
         if (requestCode == 105) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (ApplicationLoader.canDrawOverlays = Settings.canDrawOverlays(this)) {
@@ -4202,6 +4354,41 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     @Override
     protected void onResume() {
         super.onResume();
+
+        appUpdateManager
+                .getAppUpdateInfo()
+                .addOnSuccessListener(appUpdateInfo -> {
+
+                    if (appUpdateInfo.updateAvailability()
+                            == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS) {
+                        // If the update is downloaded but not installed,
+                        // notify the user to complete the update.
+                        if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                            popupSnackbarForCompleteUpdate();
+                            return;
+                        }
+                        // If an in-app update is already running, resume the update.
+                        try {
+                            if (immediateUpdateStarted) {
+                                appUpdateManager.startUpdateFlowForResult(
+                                        appUpdateInfo,
+                                        IMMEDIATE,
+                                        this,
+                                        IMMEDIATE_UPDATE_REQUEST);
+                            } else {
+                                appUpdateManager.startUpdateFlowForResult(
+                                        appUpdateInfo,
+                                        AppUpdateType.FLEXIBLE,
+                                        this,
+                                        FLEXIBLE_UPDATE_REQUEST);
+                            }
+
+                        } catch (IntentSender.SendIntentException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                });
         try {
             drawerLayoutAdapter.notifyDataSetChanged();
         } catch (Exception x) {
@@ -4951,6 +5138,10 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         } else if (currentConnectionState == ConnectionsManager.ConnectionStateConnecting) {
             title = "Connecting";
             titleId = R.string.Connecting;
+        }
+        if (mSocket != null) {
+
+            connectSocket();
         }
         if (currentConnectionState == ConnectionsManager.ConnectionStateConnecting || currentConnectionState == ConnectionsManager.ConnectionStateConnectingToProxy) {
             action = () -> {

@@ -254,6 +254,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -770,30 +771,55 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     Object lockObject = new Object();
 
     private void requestTasksFromBackend() {
-        Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
+        try {
+            boolean isAuhorized = ((LaunchActivity) getParentActivity()).isAuthorized();
 
-        if (socket.connected()) {
-            final int chatId = arguments.getInt("chat_id", 0);
-            long[] chatIds;
-            if (migratedFromChatID > 0) {
-                chatIds = new long[2];
-                chatIds[0] = Math.abs(dialog_id);
-                chatIds[1] = migratedFromChatID;
-            } else {
-                chatIds = new long[1];
-                chatIds[0] = Math.abs(dialog_id);
+            if (!isAuhorized) {
+                return;
             }
+            Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
 
-            TaskSocketQuery query = new TaskSocketQuery();
-            query.setChat_type(chatId == 0 ? Constants.CHAT_TYPE_PRIVATE : Constants.CHAT_TYPE_GROUP);
+            if (socket.connected()) {
+                final int chatId = arguments.getInt("chat_id", 0);
+                long[] chatIds;
+                if (migratedFromChatID > 0) {
+                    chatIds = new long[2];
+                    chatIds[0] = Math.abs(dialog_id);
+                    chatIds[1] = migratedFromChatID;
+                } else {
+                    chatIds = new long[1];
+                    chatIds[0] = Math.abs(dialog_id);
+                }
 
-            for (int i = 0; i < chatIds.length; i++) {
-                query.setChat_id(Math.abs(chatIds[i]));
+                TaskSocketQuery query = new TaskSocketQuery();
+                query.setChat_type(chatId == 0 ? Constants.CHAT_TYPE_PRIVATE : Constants.CHAT_TYPE_GROUP);
+
+                //    for (int i = 0; i < chatIds.length; i++) {
+                query.setChat_id(Math.abs(chatIds[0]));
 
                 IRoomsManager.getInstance().getMyTasks(getParentActivity(), ((LaunchActivity) getParentActivity()).getmSocket(), query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
                     @Override
-                    public void onSuccess(ArrayList<Task> success) {
-                        loadChatRelatedTasks(true);
+                    public void onSuccess(ArrayList<Task> tasks) {
+                        if (chatIds.length > 1) {
+                            query.setChat_id(chatIds[1]);
+                            IRoomsManager.getInstance().getMyTasks(getParentActivity(), ((LaunchActivity) getParentActivity()).getmSocket(), query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                                @Override
+                                public void onSuccess(ArrayList<Task> success) {
+                                    loadChatRelatedTasks(true, false);
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    try {
+                                        AndroidUtilities.runOnUIThread(() -> Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show());
+                                    } catch (Exception x) {
+                                    }
+                                }
+                            });
+                        }
+                        if (tasks.size() > 0) {
+                            loadChatRelatedTasks(true, false);
+                        }
                     }
 
                     @Override
@@ -804,92 +830,37 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         }
                     }
                 });
+                //   }
             }
+        } catch (Exception x) {
         }
+
     }
 
-    private synchronized void loadChatRelatedTasks(boolean gotLastTasksFromBackend) {
+    private synchronized void loadChatRelatedTasks(boolean gotLastTasksFromBackend, boolean firstTime) {
+        try {
+            int selectedAccountUserId = UserConfig.getInstance(UserConfig.selectedAccount).clientUserId;
+            final int chatId = arguments.getInt("chat_id", 0);
+            final int userId = arguments.getInt("user_id", 0);
 
-        int selectedAccountUserId = UserConfig.getInstance(UserConfig.selectedAccount).clientUserId;
-        final int chatId = arguments.getInt("chat_id", 0);
-        final int userId = arguments.getInt("user_id", 0);
+            int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, 0);
 
-        int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, 0);
+            if (chatId == 0 && userId == selectedAccountUserId) {
+                //saved messages/tasks
+                IRoomsManager.getInstance().getAccountTasks(getParentActivity(), userId,
+                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                            @Override
+                            public void onSuccess(ArrayList<Task> list) {
+                                if (list != null) {
 
-        if (chatId == 0 && userId == selectedAccountUserId) {
-            //saved messages/tasks
-            IRoomsManager.getInstance().getAccountTasks(getParentActivity(), userId,
-                    new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                        @Override
-                        public void onSuccess(ArrayList<Task> list) {
-                            if (list != null) {
-
-                                taskList.clear();
-
-                                taskList.addAll(list);
-                                AndroidUtilities.runOnUIThread(() -> {
-                                    if (chatListView.getAdapter() != null) {
-                                        chatListView.getAdapter().notifyDataSetChanged();
-                                    }
-                                });
-                                if (!gotLastTasksFromBackend) {
-                                    requestTasksFromBackend();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else if (chatId == 0) {
-            //private chat with someone
-            IRoomsManager.getInstance().getUserTasks(companyId, getParentActivity(), selectedAccountUserId, userId,
-                    new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                        @Override
-                        public void onSuccess(ArrayList<Task> list) {
-                            if (list != null) {
-                                taskList.clear();
-                                taskList.addAll(list);
-                                AndroidUtilities.runOnUIThread(() -> {
-                                    if (chatListView.getAdapter() != null) {
-                                        chatListView.getAdapter().notifyDataSetChanged();
-                                    }
-                                });
-                                if (!gotLastTasksFromBackend) {
-                                    requestTasksFromBackend();
-                                }
-                            }
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        } else {
-            //group chat
-            long[] chatIds;
-            if (migratedFromChatID > 0) {
-                chatIds = new long[2];
-                chatIds[0] = Math.abs(dialog_id);
-                chatIds[1] = migratedFromChatID;
-            } else {
-                chatIds = new long[1];
-                chatIds[0] = Math.abs(dialog_id);
-            }
-            IRoomsManager.getInstance().getGroupChatRelatedTasks(getParentActivity(), chatIds, companyId,
-                    new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                        @Override
-                        public void onSuccess(ArrayList<Task> list) {
-                            if (list != null) {
-                                synchronized (lockObject) {
                                     taskList.clear();
+
                                     taskList.addAll(list);
                                     AndroidUtilities.runOnUIThread(() -> {
-                                        if (chatListView.getAdapter() != null) {
-                                            chatListView.getAdapter().notifyDataSetChanged();
+                                        if (isChatMode && chatAdapter != null) {
+                                            chatAdapter.notifyDataSetChanged();
+                                        } else if (!isChatMode && taskAdapter != null) {
+                                            taskAdapter.updateWithCurrentSort();
                                         }
                                     });
                                     if (!gotLastTasksFromBackend) {
@@ -897,14 +868,81 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     }
                                 }
                             }
-                        }
 
-                        @Override
-                        public void onError(String error) {
-                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } else if (chatId == 0) {
+                //private chat with someone
+                IRoomsManager.getInstance().getUserTasks(companyId, getParentActivity(), selectedAccountUserId, userId,
+                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                            @Override
+                            public void onSuccess(ArrayList<Task> list) {
+                                if (list != null) {
+                                    taskList.clear();
+                                    taskList.addAll(list);
+                                    AndroidUtilities.runOnUIThread(() -> {
+                                        if (isChatMode && chatAdapter != null) {
+                                            chatAdapter.notifyDataSetChanged();
+                                        } else if (!isChatMode && taskAdapter != null) {
+                                            taskAdapter.updateWithCurrentSort();
+                                        }
+                                    });
+                                    if (!gotLastTasksFromBackend) {
+                                        requestTasksFromBackend();
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            } else {
+                //group chat
+                long[] chatIds;
+                if (migratedFromChatID > 0) {
+                    chatIds = new long[2];
+                    chatIds[0] = Math.abs(dialog_id);
+                    chatIds[1] = migratedFromChatID;
+                } else {
+                    chatIds = new long[1];
+                    chatIds[0] = Math.abs(dialog_id);
+                }
+                IRoomsManager.getInstance().getGroupChatRelatedTasks(getParentActivity(), chatIds, companyId,
+                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                            @Override
+                            public void onSuccess(ArrayList<Task> list) {
+                                if (list != null) {
+                                    synchronized (lockObject) {
+                                        taskList.clear();
+                                        taskList.addAll(list);
+                                        AndroidUtilities.runOnUIThread(() -> {
+                                            if (isChatMode && chatAdapter != null) {
+                                                chatAdapter.notifyDataSetChanged();
+                                            } else if (!isChatMode && taskAdapter != null) {
+                                                taskAdapter.updateWithCurrentSort();
+                                            }
+                                        });
+                                        if (!gotLastTasksFromBackend) {
+                                            requestTasksFromBackend();
+                                        }
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        } catch (Exception x) {
         }
+
     }
 
     private class UnreadCounterTextView extends View {
@@ -1649,7 +1687,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 taskRunner.executeAsync(() -> {
                     List<Task> offlineTasks = RoomsRepository.getInstance(getParentActivity().getApplication()).getOfflineTasks();
                     if (offlineTasks.size() > 0) {
-                        Log.e("offline tasks length ", "length: " + offlineTasks.size());
                         for (Task task : offlineTasks) {
                             if (task.getLocalStatus() == 1) {
                                 TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
@@ -1863,6 +1900,19 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private Company selectedCompany;
 
     private void initTaskStuff() {
+
+        try {
+            if (getParentActivity() != null) {
+                taskList.clear();
+                taskList.addAll(((LaunchActivity) getParentActivity()).globalTaskList.stream().filter(task -> task.getChat_id() == Math.abs(dialog_id)).collect(Collectors.toList()));
+                AndroidUtilities.runOnUIThread(() -> {
+                    if (chatListView != null && chatListView.getAdapter() != null) {
+                        chatListView.getAdapter().notifyDataSetChanged();
+                    }
+                });
+            }
+        } catch (Exception x) {
+        }
         int selectedCompanyID = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, 0);
         ((LaunchActivity) getParentActivity()).setBackendTaskListener(new LaunchActivity.BackendForOfflineTaskListener() {
             @Override
@@ -1877,6 +1927,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         });
 
         LaunchActivity.TaskListener taskListener = new LaunchActivity.TaskListener() {
+            @Override
+            public void connectionRestored() {
+                requestTasksFromBackend();
+            }
+
             @Override
             public void onTaskUpdated(Task task) {
                 try {
@@ -1946,7 +2001,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         ((LaunchActivity) getParentActivity()).setTaskListener(taskListener);
 
-        loadChatRelatedTasks(false);
+        loadChatRelatedTasks(false, true);
 
         SendMessagesHelper.getInstance(currentAccount).setMessageSentListener(new SendMessagesHelper.MessageSentListener() {
             @Override
@@ -1959,11 +2014,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
     @Override
     public View createView(Context context) {
-        textSelectionHelper = new TextSelectionHelper.ChatListTextSelectionHelper();
-
         if (!isChannel()) {
             initTaskStuff();
         }
+
+        textSelectionHelper = new TextSelectionHelper.ChatListTextSelectionHelper();
 
         if (chatMessageCellsCache.isEmpty()) {
             for (int a = 0; a < 15; a++) {
@@ -7404,7 +7459,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             String message = "Task #" + (task.getId() > 0 ? task.getId() : task.getLocal_id()) + "\n";
                             message += LocaleController.getInstance().getRoomsString("you_got_task");
                             SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, false, 0);
-
                             moveScrollToBottom();
                         }
 
@@ -7415,16 +7469,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             bottomSheetTask.setFocusable(true);
             bottomSheetTask.setOnShowListener(
                     dialog -> {
-//                        if (bottomSheetTask.isShowing()) {
-//                            AndroidUtilities.showKeyboard(bottomSheetTask.getCurrentFocus());
-//                        } else {
                         AndroidUtilities.runOnUIThread(() -> {
                                     if (bottomSheetTask.isShowing()) {
                                         AndroidUtilities.showKeyboard(bottomSheetTask.getCurrentFocus());
                                     }
                                 }, 50
                         );
-//                        }
                     }
             );
 
@@ -13730,6 +13780,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 updateInfoTopView(openAnimationStartTime != 0 && SystemClock.elapsedRealtime() >= openAnimationStartTime + 150);
             }
         } else if (id == NotificationCenter.chatInfoDidLoad) {
+            loadChatRelatedTasks(true, true);
             TLRPC.ChatFull chatFull = (TLRPC.ChatFull) args[0];
             if (currentChat != null && chatFull.id == currentChat.id) {
                 if (chatFull instanceof TLRPC.TL_channelFull) {
@@ -13835,6 +13886,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 if (chatMode == 0 && ChatObject.isChannel(currentChat) && mergeDialogId == 0 && chatInfo.migrated_from_chat_id != 0 && !isThreadChat()) {
                     mergeDialogId = -chatInfo.migrated_from_chat_id;
                     migratedFromChatID = chatInfo.migrated_from_chat_id;
+
                     maxMessageId[1] = chatInfo.migrated_from_max_id;
                     if (chatAdapter != null) {
                         chatAdapter.notifyDataSetChanged(false);
@@ -20832,15 +20884,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 return user;
             }
         } else {
-            TLRPC.User user = getMessagesController().getUser((int) dialog_id);
-            int companyId = PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, 0);
-            if (companyId == 0) {
-                return user;
-            } else if (user != null && selectedCompany != null && selectedCompany.getId() > 0) {
-                if (selectedCompany.getMembers().contains((long) user.id)) {
-                    return user;
-                }
-            }
+            return getMessagesController().getUser((int) dialog_id);
         }
         return null;
     }
@@ -23028,7 +23072,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlTaskedit.setOnClickListener(view -> {
 
                                         bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                                finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? dialog_id : finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                                finalTaskItem1.getDescription(), getTaskMemberList(), new TaskManagerListener() {
                                                     @Override
                                                     public void onCreate(Task task) {
                                                     }
@@ -23165,7 +23209,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 Task finalTaskItem1 = taskItem;
                                 layout.tlTaskedit.setOnClickListener(view -> {
                                     bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                            finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? dialog_id : finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                            finalTaskItem1.getDescription(), getTaskMemberList(), new TaskManagerListener() {
                                                 @Override
                                                 public void onCreate(Task task) {
                                                 }
@@ -23290,10 +23334,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.tlTaskedit.setOnClickListener(view -> {
 
                                         bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
-                                                finalTaskItem1.getDescription(), getTaskMemberList(), finalTaskItem1.getChatId() == 0 ? dialog_id : finalTaskItem1.getChatId(), new TaskManagerListener() {
+                                                finalTaskItem1.getDescription(), getTaskMemberList(), new TaskManagerListener() {
                                                     @Override
                                                     public void onCreate(Task task) {
-
                                                     }
 
                                                     @Override
@@ -24009,7 +24052,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         public void onTask(Task task, boolean updated) {
             if (updated) {
                 Task task1 = sortedList.stream().filter(task2 -> task2.getId() == task.getId()).findFirst().orElse(null);
-                if (task != null) {
+                if (task1 != null) {
                     sortedList.remove(task1);
                 }
             }
@@ -24025,6 +24068,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         }
 
         public TaskAdapter() {
+            currentSort = -1;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                 taskList.sort(Comparator.comparing(task -> TaskUtil.getDateFromISO(task.getUpdated_at())));
             } else {
@@ -24089,7 +24133,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
 
                     bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), taskItem,
-                            taskItem.getDescription(), getTaskMemberList(), taskItem.getChatId() == 0 ? dialog_id : taskItem.getChatId(), new TaskManagerListener() {
+                            taskItem.getDescription(), getTaskMemberList(), new TaskManagerListener() {
                                 @Override
                                 public void onCreate(Task task) {
 

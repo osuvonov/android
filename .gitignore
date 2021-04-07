@@ -9,6 +9,8 @@ local.properties
 *.aar
 *.ap_
 *.aab
+*.output-metadata.json
+
 
 # Files for the ART/Dalvik VM
 *.dex

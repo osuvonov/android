@@ -73,4 +73,5 @@ public class TaskSocketQuery {
     public void setChat_type(String chat_type) {
         this.chat_type = chat_type;
     }
+
 }

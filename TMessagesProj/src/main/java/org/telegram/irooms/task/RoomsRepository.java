@@ -30,9 +30,7 @@ public class RoomsRepository {
     }
 
     public void deleteCompanies() {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            companyDao.deleteCompanies();
-        });
+        companyDao.deleteCompanies();
     }
 
     public String getLastRequestDateForChat(long chat_id) {
@@ -72,6 +70,10 @@ public class RoomsRepository {
 
     public void getAccountTasks(int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getAccountTasks(ownerId + ""));
+    }
+
+    public ArrayList<Task> getTasks() {
+        return (ArrayList<Task>) taskDao.getTasks();
     }
 
     public interface LocalTaskChangeListener {
@@ -180,70 +182,58 @@ public class RoomsRepository {
         return (ArrayList<Company>) companyDao.getCompanyList();
     }
 
-    public ArrayList<Task> getCompanyTasks(int companyId, int chatId) {
-        return (ArrayList<Task>) taskDao.getTasksByChatIdAndCompanyId(companyId, chatId);
-    }
-
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
     // that you're not doing any long running operations on the main thread, blocking the UI.
     public void insert(Task task) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            taskDao.createTask(task);
-        });
+        taskDao.createTask(task);
     }
 
     public void update(Company company) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            companyDao.updateCompany(company);
-        });
+        companyDao.updateCompany(company);
     }
 
     public void insert(Company company) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            companyDao.createCompany(company);
-        });
+        companyDao.createCompany(company);
     }
 
     public void updateCompanyMembers(int companyId, String members, boolean addMembers) {
-        TaskDatabase.databaseWriteExecutor.execute(() -> {
-            Company company = companyDao.getCompany(companyId);
-            if (company==null){
-                return;
-            }
-            if (!addMembers) {
-                ArrayList<Long> membersToBeDeleted = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
-                }.getType());
-                for (int i = 0; i < company.getMembers().size(); i++) {
-                    for (int j = 0; j < membersToBeDeleted.size(); j++) {
-                        if (company.getMembers().get(i).intValue() == membersToBeDeleted.get(j).intValue()) {
-                            company.getMembers().remove(i);
-                            i--;
-                        }
+        Company company = companyDao.getCompany(companyId);
+        if (company == null) {
+            return;
+        }
+        if (!addMembers) {
+            ArrayList<Long> membersToBeDeleted = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
+            }.getType());
+            for (int i = 0; i < company.getMembers().size(); i++) {
+                for (int j = 0; j < membersToBeDeleted.size(); j++) {
+                    if (company.getMembers().get(i).intValue() == membersToBeDeleted.get(j).intValue()) {
+                        company.getMembers().remove(i);
+                        i--;
                     }
                 }
-                companyDao.updateCompany(company);
+            }
+            companyDao.updateCompany(company);
+        } else {
+            ArrayList<Integer> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Integer>>() {
+            }.getType());
+            if (company.getMembers() == null || company.getMembers().size() == 0) {
+                company.setMembers(membersToBeAdded);
             } else {
-                ArrayList<Integer> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Integer>>() {
-                }.getType());
-                if (company.getMembers() == null || company.getMembers().size() == 0) {
-                    company.setMembers(membersToBeAdded);
-                } else {
-                    for (int j = 0; j < membersToBeAdded.size(); j++) {
-                        boolean found = false;
-                        for (int i = 0; i < company.getMembers().size(); i++) {
-                            if (company.getMembers().get(i).intValue() == membersToBeAdded.get(j).intValue()) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found) {
-                            company.getMembers().add(membersToBeAdded.get(j));
+                for (int j = 0; j < membersToBeAdded.size(); j++) {
+                    boolean found = false;
+                    for (int i = 0; i < company.getMembers().size(); i++) {
+                        if (company.getMembers().get(i).intValue() == membersToBeAdded.get(j).intValue()) {
+                            found = true;
+                            break;
                         }
                     }
+                    if (!found) {
+                        company.getMembers().add(membersToBeAdded.get(j));
+                    }
                 }
-                companyDao.updateCompany(company);
             }
-        });
+            companyDao.updateCompany(company);
+        }
     }
 
 }

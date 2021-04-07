@@ -48,6 +48,7 @@ import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
@@ -141,29 +142,78 @@ public class AlertsCreator {
         if (context == null) {
             return null;
         }
+        final int[] teamSelectionPosition = {-1};
+
         final int[] companyId = {PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.SELECTED_COMPANY_ID, 0)};
 
         ArrayList<Company> companies = new ArrayList<>(((LaunchActivity) context).getCompanyList());
 
         Company noTeam = new Company(0, LocaleController.getInstance().getRoomsString("no_team"));
         companies.add(noTeam);
+        TLRPC.User currentUser = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-        ArrayList<Company> teamList = new ArrayList<>(companies);
+        if (companyId[0] != 0) {
+            boolean found = false;
+            for (Company company : companies) {
+                if (company.getId() == companyId[0]) {
+                    found = true;
+                }
+            }
+            if (!found) {
+                companyId[0] = 0;
+                teamSelectionPosition[0] = companies.size() - 1;
+            }
+        }
+        ArrayList<Company> teamList = new ArrayList<>();
+        teamList.add(noTeam);
 
-        final int[] selectedTeamPosition = {0};
+        if (userList.size() == 2 && selectedUser != null) {
+            for (Company company : companies) {
+                if (company.getMembers() != null && company.getMembers().contains(selectedUser.id) && company.getMembers().contains(currentUser.id)) {
+                    teamList.add(company);
+                }
+            }
+        } else {
+            for (Company company : companies) {
+                if (company.getMembers() != null && company.getMembers().contains(currentUser.id)) {
+                    teamList.add(company);
+                }
+            }
+            teamList.addAll(companies);
+        }
 
         for (int i = 0; i < teamList.size(); i++) {
-            if (teamList.get(i).getId() == companyId[0]) {
-                selectedTeamPosition[0] = i;
-                break;
+            if (companyId[0] == teamList.get(i).getId()) {
+                teamSelectionPosition[0] = i;
             }
         }
 
+        int textColor = context.getResources().getColor(android.R.color.black);
+        if (IRoomsManager.getInstance().isDarkMode(context)) {
+            textColor = context.getResources().getColor(R.color.white);
+        }
+        int finalTextColor = textColor;
         ArrayAdapter<Company> spinnerAdapter = new ArrayAdapter<Company>(context,
-                android.R.layout.simple_spinner_item, teamList);
+                R.layout.team_spinner_item, teamList) {
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View v = super.getView(position, convertView, parent);
+                ((TextView) v).setTextColor(finalTextColor);
+
+                return v;
+            }
+
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View v = super.getDropDownView(position, convertView, parent);
+                ((TextView) v).setTextColor(finalTextColor);
+
+                return v;
+            }
+        };
 
         final String[] deadline = {TaskUtil.getMaxDate()};
+
         ArrayList<Integer> selectedMembers = new ArrayList<>();
+
         final int[] selectedState = {0};
 
         final int[] selectedDeadLineView = {-1};
@@ -179,10 +229,6 @@ public class AlertsCreator {
         });
         bottomSheet.etTaskDescription.setText(text);
 
-        int textColor = context.getResources().getColor(android.R.color.black);
-        if (IRoomsManager.getInstance().isDarkMode(context)) {
-            textColor = context.getResources().getColor(R.color.white);
-        }
         bottomSheet.etTaskDescription.setTextColor(textColor);
         bottomSheet.etTaskDescription.requestFocus();
 
@@ -280,72 +326,40 @@ public class AlertsCreator {
                         bottomSheet.tvSelectMembers.setText(selectedUsers);
                     }
 
-                    // filter teams
-                    boolean clearList = false;
+                    teamList.clear();
                     for (Company company : companies) {
                         if (company != null) {
+                            boolean add = true;
                             for (int c = 0; c < selectedMembers.size(); c++) {
-                                if (company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
-                                    companyId[0] = 0;
-                                    teamList.clear();
-                                    teamList.add(noTeam);
-                                    spinnerAdapter.notifyDataSetChanged();
-                                    clearList = true;
-                                    selectedTeamPosition[0] = 0;
-                                    bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
-
+                                if (company.getId() != 0 && company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
+                                    add = false;
                                     break;
                                 }
                             }
+                            if (add) {
+                                teamList.add(company);
+                            }
+                        }
+                    }
+                    spinnerAdapter.notifyDataSetChanged();
+                    boolean teamFound = false;
+                    for (int j = 0; j < teamList.size(); j++) {
+                        if (teamList.get(j).getId() == companyId[0]) {
+                            teamFound = true;
+                            teamSelectionPosition[0] = j;
                             break;
                         }
                     }
-                    if (!clearList) {
-                        teamList.clear();
-                        teamList.addAll(companies);
-                        for (int j = 0; j < teamList.size(); j++) {
-                            if (teamList.get(j).getId() == companyId[0]) {
-                                selectedTeamPosition[0] = j;
-                                break;
-                            }
-                        }
-                        bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+                    if (!teamFound) {
+                        companyId[0] = teamList.get(0).getId();
+                        teamSelectionPosition[0] = 0;
                     }
+                    bottomSheet.teamSpinner.setSelection(teamSelectionPosition[0]);
+                    companyId[0] = teamList.get(teamSelectionPosition[0]).getId();
+
                 }
             });
             builder12.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), (dialogInterface, j) -> {
-
-                boolean clearList = false;
-                for (Company company : companies) {
-                    if (company != null) {
-                        for (int c = 0; c < selectedMembers.size(); c++) {
-                            if (company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
-                                companyId[0] = 0;
-                                teamList.clear();
-                                teamList.add(noTeam);
-                                spinnerAdapter.notifyDataSetChanged();
-                                clearList = true;
-                                selectedTeamPosition[0] = 0;
-                                bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
-
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-                if (!clearList) {
-                    teamList.clear();
-                    teamList.addAll(companies);
-                    for (int j1 = 0; j1 < teamList.size(); j1++) {
-                        if (teamList.get(j1).getId() == companyId[0]) {
-                            selectedTeamPosition[0] = j1;
-                            break;
-                        }
-                    }
-                    bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
-
-                }
             });
 
             // create and show the alert dialog
@@ -364,12 +378,12 @@ public class AlertsCreator {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         bottomSheet.teamSpinner.setAdapter(spinnerAdapter);
-        bottomSheet.teamSpinner.setSelection(selectedTeamPosition[0]);
+        bottomSheet.teamSpinner.setSelection(teamSelectionPosition[0] == -1 ? 0 : teamSelectionPosition[0]);
         bottomSheet.teamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 companyId[0] = teamList.get(position).getId();
-                selectedTeamPosition[0] = position;
+                teamSelectionPosition[0] = position;
             }
 
             @Override
@@ -445,7 +459,7 @@ public class AlertsCreator {
             task.setReceivers(receiverIds);
             task.setChat_type(chatType);
 
-            if (!socket.connected()) {
+            if (!socket.connected() || !((LaunchActivity) context).isAuthorized()) {
                 callback.onCreate(task);
                 RoomsRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
             } else {
@@ -477,7 +491,7 @@ public class AlertsCreator {
     }
 
     public static BottomSheet.Builder editTaskDialogBySocket(Context context, Task task, CharSequence text, ArrayList<TLRPC.User> userList,
-                                                             long chatId, TaskManagerListener callback) {
+                                                             TaskManagerListener callback) {
         if (context == null) {
             return null;
         }
@@ -686,7 +700,6 @@ public class AlertsCreator {
 
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
-            int companyId = PreferenceManager.getDefaultSharedPreferences(context).getInt("selected_company_id", -1);
             String description = bottomSheet.etTaskDescription.getText().toString();
             if ("".equals(description) || description == null) {
                 bottomSheet.btnTaskSave.setEnabled(true);
@@ -695,15 +708,13 @@ public class AlertsCreator {
             task.setDescription(description);
 
             task.setMembers(selectedMembers);
-            task.setCreatorId(UserConfig.getInstance(0).clientUserId);
+
             if (deadline[0] == null || deadline[0].equals("null")) {
                 deadline[0] = TaskUtil.getMaxDate();
             }
             task.setExpiresAt(deadline[0]);
             task.setStatus(Utils.getStatuses()[selectedState[0]]);
             task.setStatus_code(selectedState[0]);
-            task.setChatId(chatId);
-            task.setCompanyId(companyId);
             if (task.getLocal_id().equals("") || task.getLocal_id().equals("local")) {
                 task.setLocal_id(Utils.generateLocalId());
             }

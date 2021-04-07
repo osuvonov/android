@@ -1,17 +1,16 @@
 package org.telegram.irooms.models;
 
-import java.net.Socket;
-
 public class SocketAuthObject {
-    private String token = "";
-    private String version = "";
-    private String platform = "";
+    private String token;
+    private String version;
+    private String platform;
 
-    public SocketAuthObject(String token, String pl, String ver){
-        this.token=token;
-        this.version=ver;
-        this.platform=pl;
+    public SocketAuthObject(String token, String pl, String ver) {
+        this.token = token;
+        this.version = ver;
+        this.platform = pl;
     }
+
     public String getToken() {
         return token;
     }

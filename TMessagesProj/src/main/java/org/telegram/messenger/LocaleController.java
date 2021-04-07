@@ -972,11 +972,13 @@ public class LocaleController {
         englishRoomsMap.put("today", "Today");
         englishRoomsMap.put("tomorrow", "Tomorrow");
         englishRoomsMap.put("participants", " participants");
-        englishRoomsMap.put("you_got_task", "You have received a new assignment.\nTo view, follow the link https://irooms.io or download the application https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US");
+        englishRoomsMap.put("you_got_task", "Вы получили новое задание.\n" + "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US");
         englishRoomsMap.put("no_task_yet", "No tasks here yet");
         englishRoomsMap.put("choose_status", "Choose status");
         englishRoomsMap.put("choose_participants", "Choose participants");
         englishRoomsMap.put("ok", "Ok");
+        englishRoomsMap.put("yes", "Yes");
+
         englishRoomsMap.put("chat", "Chat");
         englishRoomsMap.put("team_added", "Team has been successfully added");
         englishRoomsMap.put("fast", "Fast");
@@ -992,10 +994,16 @@ public class LocaleController {
         englishRoomsMap.put("add_members", "Add members to team");
         englishRoomsMap.put("saved_tasks", "Saved Tasks/Messages");
         englishRoomsMap.put("do_not_show", "Do not show again");
+        englishRoomsMap.put("update_downloaded", "An update has just been downloaded.");
+        englishRoomsMap.put("start", "Start");
+        englishRoomsMap.put("restart", "Restart app");
+        englishRoomsMap.put("sure_to_delete_member","Are you sure to delete this member?");
+        englishRoomsMap.put("cancel","Cancel");
 
     }
 
     private void inituzRoomsStrings() {
+        uzbekRoomsMap.put("yes", "Ha");
         uzbekRoomsMap.put("all", "Barchasi");
         uzbekRoomsMap.put("todo", "Bajarishga");
         uzbekRoomsMap.put("doing", "Bajarilmoqda");
@@ -1016,30 +1024,36 @@ public class LocaleController {
         uzbekRoomsMap.put("today", "Bugun");
         uzbekRoomsMap.put("tomorrow", "Ertaga");
         uzbekRoomsMap.put("participants", " ishtirokchilar");
-        uzbekRoomsMap.put("you_got_task", "Sizda yangi vazifa.\nKo'rish uchun quyidagi linkni bosing: https://irooms.io yoki ilovani yuklab oling https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US");
+        uzbekRoomsMap.put("you_got_task", "Вы получили новое задание.\n" + "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US");
         uzbekRoomsMap.put("no_task_yet", "Hali vazifalar yo'q");
         uzbekRoomsMap.put("choose_status", "Holatni tanlang");
         uzbekRoomsMap.put("choose_participants", "Ishtirokchilarni tanlang");
         uzbekRoomsMap.put("ok", "Ha");
-        uzbekRoomsMap.put("chat","Chat");
-        uzbekRoomsMap.put("team_added","Yangi jamoa muvaffaqiyatli qo'shildi");
-        uzbekRoomsMap.put("fast","Tez");
-        uzbekRoomsMap.put("notifications","Bildirishnomalar");
-        uzbekRoomsMap.put("secure","Xavfsiz");
+        uzbekRoomsMap.put("chat", "Chat");
+        uzbekRoomsMap.put("team_added", "Yangi jamoa muvaffaqiyatli qo'shildi");
+        uzbekRoomsMap.put("fast", "Tez");
+        uzbekRoomsMap.put("notifications", "Bildirishnomalar");
+        uzbekRoomsMap.put("secure", "Xavfsiz");
         uzbekRoomsMap.put("teams", "Jamoalar");
-        uzbekRoomsMap.put("intro1","Rooms - vazifalarni belgilash va loyihalarni boshqarish qobiliyatiga ega korporativ messenjer.");
-        uzbekRoomsMap.put("intro2","Rooms - xabarlarni boshqa messenjerlarga qaraganda tezroq yetkazadi.");
-        uzbekRoomsMap.put("intro3","Vazifalarni ikki marta bosish bilan hosil qiling.");
-        uzbekRoomsMap.put("intro4","Tugallangan yoki muddati o'tgan ishlardan xabardor bo'ling.");
-        uzbekRoomsMap.put("intro5","** Rooms ** sizning xabarlaringizni xavfsizligini \n" +
+        uzbekRoomsMap.put("intro1", "Rooms - vazifalarni belgilash va loyihalarni boshqarish qobiliyatiga ega korporativ messenjer.");
+        uzbekRoomsMap.put("intro2", "Rooms - xabarlarni boshqa messenjerlarga qaraganda tezroq yetkazadi.");
+        uzbekRoomsMap.put("intro3", "Vazifalarni ikki marta bosish bilan hosil qiling.");
+        uzbekRoomsMap.put("intro4", "Tugallangan yoki muddati o'tgan ishlardan xabardor bo'ling.");
+        uzbekRoomsMap.put("intro5", "** Rooms ** sizning xabarlaringizni xavfsizligini \n" +
                 "  xakerlar hujumidan himoya qiladi.");
-        uzbekRoomsMap.put("add_members","Jamoaga ishtirokchilarni qo'shish");
-        uzbekRoomsMap.put("saved_tasks","Saqlangan Vazifalar/Xabarlar");
-        uzbekRoomsMap.put("do_not_show","Boshqa ko'rsatilmasin");
-
+        uzbekRoomsMap.put("add_members", "Jamoaga ishtirokchilarni qo'shish");
+        uzbekRoomsMap.put("saved_tasks", "Saqlangan Vazifalar/Xabarlar");
+        uzbekRoomsMap.put("do_not_show", "Boshqa ko'rsatilmasin");
+        uzbekRoomsMap.put("update_downloaded", "Yangilash yuklab olindi.");
+        uzbekRoomsMap.put("start", "Boshlash");
+        uzbekRoomsMap.put("restart", "O'rnatish");
+        uzbekRoomsMap.put("sure_to_delete_member","Ushbu ishtirokchini jamoadan chiqarib yubormoqchimisiz?");
+        uzbekRoomsMap.put("cancel","Bekor qilish");
     }
 
     private void initruRoomsStrings() {
+        russianRoomsMap.put("cancel","Отмена");
+        russianRoomsMap.put("yes", "Да");
         russianRoomsMap.put("all", "Все");
         russianRoomsMap.put("todo", "Надо сделать");
         russianRoomsMap.put("doing", "В работе");
@@ -1063,6 +1077,7 @@ public class LocaleController {
         russianRoomsMap.put("participants", " участников");
         russianRoomsMap.put("you_got_task", "Вы получили новое задание.\n" +
                 "Чтобы просмотреть перейдите по ссылке https://irooms.io или скачайте приложение https://play.google.com/store/apps/details?id=org.rooms.messenger&hl=ru&gl=US");
+        russianRoomsMap.put("no_task_yet", "Нет задач");
         russianRoomsMap.put("choose_status", "Выберите статус");
         russianRoomsMap.put("choose_participants", "Выбрать участников");
         russianRoomsMap.put("ok", "Да");
@@ -1079,6 +1094,10 @@ public class LocaleController {
         russianRoomsMap.put("add_members", "Добавить участников в команду");
         russianRoomsMap.put("saved_tasks", "Сохраненные Задачи/Сообщения");
         russianRoomsMap.put("do_not_show", "Больше не показывать");
+        russianRoomsMap.put("update_downloaded", "Обновление скачано.");
+        russianRoomsMap.put("start", "Начать");
+        russianRoomsMap.put("restart", "Перезапустить");
+        russianRoomsMap.put("sure_to_delete_member","Вы уверены, что хотите удалить этого участника?");
     }
 
     public String getRoomsString(String key) {

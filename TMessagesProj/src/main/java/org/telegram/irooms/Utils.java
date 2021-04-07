@@ -9,6 +9,10 @@ import android.util.TypedValue;
 import org.telegram.messenger.LocaleController;
 import org.telegram.tgnet.TLRPC;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +31,28 @@ public class Utils {
             }
         }
         return temp;
+    }
+
+    public static void appendLog(String text) {
+        try {
+            File logFile = new File("sdcard/roomslog.file");
+            if (!logFile.exists()) {
+                try {
+                    logFile.createNewFile();
+                } catch (IOException e) {
+                }
+            }
+            try {
+                //BufferedWriter for performance, true to set append to file flag
+                BufferedWriter buf = new BufferedWriter(new FileWriter(logFile, true));
+                buf.append(text);
+                buf.newLine();
+                buf.close();
+            } catch (IOException e) {
+            }
+        } catch (Exception x) {
+        }
+
     }
 
     public static String generateLocalId() {

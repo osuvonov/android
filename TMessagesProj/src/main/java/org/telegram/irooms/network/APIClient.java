@@ -22,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.Utils;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.messenger.UserConfig;
@@ -107,7 +108,6 @@ public class APIClient {
                 JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, hostNameCloud, postData,
                         response -> {
                             try {
-                                Log.e("responsssssss", response.toString());
                                 JSONObject jsonObject = new JSONObject(response.toString());
                                 String success = jsonObject.getString("success");
                                 if (success.equals("true")) {
@@ -180,6 +180,7 @@ public class APIClient {
                         if (error != null) {
                             errorDescription = error.getString("description");
                         }
+
                         callback.onError(errorDescription);
                     }
                 } catch (JSONException e) {
@@ -213,7 +214,8 @@ public class APIClient {
 
         JSONObject postData = null;
         try {
-            postData = new JSONObject(new Gson().toJson(task));
+            String json = new Gson().toJson(task);
+            postData = new JSONObject(json);
             makeSocketEmit(socket, "createTask", postData, callback);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -224,7 +226,8 @@ public class APIClient {
 
         JSONObject postData = null;
         try {
-            postData = new JSONObject(new Gson().toJson(task));
+            String json = new Gson().toJson(task);
+            postData = new JSONObject(json);
 
             makeSocketEmit(socket, "editTask", postData, callback);
 
@@ -233,29 +236,8 @@ public class APIClient {
         }
     }
 
-    public void getMyCompanies(Context context, final VolleyCallback callback) {
-
-        String hostNameCloud = BASE_URL + "/companies";
-
-        makeGetRequest(context, hostNameCloud, callback);
-    }
-
     public void getMyCompaniesBySocket(Context context, Socket socket, final VolleyCallback callback) {
         makeSocketEmit(socket, "getUserCompanies", null, callback);
-    }
-
-    public void createCompany(Context context, String companyName, final VolleyCallback callback) {
-
-        String hostNameCloud = BASE_URL + "/companies/register";
-
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("name", companyName);
-            makePostRequest(context, postData, hostNameCloud, callback);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     public void registerCompanyBySocket(Socket socket, String name, final VolleyCallback volleyCallback) {
@@ -292,51 +274,16 @@ public class APIClient {
         }
     }
 
-    public void addMembersToCompany(Context context, int companyId, ArrayList<Integer> members_, final VolleyCallback callback) {
-
-        String hostNameCloud = BASE_URL + "/companies/add-members";
-
-        AddMemberToCompanyObject company = new AddMemberToCompanyObject();
-        company.company_id = companyId;
-        company.members = members_;
-
-        JSONObject postData = null;
-        try {
-            postData = new JSONObject(new Gson().toJson(company));
-
-            makePostRequest(context, postData, hostNameCloud, callback);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     public void addMembersToCompanyBySocket(Context context, Socket socket, int companyId, ArrayList<Integer> members_, final VolleyCallback callback) {
         AddMemberToCompanyObject company = new AddMemberToCompanyObject();
         company.company_id = companyId;
         company.members = members_;
         JSONObject postData = null;
         try {
-            postData = new JSONObject(new Gson().toJson(company));
+            String json = new Gson().toJson(company);
+            postData = new JSONObject(json);
             makeSocketEmit(socket, "addCompanyMembers", postData, callback);
         } catch (Exception x) {
-        }
-    }
-
-    public void deleteMembersFromCompany(Context context, int companyId, ArrayList<Integer> members_, final VolleyCallback callback) {
-
-        String hostNameCloud = BASE_URL + "/companies/delete-members";
-
-        AddMemberToCompanyObject company = new AddMemberToCompanyObject();
-        company.company_id = companyId;
-        company.members = members_;
-
-        JSONObject postData = null;
-        try {
-            postData = new JSONObject(new Gson().toJson(company));
-
-            makePostRequest(context, postData, hostNameCloud, callback);
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
     }
 
@@ -347,7 +294,8 @@ public class APIClient {
 
         JSONObject postData;
         try {
-            postData = new JSONObject(new Gson().toJson(company));
+            String json = new Gson().toJson(company);
+            postData = new JSONObject(json);
             makeSocketEmit(socket, "deleteCompanyMembers", postData, callback);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -482,18 +430,21 @@ public class APIClient {
     public void getTasksBySocket(Socket socket, TaskSocketQuery query, final VolleyCallback callback) {
         JSONObject jsonObject = null;
         try {
-
-            jsonObject = new JSONObject(new Gson().toJson(query));
-
-        } catch (JSONException e) {
-
+            jsonObject = new JSONObject();
+            jsonObject.put("company_id", query.getCompany_id());
+            jsonObject.put("chat_id", query.getChat_id());
+            jsonObject.put("limit", query.getLimit());
+            jsonObject.put("offset", query.getOffset());
+            jsonObject.put("order_by", query.getOrder_by());
+            jsonObject.put("chat_type", query.getChat_type());
+            jsonObject.put("from_date", query.getFrom_date());
+        } catch (Exception e) {
             e.printStackTrace();
         }
         makeSocketEmit(socket, "getTasks", jsonObject, callback);
     }
 
     public void getTask(Context context, long taskId, final VolleyCallback callback) {
-
         String url = BASE_URL + "/tasks/" + taskId;
         makeGetRequest(context, url, callback);
     }
