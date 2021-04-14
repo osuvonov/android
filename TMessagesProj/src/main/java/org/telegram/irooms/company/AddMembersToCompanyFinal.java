@@ -47,6 +47,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.database.Company;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
@@ -250,7 +251,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
         if (createCompany) {
             actionBar.setTitle(LocaleController.getInstance().getRoomsString("create_team"));
         } else {
-            actionBar.setTitle(PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getString(Constants.SELECTED_COMPANY_NAME, ""));
+            actionBar.setTitle(IRoomsManager.getInstance().getSelectedCompanyName(context));
         }
 
 
@@ -507,11 +508,12 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                 if (co != null) {
                                     int companyId = co.getInt("id");
                                     companyName = co.getString("name");
-                                    if (PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.SELECTED_COMPANY_NAME, "").equals("")) {
-                                        PreferenceManager.getDefaultSharedPreferences(getParentActivity()).edit().putString(Constants.SELECTED_COMPANY_NAME, companyName).commit();
-                                        PreferenceManager.getDefaultSharedPreferences(getParentActivity()).edit().putInt(Constants.SELECTED_COMPANY_ID, companyId).commit();
-                                        PreferenceManager.getDefaultSharedPreferences(getParentActivity()).edit().putBoolean(Constants.HAS_COMPANY, true).commit();
-                                        PreferenceManager.getDefaultSharedPreferences(getParentActivity()).edit().putBoolean(Constants.IS_OWNER, true).commit();
+                                    if (IRoomsManager.getInstance().getSelectedCompanyName(context).equals("")) {
+                                        Company company = new Company();
+                                        company.setId(companyId);
+                                        company.setName(companyName);
+                                        IRoomsManager.getInstance().setSelectedCompany(context, company, true);
+                                        IRoomsManager.getInstance().setHasCompany(context, true);
                                     }
                                     selectedContacts.add(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
 
@@ -556,7 +558,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                 });
             } else {
                 if (action == "add") {
-                    IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1), selectedContacts, new IRoomsManager.IRoomsCallback() {
+                    IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, IRoomsManager.getInstance().getSelectedCompanyId(context), selectedContacts, new IRoomsManager.IRoomsCallback() {
                         @Override
                         public void onSuccess(String success) {
                             ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
@@ -579,7 +581,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                     });
                 } else {
 
-                    IRoomsManager.getInstance().deleteMembersFromCompany(getParentActivity(), socket, PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getInt(Constants.SELECTED_COMPANY_ID, -1), selectedContacts, new IRoomsManager.IRoomsCallback() {
+                    IRoomsManager.getInstance().deleteMembersFromCompany(getParentActivity(), socket, IRoomsManager.getInstance().getSelectedCompanyId(context), selectedContacts, new IRoomsManager.IRoomsCallback() {
                         @Override
                         public void onSuccess(String success) {
                             Toast.makeText(getParentActivity(), "Selected members deleted from company", Toast.LENGTH_SHORT).show();

@@ -336,15 +336,13 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 // dynamic company list
                 setCompanyList(companies);
 
-                RoomsRepository.getInstance(getApplication()).deleteCompanies();
                 if (companies.size() > 0) {
                     try {
                         for (Company company : companies) {
                             if (company.getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
-                                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
-                                prefs.edit().putBoolean(Constants.HAS_COMPANY, true).commit();
-                                if (prefs.getInt(Constants.SELECTED_COMPANY_ID, 0) == company.getId()) {
-                                    prefs.edit().putBoolean(Constants.IS_OWNER, true).commit();
+                                IRoomsManager.getInstance().setHasCompany(LaunchActivity.this, true);
+                                if (IRoomsManager.getInstance().getSelectedCompanyId(LaunchActivity.this) == company.getId()) {
+                                    IRoomsManager.getInstance().setOwnerOfSelectedCompany(LaunchActivity.this, true);
                                 }
                             }
                             RoomsRepository.getInstance(getApplication()).insert(company);
@@ -352,11 +350,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     } catch (Exception x) {
                     }
                 } else {
-                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this);
-                    prefs.edit().putBoolean(Constants.HAS_COMPANY, false).commit();
-                    prefs.edit().putBoolean(Constants.IS_OWNER, false).commit();
-                    prefs.edit().putInt(Constants.SELECTED_COMPANY_ID, 0).commit();
-                    prefs.edit().putString(Constants.SELECTED_COMPANY_NAME, "").commit();
+                    IRoomsManager.getInstance().setHasCompany(LaunchActivity.this, false);
+                    IRoomsManager.getInstance().setOwnerOfSelectedCompany(LaunchActivity.this, false);
+                    IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, new Company(), false);
                 }
 
                 if (name.equals("") && companies.size() > 1) {
@@ -518,7 +514,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             postData.put("version", BuildVars.BUILD_VERSION_STRING);
 
                             mSocket.emit("auth", postData, (Ack) args1 -> {
-
+                                Log.e("on auth", "authenticated");
                                 authorized = true;
 
                                 if (taskListener != null) {
@@ -630,6 +626,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     private Emitter.Listener onDisconnect = args -> {
+        Log.e("on disconnnect", "disconnected");
         authorized = false;
     };
 
@@ -730,7 +727,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     synchronized (taskListSynchronizer) {
                         setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getCompanyList());
                     }
-                    loadTasks();
+                    // loadTasks();
                     return null;
                 },
                 result -> {
@@ -1181,9 +1178,15 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 if (id == 21) {
                     Bundle args = new Bundle();
                     args.putString("action", "add");
-                    args.putString("companyName", PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getString(Constants.SELECTED_COMPANY_NAME, ""));
+                    args.putString("companyName", IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this));
                     args.putBoolean("create_company", false);
                     presentFragment(new AddMembersToCompanyActivity(args));
+                    drawerLayoutContainer.closeDrawer(false);
+                }
+                if (id == 200) {
+                    Bundle args = new Bundle();
+                    args.putInt("user_id", 767627698);
+                    presentFragment(new ChatActivity(args));
                     drawerLayoutContainer.closeDrawer(false);
                 }
                 if (id == 13) {

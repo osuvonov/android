@@ -67,7 +67,7 @@ public class CompanyViewAdapter extends ListAdapter<Company, CompanyViewAdapter.
     @Override
     public void onBindViewHolder(@NonNull CompanyViewHolder holder, int position) {
 
-        int selectedCompanyId = PreferenceManager.getDefaultSharedPreferences(mContext).getInt(Constants.SELECTED_COMPANY_ID, 0);
+        int selectedCompanyId = IRoomsManager.getInstance().getSelectedCompanyId(mContext);
 
         Company company = getItem(position);
 

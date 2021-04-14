@@ -47,6 +47,33 @@ public class RoomsRepository {
         requestHistoryDao.insertRequestHistory(requestHistory);
     }
 
+    // ---------------------    PAGINATION TASKS   ----------------------------------------
+
+
+    public ArrayList<Task> getChatRelatedTasks(long[] chatID, int limit, int offset) {
+        return (ArrayList<Task>) taskDao.getTasksByChatId(chatID, limit, offset);
+    }
+
+    public ArrayList<Task> getChatAndCompanyRelatedTasks(long chatID, int companyID, int limit, int offset) {
+
+        return (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID, companyID, limit, offset);
+    }
+
+    public ArrayList<Task> getPrivateChatTasks(int companyID, int selectedAccountUserId, int ownerId, int limit, int offset) {
+        if (companyID != 0) {
+            return (ArrayList<Task>) taskDao.getPrivateChatTasksTeam(companyID, selectedAccountUserId, ownerId, limit, offset);
+        } else {
+            return (ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId, limit, offset);
+        }
+    }
+
+    public ArrayList<Task> getAccountTasks(int ownerId, int limit, int offset) {
+        return (ArrayList<Task>) taskDao.getAccountTasks(ownerId + "", limit, offset);
+    }
+
+
+    // ---------------------   END PAGINATION TASKS   ----------------------------------------
+
     public void getChatRelatedTasks(long[] chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatId(chatID);
 
@@ -180,6 +207,10 @@ public class RoomsRepository {
 
     public ArrayList<Company> getCompanyList() {
         return (ArrayList<Company>) companyDao.getCompanyList();
+    }
+
+    public ArrayList<Company> getCurrentUserCompanyList(int id) {
+        return (ArrayList<Company>) companyDao.getCurrentUserCompanyList(id);
     }
 
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures

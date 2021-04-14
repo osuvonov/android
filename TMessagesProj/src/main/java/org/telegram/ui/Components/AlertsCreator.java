@@ -144,7 +144,7 @@ public class AlertsCreator {
         }
         final int[] teamSelectionPosition = {-1};
 
-        final int[] companyId = {PreferenceManager.getDefaultSharedPreferences(context).getInt(Constants.SELECTED_COMPANY_ID, 0)};
+        final int[] companyId = {IRoomsManager.getInstance().getSelectedCompanyId(context)};
 
         ArrayList<Company> companies = new ArrayList<>(((LaunchActivity) context).getCompanyList());
 
@@ -179,7 +179,6 @@ public class AlertsCreator {
                     teamList.add(company);
                 }
             }
-            teamList.addAll(companies);
         }
 
         for (int i = 0; i < teamList.size(); i++) {
@@ -197,15 +196,19 @@ public class AlertsCreator {
                 R.layout.team_spinner_item, teamList) {
             public View getView(int position, View convertView, ViewGroup parent) {
                 View v = super.getView(position, convertView, parent);
+                if (IRoomsManager.getInstance().isDarkMode(context)) {
+                    ((TextView) v).setBackgroundColor(R.color.lighter_gray);
+                }
                 ((TextView) v).setTextColor(finalTextColor);
-
                 return v;
             }
 
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 View v = super.getDropDownView(position, convertView, parent);
                 ((TextView) v).setTextColor(finalTextColor);
-
+                if (IRoomsManager.getInstance().isDarkMode(context)) {
+                    ((TextView) v).setBackgroundColor(R.color.lighter_gray);
+                }
                 return v;
             }
         };
@@ -526,7 +529,6 @@ public class AlertsCreator {
             boolean todaySelected = selectedDeadLineView[0] == 1;
             if (todaySelected) {
                 selectedDeadLineView[0] = -1;
-
                 deadline[0] = TaskUtil.getMaxDate();
                 bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             } else {
@@ -535,7 +537,6 @@ public class AlertsCreator {
                 deadline[0] = TaskUtil.getEndOfTheDay();
             }
             bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
-
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });

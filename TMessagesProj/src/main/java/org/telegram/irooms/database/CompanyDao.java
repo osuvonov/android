@@ -33,4 +33,6 @@ public interface CompanyDao {
     @Query("delete from tbl_company")
     void deleteCompanies();
 
+    @Query("select * from tbl_company where owner_id=:id or (members like '%' || :id  || '%') ")
+    List<Company> getCurrentUserCompanyList(int id);
 }

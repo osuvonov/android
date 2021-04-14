@@ -51,6 +51,7 @@ import android.widget.ScrollView;
 import android.widget.Toast;
 
 import org.telegram.irooms.Constants;
+import org.telegram.irooms.IRoomsManager;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
@@ -407,7 +408,7 @@ public class AddMembersToCompanyActivity extends BaseFragment implements Notific
 
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setAllowOverlayTitle(true);
-        actionBar.setTitle(PreferenceManager.getDefaultSharedPreferences(getParentActivity()).getString(Constants.SELECTED_COMPANY_NAME, ""));
+        actionBar.setTitle(IRoomsManager.getInstance().getSelectedCompanyName(context));
 
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override

@@ -25,7 +25,9 @@ import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.irooms.task.TaskUtil;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.UserConfig;
+import org.telegram.tgnet.TLRPC;
 
+import java.net.UnknownServiceException;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -218,19 +220,17 @@ public class IRoomsManager {
                 try {
                     TaskRunner runner = new TaskRunner();
                     runner.executeAsync(() -> {
-                        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(Constants.HAS_COMPANY, false).commit();
+                        IRoomsManager.getInstance().setHasCompany(context, true);
                         RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
                         JSONObject jsonObject = new JSONObject(response);
                         ArrayList<Company> companies = IRoomJsonParser.getCompanies(jsonObject.toString());
-                        //     repository.deleteCompanies();
 
                         if (companies.size() > 0) {
                             for (Company company : companies) {
                                 if (company.getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
-                                    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                                    prefs.edit().putBoolean(Constants.HAS_COMPANY, true).commit();
-                                    if (prefs.getInt(Constants.SELECTED_COMPANY_ID, 0) == company.getId()) {
-                                        prefs.edit().putBoolean(Constants.IS_OWNER, true).commit();
+                                    IRoomsManager.getInstance().setHasCompany(context, true);
+                                    if (IRoomsManager.getInstance().getSelectedCompanyId(context) == company.getId()) {
+                                        IRoomsManager.getInstance().setOwnerOfSelectedCompany(context, true);
                                     }
                                 }
                                 repository.insert(company);
@@ -251,6 +251,20 @@ public class IRoomsManager {
                 callback.onError(error);
             }
         });
+    }
+
+    public void setHasCompany(Context context, boolean b) {
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+        preferences.edit().putBoolean(Constants.HAS_COMPANY, b).commit();
+    }
+
+    public boolean getHasCompany(Context context) {
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+        return preferences.getBoolean(Constants.HAS_COMPANY, false);
     }
 
     public void getCompany(Context context, int companyId, IRoomCallback<Company> companyIRoomCallback) {
@@ -320,14 +334,14 @@ public class IRoomsManager {
     }
 
     public void setSelectedCompany(Context context, Company company, boolean isOwner) {
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
 
-        PreferenceManager.getDefaultSharedPreferences(context).
-                edit().putString(Constants.SELECTED_COMPANY_NAME, company.getName()).commit();
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+        preferences.edit().putString(Constants.SELECTED_COMPANY_NAME, company.getName()).commit();
 
-        PreferenceManager.getDefaultSharedPreferences(context).
-                edit().putInt(Constants.SELECTED_COMPANY_ID, company.getId()).commit();
+        preferences.edit().putInt(Constants.SELECTED_COMPANY_ID, company.getId()).commit();
 
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(Constants.IS_OWNER, isOwner).commit();
+        preferences.edit().putBoolean(Constants.IS_OWNER, isOwner).commit();
 
 //        try {
 //            Socket socket = ((LaunchActivity) context).getmSocket();
@@ -350,9 +364,39 @@ public class IRoomsManager {
 //        }
     }
 
+
     public String getSelectedCompanyName(Context context) {
-        String name = PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.SELECTED_COMPANY_NAME, "");
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+        String name = preferences.getString(Constants.SELECTED_COMPANY_NAME, "");
         return name.equals("") ? "" : name;
+    }
+
+    public int getSelectedCompanyId(Context context) {
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+        int id = preferences.getInt(Constants.SELECTED_COMPANY_ID, 0);
+        return id;
+    }
+
+    public boolean isOwnerOfSelectedCompany(Context context) {
+
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+
+        return preferences.getBoolean(Constants.IS_OWNER, false);
+    }
+
+    public void setOwnerOfSelectedCompany(Context context, boolean owner) {
+
+        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+        SharedPreferences preferences = context.getSharedPreferences(phone, Context.MODE_PRIVATE);
+
+        preferences.edit().putBoolean(Constants.IS_OWNER, owner).commit();
     }
 
     public void getGroupChatRelatedTasks(Context context, long[] chatId, int companyId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
@@ -395,21 +439,38 @@ public class IRoomsManager {
         );
     }
 
-    public void setCompanyRequestAsked(Context context, boolean b) {
-        PreferenceManager.getDefaultSharedPreferences(context).
-                edit().putBoolean(Constants.COMPANY_REGISTER_REQUEST_ASKED, b).commit();
-    }
-
-    public boolean isCompanyCreateRequestBeen(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Constants.COMPANY_REGISTER_REQUEST_ASKED, false);
-    }
-
     public void setDarkTheme(Context context, boolean toDark) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(Constants.DARK_THEME, toDark).apply();
     }
 
     public boolean isDarkMode(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Constants.DARK_THEME, false);
+    }
+
+    public void performLogOut(Context context) {
+        if (context != null) {
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+
+            long recordID = PreferenceManager.getDefaultSharedPreferences(context).getLong("record_id", -1);
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putLong("record_id", -1).commit();
+            String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + user.phone, "");
+            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("token" + user.phone, "").commit();
+
+            SharedPreferences preferences = context.getSharedPreferences(user.phone, Context.MODE_PRIVATE);
+            preferences.edit().clear().apply();
+            APIClient.getInstance().deleteSubscription(context, token, recordID, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+
+                }
+
+                @Override
+                public void onError(String error) {
+                    Log.e("logout error", error);
+                }
+            });
+
+        }
     }
 
     public interface IRoomsCallback {

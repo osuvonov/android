@@ -301,19 +301,19 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         }
         companyIcon = R.drawable.outline_pack;
 
-        if (!PreferenceManager.getDefaultSharedPreferences(mContext).getString(Constants.SELECTED_COMPANY_NAME, "").equals("")) {
+        if (!IRoomsManager.getInstance().getSelectedCompanyName(mContext).equals("")) {
             items.add(new Item(1, IRoomsManager.getInstance().getSelectedCompanyName(mContext), companyIcon));
         } else {
             TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
             String name = (user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name);
-            name = name.concat("\n"+LocaleController.getInstance().getRoomsString("no_team"));
+            name = name.concat("\n" + LocaleController.getInstance().getRoomsString("no_team"));
             items.add(new Item(1, name, companyIcon));
         }
 
-        if (PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.IS_OWNER, false)) {
+        if (IRoomsManager.getInstance().isOwnerOfSelectedCompany(mContext)) {
             items.add(new Item(21, LocaleController.getInstance().getRoomsString("add_members"), newGroupIcon));
         }
-        if (!PreferenceManager.getDefaultSharedPreferences(mContext).getBoolean(Constants.HAS_COMPANY, false)) {
+        if (!IRoomsManager.getInstance().getHasCompany(mContext)) {
             items.add(new Item(13, LocaleController.getInstance().getRoomsString("create_team"), companyIcon));
         }
         items.add(new Item(11, LocaleController.getInstance().getRoomsString("saved_tasks"), savedIcon));
@@ -327,6 +327,8 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         }
         //items.add(new Item(11, LocaleController.getString("SavedMessages", R.string.SavedMessages), savedIcon));
         items.add(new Item(8, LocaleController.getString("Settings", R.string.Settings), settingsIcon));
+        items.add(new Item(200,LocaleController.getInstance().getRoomsString("help"),R.drawable.menu_help));
+
         items.add(null); // divider
         items.add(new Item(7, LocaleController.getString("InviteFriends", R.string.InviteFriends), inviteIcon));
         //items.add(new Item(9, LocaleController.getString("TelegramFAQ", R.string.TelegramFAQ), helpIcon));

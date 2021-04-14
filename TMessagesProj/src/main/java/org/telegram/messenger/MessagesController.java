@@ -30,6 +30,7 @@ import androidx.core.app.NotificationManagerCompat;
 import org.rooms.messenger.GcmPushListenerService;
 import org.rooms.messenger.R;
 import org.telegram.SQLite.SQLiteCursor;
+import org.telegram.irooms.IRoomsManager;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.messenger.voip.VoIPService;
 import org.telegram.tgnet.ConnectionsManager;
@@ -8850,6 +8851,8 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void performLogout(int type) {
+        IRoomsManager.getInstance().performLogOut(ApplicationLoader.applicationContext);
+
         if (type == 1) {
             unregistedPush();
             TLRPC.TL_auth_logOut req = new TLRPC.TL_auth_logOut();

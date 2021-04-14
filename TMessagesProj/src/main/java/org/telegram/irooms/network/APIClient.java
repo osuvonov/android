@@ -382,7 +382,7 @@ public class APIClient {
                             showToast(context, "Error on login: " + errorDesc);
                         }
 
-                    } catch (JSONException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }, error -> {
@@ -423,6 +423,54 @@ public class APIClient {
 
             makePostRequest(context, postData, hostNameCloud, callback);
         } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteSubscription(Context context,String token, long recordID, final VolleyCallback callback) {
+
+        String hostNameCloud = BASE_URL + "/push-subscription/delete";
+
+        try {
+            JSONObject postData = new JSONObject();
+
+            postData.put("record_id", recordID);
+            JsonObjectRequest postRequest = new JsonObjectRequest(Request.Method.POST, hostNameCloud, postData,
+                    response -> {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response.toString());
+                            String success = jsonObject.getString("success");
+                            if (success.equals("true")) {
+                                callback.onSuccess(response.toString());
+                            } else {
+                                JSONObject error = jsonObject.opt("error") == null ? null : jsonObject.getJSONObject("error");
+                                String errorDescription = "Unknown error";
+                                if (error != null) {
+                                    errorDescription = error.getString("description");
+                                }
+                                callback.onError(errorDescription);
+                                showToast(context, "Error on adding task: " + errorDescription);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }, error -> {
+                handleError(context, error);
+            }) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    HashMap<String, String> headers = new HashMap<>();
+                    headers.put("Accept", "application/json");
+                    headers.put("Content-Type", "application/json");
+                    headers.put("Api-Key", Constants.API_KEY);
+                    headers.put("Authorization", "Bearer " + token);
+                    return headers;
+                }
+            };
+            RequestQueue requestQueue = Volley.newRequestQueue(context);
+
+            requestQueue.add(postRequest);
+         } catch (JSONException e) {
             e.printStackTrace();
         }
     }

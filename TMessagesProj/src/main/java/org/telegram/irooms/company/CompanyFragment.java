@@ -23,6 +23,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.rooms.messenger.R;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.UserConfig;
+import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -119,8 +120,9 @@ public class CompanyFragment extends BaseFragment {
     private void initCompaniesInfo() {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync((Callable<List<Company>>) () -> {
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
             RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
-            return repository.getCompanyList();
+            return repository.getCurrentUserCompanyList(user.id);
         }, result -> {
             companyViewAdapter.submitList(result);
             if (((LaunchActivity) getParentActivity()).getmSocket().connected()) {
@@ -137,9 +139,9 @@ public class CompanyFragment extends BaseFragment {
                     TaskRunner runner = new TaskRunner();
                     runner.executeAsync((Callable<List<Company>>) () -> {
 
+                        TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
                         RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
-
-                        return repository.getCompanyList();
+                        return repository.getCurrentUserCompanyList(user.id);
 
                     }, result -> {
                         try {
