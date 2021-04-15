@@ -36,6 +36,7 @@ public abstract class TaskDatabase extends RoomDatabase {
     public static TaskDatabase getDatabase(final Context context, String dbName) {
         if (currentDb != null) {
             if (!currentDb.equals(dbName)) {
+                INSTANCE.close();
                 INSTANCE = null;
             }
         }
