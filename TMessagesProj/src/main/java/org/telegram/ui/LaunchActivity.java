@@ -269,7 +269,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
         if (mSocket != null) {
             disconnectSocket();
-            connectSocket();
         }
     }
 
@@ -332,6 +331,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
             try {
                 ArrayList<Company> companies = IRoomJsonParser.getCompaniesFromSocketAuth(json);
+                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
                 // dynamic company list
                 setCompanyList(companies);
@@ -345,7 +345,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                     IRoomsManager.getInstance().setOwnerOfSelectedCompany(LaunchActivity.this, true);
                                 }
                             }
-                            RoomsRepository.getInstance(getApplication()).insert(company);
+                            RoomsRepository.getInstance(getApplication(), user.phone).insert(company);
                         }
                     } catch (Exception x) {
                     }
@@ -435,8 +435,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     public void connectSocket() {
-        if (mSocket != null && !mSocket.connected()) {
-
+        if (mSocket != null) {
             mSocket.connect();
         }
     }
@@ -444,14 +443,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     public void disconnectSocket() {
         if (mSocket != null) {
             mSocket.disconnect();
+            authorized = false;
         }
         connectSocket();
     }
 
+    private boolean destroy = false;
+
     private void destroySocket() {
         try {
-
+            destroy = true;
             mSocket.disconnect();
+            authorized = false;
             mSocket.off(Socket.EVENT_CONNECT, onConnect);
             mSocket.off(Socket.EVENT_DISCONNECT, onDisconnect);
             mSocket.off("error", onConnectError);
@@ -491,7 +494,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         try {
             Company company1 = IRoomJsonParser.getCompany(company);
             if (company1 != null) {
-                RoomsRepository.getInstance(getApplication()).update(company1);
+                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+
+                RoomsRepository.getInstance(getApplication(), user.phone).update(company1);
             }
         } catch (Exception x) {
 
@@ -501,6 +506,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private void socketAuth() {
 
         try {
+            setLocalTaskChangeListener();
             APIClient.getInstance().getToken(LaunchActivity.this, new APIClient.TokenListener() {
                 @Override
                 public void onToken(String token) {
@@ -512,8 +518,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             postData.put("platform", "android");
                             postData.put("token", token);
                             postData.put("version", BuildVars.BUILD_VERSION_STRING);
-
-                            mSocket.emit("auth", postData, (Ack) args1 -> {
+                             mSocket.emit("auth", postData, (Ack) args1 -> {
                                 Log.e("on auth", "authenticated");
                                 authorized = true;
 
@@ -558,12 +563,12 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         if (mSocket.connected() && authorized) {
             TaskRunner taskRunner = new TaskRunner();
             taskRunner.executeAsync(() -> {
-                List<Task> offlineTasks = RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getOfflineTasks();
+                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+
+                List<Task> offlineTasks = RoomsRepository.getInstance(LaunchActivity.this.getApplication(), user.phone).getOfflineTasks();
                 if (offlineTasks.size() > 0 && mSocket != null) {
-                    Log.e("offline tasks length ", "length: " + offlineTasks.size());
-                    for (Task task : offlineTasks) {
+                     for (Task task : offlineTasks) {
                         if (task.getLocalStatus() == 1 || task.getId() < 0) {
-                            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
                             if (user.id == task.getCreatorId()) {
 //                                if ("group".equals(task.getChat_type())) {
 //                                    TLRPC.ChatFull info = MessagesController.getInstance(UserConfig.selectedAccount).getChatFull((int) task.getChatId());
@@ -587,7 +592,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                         }
 
                                         String message = "Task #" + task.getId() + "\n";
-                                        message += LocaleController.getInstance().getRoomsString("yout_got_task");
+                                        message += LocaleController.getInstance().getRoomsString("you_got_task");
 
                                         long chatID = task.getChatId();
                                         if (task.getChat_type() != null && task.getChat_type().equals("group")) {
@@ -628,6 +633,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private Emitter.Listener onDisconnect = args -> {
         Log.e("on disconnnect", "disconnected");
         authorized = false;
+        if (!destroy) {
+            mSocket.connect();
+        }
     };
 
     private void onTaskUpdated(String json) {
@@ -635,8 +643,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             JSONObject data = new JSONObject(json);
 
             Task task = IRoomJsonParser.getTask(data.toString(), true);
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-            RoomsRepository.getInstance(getApplication()).updateOnlineTask(task);
+            RoomsRepository.getInstance(getApplication(), user.phone).updateOnlineTask(task);
             runOnUiThread(() -> taskUpdated(task));
         } catch (Exception x) {
             return;
@@ -648,8 +657,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             JSONObject data = new JSONObject(json);
 
             Task task = IRoomJsonParser.getTask(data.toString(), true);
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-            RoomsRepository.getInstance(getApplication()).insert(task);
+            RoomsRepository.getInstance(getApplication(), user.phone).insert(task);
 
             taskCreated(task);
         } catch (Exception x) {
@@ -725,7 +735,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
                     synchronized (taskListSynchronizer) {
-                        setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication()).getCompanyList());
+                        TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+
+                        setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication(),user.phone).getCompanyList());
                     }
                     // loadTasks();
                     return null;
@@ -734,11 +746,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 });
     }
 
-
-    private void loadTasks() {
-        globalTaskList.clear();
-        globalTaskList.addAll(RoomsRepository.getInstance(getApplication()).getTasks());
-    }
 
     public void addTaskButtonClicked() {
         Bundle bundle = new Bundle();
@@ -819,25 +826,13 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             });
         } catch (Exception x) {
-            Log.e("in app update", x.getMessage());
-        }
+         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        checkRoomsUpdate();
-        initSocket();
-        loadTeams();
-        // init firebase analytics
-        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        Bundle bundle = new Bundle();
-        bundle.putString("date", Calendar.getInstance().getTime().toString());
-        mFirebaseAnalytics.logEvent("start_app", bundle);
+    private void setLocalTaskChangeListener(){
+        TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-
-        ApplicationLoader.postInitApplication();
-
-        RoomsRepository.getInstance(LaunchActivity.this.getApplication()).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
+        RoomsRepository.getInstance(LaunchActivity.this.getApplication(),user.phone).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
             @Override
             public void onLocalTaskCreated(Task task) {
                 IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
@@ -877,6 +872,20 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }
         });
 
+    }
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        checkRoomsUpdate();
+        initSocket();
+        loadTeams();
+        // init firebase analytics
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+        Bundle bundle = new Bundle();
+        bundle.putString("date", Calendar.getInstance().getTime().toString());
+        mFirebaseAnalytics.logEvent("start_app", bundle);
+
+        ApplicationLoader.postInitApplication();
+        setLocalTaskChangeListener();
         AndroidUtilities.checkDisplaySize(this, getResources().getConfiguration());
         currentAccount = UserConfig.selectedAccount;
         if (!UserConfig.getInstance(currentAccount).isClientActivated()) {
@@ -1618,7 +1627,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
         try {
             disconnectSocket();
-            connectSocket();
         } catch (Exception x) {
         }
 

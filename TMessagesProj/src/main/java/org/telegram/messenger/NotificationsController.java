@@ -3670,8 +3670,9 @@ public class NotificationsController extends BaseController {
     public void showTaskNotification(int taskId, String title, String body) {
         Task task = null;
         try {
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-            RoomsRepository repository = RoomsRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext());
+            RoomsRepository repository = RoomsRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext(),user.phone);
             task = repository.getTask(taskId);
         } catch (Exception x) {
         }

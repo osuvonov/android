@@ -2,6 +2,7 @@ package org.telegram.irooms.task;
 
 import android.app.Application;
 
+import com.google.android.exoplayer2.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -51,7 +52,7 @@ public class RoomsRepository {
 
 
     public ArrayList<Task> getChatRelatedTasks(long[] chatID, int limit, int offset) {
-        return (ArrayList<Task>) taskDao.getTasksByChatId(chatID, limit, offset);
+         return (ArrayList<Task>) taskDao.getTasksByChatId(chatID, limit, offset);
     }
 
     public ArrayList<Task> getChatAndCompanyRelatedTasks(long chatID, int companyID, int limit, int offset) {
@@ -120,20 +121,29 @@ public class RoomsRepository {
     private CompanyDao companyDao;
 
     private static RoomsRepository instance;
+    private static String currentDb;
 
-    public static RoomsRepository getInstance(Application application) {
+    public static RoomsRepository getInstance(Application application, String dbName) {
+        if (currentDb!=null){
+            if (!currentDb.equals(dbName)){
+                instance=null;
+            }
+        }
         if (instance == null) {
             synchronized (RoomsRepository.class) {
                 if (instance == null) {
-                    instance = new RoomsRepository(application);
+                    currentDb=dbName;
+                    instance = new RoomsRepository(application, dbName);
                 }
             }
         }
         return instance;
     }
 
-    private RoomsRepository(Application application) {
-        TaskDatabase db = TaskDatabase.getDatabase(application);
+
+    private RoomsRepository(Application application, String dbName) {
+
+        TaskDatabase db = TaskDatabase.getDatabase(application, dbName);
         taskDao = db.taskDao();
         companyDao = db.companyDao();
         requestHistoryDao = db.requestHistoryDao();
@@ -151,6 +161,7 @@ public class RoomsRepository {
     // does not matter if network is on/off
     public void createLocalTask(Task task) {
         TaskDatabase.databaseWriteExecutor.execute(() -> {
+
             task.setLocalStatus(1);
             taskDao.createLocalTask(task);
             if (localTaskChangeListener != null) {
@@ -162,8 +173,7 @@ public class RoomsRepository {
     //
     public void createOnlineTask(Task task, long currentAccountId) {
         task.setLocalStatus(3);
-
-        if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
+         if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
             Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
             if (task1 != null && task1.getId() == -1) {
                 taskDao.deleteTask(task.getLocal_id());

@@ -499,13 +499,13 @@ public class APIClient {
 
     public void getToken(Context context, TokenListener tokenListener) {
         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+        String phone =new String(user.phone);
         if (user == null) {
             return;
         }
 
-        String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + user.phone, "");
-
-        if (token != null && token.length() > 0) {
+        String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" +phone, "");
+         if (token != null && token.length() > 0) {
             try {
                 String ar = token.split("\\.")[1];
                 byte[] data = Base64.decode(ar, Base64.DEFAULT);
@@ -518,7 +518,7 @@ public class APIClient {
                     loginToRooms(context, new VolleyCallback() {
                         @Override
                         public void onSuccess(String response) {
-                            String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone, "");
+                            String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + phone, "");
                             tokenListener.onToken(token);
                         }
 
@@ -538,7 +538,7 @@ public class APIClient {
             loginToRooms(context, new VolleyCallback() {
                 @Override
                 public void onSuccess(String response) {
-                    String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone, "");
+                    String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + phone, "");
                     tokenListener.onToken(token);
                 }
 

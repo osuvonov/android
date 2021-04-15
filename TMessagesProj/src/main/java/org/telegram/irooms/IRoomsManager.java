@@ -66,7 +66,8 @@ public class IRoomsManager {
             public void onSuccess(String response) {
                 try {
                     new TaskRunner().executeAsync(() -> {
-                        RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+                        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+                        RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
 
                         JSONObject jsonObject = new JSONObject(response);
                         JSONObject co = jsonObject.getJSONObject("result");
@@ -96,7 +97,9 @@ public class IRoomsManager {
     public void getCompanyList(Context context, IRoomsCallback callback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
-            RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+            String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+            RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
             return repository.getCompanyList();
         }, result -> {
             String json = new Gson().toJson(result);
@@ -110,7 +113,9 @@ public class IRoomsManager {
             public void onSuccess(String response) {
                 try {
                     new TaskRunner().executeAsync(() -> {
-                        RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+                        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                        RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                         String json = new Gson().toJson(members);
                         roomsRepository.updateCompanyMembers(companyId, json, true);
                         return "1";
@@ -133,7 +138,10 @@ public class IRoomsManager {
             public void onSuccess(String response) {
                 try {
                     new TaskRunner().executeAsync(() -> {
-                        RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+
+                        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                        RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                         String json = new Gson().toJson(members);
                         roomsRepository.updateCompanyMembers(companyId, json, false);
                         return "1";
@@ -160,7 +168,9 @@ public class IRoomsManager {
                         Task myTask = IRoomJsonParser.getTask(response, false);
 
                         if (myTask != null) {
-                            RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+
+                            String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+                            RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                             myTask.setLocalStatus(3);
 
                             roomsRepository.createOnlineTask(myTask, UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId());
@@ -191,7 +201,10 @@ public class IRoomsManager {
                         Task myTask = IRoomJsonParser.getTask(response, false);
 
                         if (myTask != null) {
-                            RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+
+                            String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                            RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                             myTask.setLocalStatus(3);
                             roomsRepository.updateOnlineTask(myTask);
                             callback.onUpdate(myTask);
@@ -221,7 +234,10 @@ public class IRoomsManager {
                     TaskRunner runner = new TaskRunner();
                     runner.executeAsync(() -> {
                         IRoomsManager.getInstance().setHasCompany(context, true);
-                        RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+
+                        String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                        RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                         JSONObject jsonObject = new JSONObject(response);
                         ArrayList<Company> companies = IRoomJsonParser.getCompanies(jsonObject.toString());
 
@@ -270,7 +286,10 @@ public class IRoomsManager {
     public void getCompany(Context context, int companyId, IRoomCallback<Company> companyIRoomCallback) {
         TaskRunner taskRunner = new TaskRunner();
         taskRunner.executeAsync(() -> {
-            RoomsRepository repo = RoomsRepository.getInstance((Application) context.getApplicationContext());
+
+            String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+            RoomsRepository repo = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
             return repo.getCompany(companyId);
 
         }, success -> companyIRoomCallback.onSuccess(success));
@@ -280,7 +299,10 @@ public class IRoomsManager {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
 
-            String date = RoomsRepository.getInstance((Application) context.getApplicationContext()).getLastRequestDateForChat(query.getChat_id());
+            String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+            RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
+            String date = roomsRepository.getLastRequestDateForChat(query.getChat_id());
             query.setFrom_date("".equals(date) ? null : date);
 
             Calendar calendar = Calendar.getInstance();
@@ -299,21 +321,14 @@ public class IRoomsManager {
                         ArrayList<Task> tasks = IRoomJsonParser.getTasks(jsonObject.toString());
 
                         if (tasks.size() > 0) {
-                            TaskRunner taskRunner = new TaskRunner();
-                            taskRunner.executeAsync(() -> {
-                                RoomsRepository repo = RoomsRepository.getInstance((Application) context.getApplicationContext());
+                            RequestHistory history = new RequestHistory(query.getChat_id(), currentISODate);
+                            roomsRepository.insert(history);
 
-                                RequestHistory history = new RequestHistory(query.getChat_id(), currentISODate);
-                                repo.insert(history);
-
-                                long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
-                                for (Task task : tasks) {
-                                    repo.createOnlineTask(task, userID);
-                                }
-                                return tasks;
-                            }, result -> {
-                                callback.onSuccess(tasks);
-                            });
+                            long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
+                            for (Task task : tasks) {
+                                roomsRepository.createOnlineTask(task, userID);
+                            }
+                            callback.onSuccess(tasks);
                         } else {
                             callback.onSuccess(tasks);
                         }
@@ -402,8 +417,10 @@ public class IRoomsManager {
     public void getGroupChatRelatedTasks(Context context, long[] chatId, int companyId, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
-                    RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
 
+                    String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                    RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
 //                    if (companyId >= 0) {
 //                        repository.getChatAndCompanyRelatedTasks(chatId, arrayListIRoomCallback, companyId);
 //                    } else {
@@ -418,7 +435,10 @@ public class IRoomsManager {
     public void getUserTasks(int companyId, Context context, int selectedAccountUserId, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
-                    RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+
+                    String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                    RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
 
                     repository.getPrivateChatTasks(companyId, selectedAccountUserId, id, arrayListIRoomCallback);
 
@@ -431,7 +451,9 @@ public class IRoomsManager {
     public void getAccountTasks(Context context, int id, IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
-                    RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext());
+                    String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+
+                    RoomsRepository repository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                     repository.getAccountTasks(id, arrayListIRoomCallback);
                     return "";
                 }, result -> {

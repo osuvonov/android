@@ -443,13 +443,13 @@ public class AlertsCreator {
             bottomSheet.btnTaskSave.setEnabled(false);
             Task task = new Task(-1, companyId[0]);
             String description = bottomSheet.etTaskDescription.getText().toString();
-            if ("".equals(description) || description == null) {
+            if ("".equals(description)) {
                 bottomSheet.btnTaskSave.setEnabled(true);
                 return;
             }
             task.setDescription(description);
             task.setMembers(selectedMembers);
-            task.setCreatorId(UserConfig.getInstance(0).clientUserId);
+            task.setCreatorId(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
             task.setExpiresAt(deadline[0]);
             task.setStatus(Utils.getStatuses()[selectedState[0]]);
             task.setStatus_code(selectedState[0]);
@@ -464,7 +464,7 @@ public class AlertsCreator {
 
             if (!socket.connected() || !((LaunchActivity) context).isAuthorized()) {
                 callback.onCreate(task);
-                RoomsRepository.getInstance((Application) context.getApplicationContext()).createLocalTask(task);
+                RoomsRepository.getInstance((Application) context.getApplicationContext(),currentUser.phone).createLocalTask(task);
             } else {
                 IRoomsManager.getInstance().createTaskBySocket(context, socket, task, new TaskManagerListener() {
                     @Override
@@ -724,8 +724,8 @@ public class AlertsCreator {
             task.setReceivers(receiverIds);
 
             callback.onUpdate(task);
-
-            RoomsRepository.getInstance((Application) context.getApplicationContext()).updateLocalTask(task);
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            RoomsRepository.getInstance((Application) context.getApplicationContext(),user.phone).updateLocalTask(task);
             builder.getDismissRunnable().run();
 
         });

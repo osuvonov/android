@@ -121,7 +121,7 @@ public class CompanyFragment extends BaseFragment {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync((Callable<List<Company>>) () -> {
             TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-            RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+            RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(),user.phone);
             return repository.getCurrentUserCompanyList(user.id);
         }, result -> {
             companyViewAdapter.submitList(result);
@@ -140,7 +140,7 @@ public class CompanyFragment extends BaseFragment {
                     runner.executeAsync((Callable<List<Company>>) () -> {
 
                         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(),user.phone);
                         return repository.getCurrentUserCompanyList(user.id);
 
                     }, result -> {

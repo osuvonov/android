@@ -16,6 +16,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 @Database(entities = {Task.class, Company.class, RequestHistory.class}, version = 21, exportSchema = false)
 public abstract class TaskDatabase extends RoomDatabase {
 
+    private static String currentDb;
+
     public abstract TaskDao taskDao();
 
     public abstract CompanyDao companyDao();
@@ -31,12 +33,18 @@ public abstract class TaskDatabase extends RoomDatabase {
     public static final ExecutorService databaseWriteExecutor =
             Executors.newFixedThreadPool(NUMBER_OF_THREADS);
 
-    public static TaskDatabase getDatabase(final Context context) {
+    public static TaskDatabase getDatabase(final Context context, String dbName) {
+        if (currentDb != null) {
+            if (!currentDb.equals(dbName)) {
+                INSTANCE = null;
+            }
+        }
         if (INSTANCE == null) {
             synchronized (TaskDatabase.class) {
                 if (INSTANCE == null) {
+                    currentDb = dbName;
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
-                            TaskDatabase.class, "task_database")
+                            TaskDatabase.class, dbName)
                             .addCallback(sRoomDatabaseCallback)
                             .fallbackToDestructiveMigration()
                             .build();
@@ -60,7 +68,7 @@ public abstract class TaskDatabase extends RoomDatabase {
                 dao.deleteAll();
                 CompanyDao companyDao = INSTANCE.companyDao();
                 companyDao.deleteAll();
-                RequestHistoryDao requestHistory=INSTANCE.requestHistoryDao();
+                RequestHistoryDao requestHistory = INSTANCE.requestHistoryDao();
                 requestHistory.deleteAll();
             });
         }

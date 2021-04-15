@@ -769,7 +769,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             @Override
             public ArrayList<Task> call() throws Exception {
                 try {
-                    int selectedAccountUserId = UserConfig.getInstance(UserConfig.selectedAccount).clientUserId;
+                    TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+                    int selectedAccountUserId = user.id;
                     final int chatId = arguments.getInt("chat_id", 0);
                     final int userId = arguments.getInt("user_id", 0);
                     int limit = 20;
@@ -778,7 +779,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     int companyId = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
 
                     if (chatId == 0 && userId == selectedAccountUserId) {
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
 
                         ArrayList<Task> tempList = repository.getAccountTasks(userId, limit, taskList.size());
                         while (!onBackPressed && tempList.size() > 0) {
@@ -806,7 +807,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     } else if (chatId == 0) {
 
                         //private chat with someone
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
 
                         ArrayList<Task> tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
                         while (!onBackPressed && tempList.size() > 0) {
@@ -844,10 +845,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             chatIds = new long[1];
                             chatIds[0] = Math.abs(dialog_id);
                         }
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication());
+                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
 
                         ArrayList<Task> tempList = repository.getChatRelatedTasks(chatIds, limit, taskList.size());
-
 
                         while (!onBackPressed && tempList.size() > 0) {
                             taskList.addAll(tempList);
@@ -1840,11 +1840,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 Socket mSocket = ((LaunchActivity) getParentActivity()).getmSocket();
                 TaskRunner taskRunner = new TaskRunner();
                 taskRunner.executeAsync(() -> {
-                    List<Task> offlineTasks = RoomsRepository.getInstance(getParentActivity().getApplication()).getOfflineTasks();
+                    TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+
+                    List<Task> offlineTasks = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone).getOfflineTasks();
                     if (offlineTasks.size() > 0) {
                         for (Task task : offlineTasks) {
                             if (task.getLocalStatus() == 1) {
-                                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
                                 if (user.id == task.getCreatorId()) {
                                     if ("group".equals(task.getChat_type())) {
                                         if (task.getChat_id() == migratedFromChatID) {
@@ -2119,6 +2120,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         if (task1 != null) {
                             taskList.remove(task1);
                         }
+
                         taskList.add(task);
                         moveScrollToBottom();
                         if (!isChatMode) {
@@ -2152,12 +2154,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         //loadChatRelatedTasks(false, true);
         loadTaskByPagination();
-        SendMessagesHelper.getInstance(currentAccount).setMessageSentListener(new SendMessagesHelper.MessageSentListener() {
-            @Override
-            public void onMessageSent(int oldId, int newId, String message) {
 
-            }
-        });
     }
 
 
@@ -7605,7 +7602,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         public void onCreate(Task task) {
                             // adding task to {taskList} in order to show task card view
                             taskList.add(task);
-                            sendTaskMessage(task);
+                             sendTaskMessage(task);
                             moveScrollToBottom();
                         }
 
@@ -21096,10 +21093,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         if (t != null) {
 
             task.setMessageId(t.getMessageId());
-            String part1 = "Task #" + task.getId() + "\n";
 
-            String message = part1 + task.getDescription();
-            SendMessagesHelper.getInstance(currentAccount).sendMessage(message, dialog_id, null, null, null, false, null, null, null, true, 0);
+            sendTaskMessage(task);
 
             taskList.remove(t);
             taskList.add(task);
@@ -22336,8 +22331,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
         task.setReceivers(receiverIds);
+        TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-        RoomsRepository.getInstance((Application) getParentActivity().getApplicationContext()).updateLocalTask(task);
+        RoomsRepository.getInstance((Application) getParentActivity().getApplicationContext(), user.phone).updateLocalTask(task);
     }
 
     public class ChatActivityAdapter extends RecyclerAnimationScrollHelper.AnimatableAdapter {

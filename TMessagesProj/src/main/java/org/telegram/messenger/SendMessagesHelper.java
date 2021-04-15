@@ -126,16 +126,6 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         }
     });
 
-    private MessageSentListener messageSentListener;
-
-    public void setMessageSentListener(MessageSentListener ls) {
-        this.messageSentListener = ls;
-    }
-
-    public interface MessageSentListener {
-        void onMessageSent(int oldId, int newId, String message);
-    }
-
     public static class SendingMediaInfo {
         public Uri uri;
         public String path;
@@ -1661,9 +1651,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                             });
                                         } else {
                                             getMessagesStorage().getStorageQueue().postRunnable(() -> {
-                                                if (messageSentListener != null) {
-                                                    messageSentListener.onMessageSent(oldId, newMsgObj1.id,newMsgObj1.message);
-                                                }
+
                                                 getMessagesStorage().updateMessageStateAndId(newMsgObj1.random_id, (long) oldId, newMsgObj1.id, 0, false, peer_id.channel_id, scheduleDate != 0 ? 1 : 0);
                                                 getMessagesStorage().putMessages(sentMessages, true, false, false, 0, scheduleDate != 0);
                                                 AndroidUtilities.runOnUIThread(() -> {
@@ -4633,9 +4621,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
                             getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, grouped_id, existFlags, scheduled);
                             getMessagesStorage().getStorageQueue().postRunnable(() -> {
-                                if (messageSentListener != null) {
-                                    messageSentListener.onMessageSent(oldId, newMsgObj.id,newMsgObj.message);
-                                }
+
                                 getMessagesStorage().updateMessageStateAndId(newMsgObj.random_id, (long) oldId, newMsgObj.id, 0, false, newMsgObj.peer_id.channel_id, scheduled ? 1 : 0);
                                 getMessagesStorage().putMessages(sentMessages, true, false, false, 0, scheduled);
                                 AndroidUtilities.runOnUIThread(() -> {
@@ -4938,9 +4924,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             } else {
                                 getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, 0L, existFlags, scheduled);
                                 getMessagesStorage().getStorageQueue().postRunnable(() -> {
-                                    if (messageSentListener != null) {
-                                        messageSentListener.onMessageSent(oldId, newMsgObj.id,newMsgObj.message);
-                                    }
+
                                     getMessagesStorage().updateMessageStateAndId(newMsgObj.random_id, (long) oldId, newMsgObj.id, 0, false, newMsgObj.peer_id.channel_id, scheduled ? 1 : 0);
                                     getMessagesStorage().putMessages(sentMessages, true, false, false, 0, scheduled);
                                     AndroidUtilities.runOnUIThread(() -> {
