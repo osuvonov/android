@@ -158,6 +158,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Theme.createDialogsResources(this);
         Theme.createChatResources(this, false);
 
         AndroidUtilities.fillStatusBarHeight(this);
@@ -1184,6 +1185,9 @@ public class PopupNotificationActivity extends Activity implements NotificationC
         popupMessages.clear();
         if (isReply) {
             int account = intent != null ? intent.getIntExtra("currentAccount", UserConfig.selectedAccount) : UserConfig.selectedAccount;
+            if (!UserConfig.isValidAccount(account)) {
+                return;
+            }
             popupMessages.addAll(NotificationsController.getInstance(account).popupReplyMessages);
         } else {
             for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
@@ -1373,7 +1377,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
             currentChat = chat;
             if (avatarImageView != null) {
                 AvatarDrawable avatarDrawable = new AvatarDrawable(currentChat);
-                avatarImageView.setImage(ImageLocation.getForChat(chat, false), "50_50", avatarDrawable, chat);
+                avatarImageView.setForUserOrChat(chat, avatarDrawable);
             }
         } else if (currentUser != null) {
             TLRPC.User user = MessagesController.getInstance(currentMessageObject.currentAccount).getUser(currentUser.id);
@@ -1383,7 +1387,7 @@ public class PopupNotificationActivity extends Activity implements NotificationC
             currentUser = user;
             if (avatarImageView != null) {
                 AvatarDrawable avatarDrawable = new AvatarDrawable(currentUser);
-                avatarImageView.setImage(ImageLocation.getForUser(user, false), "50_50", avatarDrawable, user);
+                avatarImageView.setForUserOrChat(user, avatarDrawable);
             }
         }
     }
