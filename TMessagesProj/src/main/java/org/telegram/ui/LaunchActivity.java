@@ -831,46 +831,48 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     private void setLocalTaskChangeListener(){
         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+        if (user!=null){
+            RoomsRepository.getInstance(LaunchActivity.this.getApplication(),user.phone).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
+                @Override
+                public void onLocalTaskCreated(Task task) {
+                    IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
+                        @Override
+                        public void onCreate(Task task) {
+                            if (backendTaskListener != null) {
+                                backendTaskListener.onBackendTaskForLocalTaskCreated(task);
+                            }
+                            Bundle bundle = new Bundle();
+                            bundle.putString("task_id", task.getId() + "");
+                            bundle.putString("description", task.getDescription());
 
-        RoomsRepository.getInstance(LaunchActivity.this.getApplication(),user.phone).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
-            @Override
-            public void onLocalTaskCreated(Task task) {
-                IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
-                    @Override
-                    public void onCreate(Task task) {
-                        if (backendTaskListener != null) {
-                            backendTaskListener.onBackendTaskForLocalTaskCreated(task);
+                            mFirebaseAnalytics.logEvent("task_created", bundle);
                         }
-                        Bundle bundle = new Bundle();
-                        bundle.putString("task_id", task.getId() + "");
-                        bundle.putString("description", task.getDescription());
 
-                        mFirebaseAnalytics.logEvent("task_created", bundle);
-                    }
+                        @Override
+                        public void onUpdate(Task task) {
 
-                    @Override
-                    public void onUpdate(Task task) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onLocalTaskUpdated(Task task) {
-                IRoomsManager.getInstance().editTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
-                    @Override
-                    public void onCreate(Task task) {
-                    }
-
-                    @Override
-                    public void onUpdate(Task task) {
-                        if (backendTaskListener != null) {
-                            backendTaskListener.onBackendTaskForOfflineTaskUpdated(task);
                         }
-                    }
-                });
-            }
-        });
+                    });
+                }
+
+                @Override
+                public void onLocalTaskUpdated(Task task) {
+                    IRoomsManager.getInstance().editTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
+                        @Override
+                        public void onCreate(Task task) {
+                        }
+
+                        @Override
+                        public void onUpdate(Task task) {
+                            if (backendTaskListener != null) {
+                                backendTaskListener.onBackendTaskForOfflineTaskUpdated(task);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
 
     }
     @Override
