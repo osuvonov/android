@@ -246,7 +246,7 @@
             android:windowSoftInputMode="adjustResize|stateHidden">
         </activity>
         <activity
-            android:name=".GoogleVoiceClientActivity"
+            android:name="org.telegram.messenger.GoogleVoiceClientActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="com.google.android.voicesearch.SEND_MESSAGE_TO_CONTACTS" />
@@ -303,7 +303,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".AuthenticatorService" android:exported="true">
+        <service android:name="org.telegram.messenger.AuthenticatorService" android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -311,7 +311,7 @@
                 android:resource="@xml/auth"/>
         </service>
 
-        <service android:name=".ContactsSyncAdapterService" android:exported="true">
+        <service android:name="org.telegram.messenger.ContactsSyncAdapterService" android:exported="true">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter" />
             </intent-filter>
@@ -465,7 +465,7 @@
             android:authorities="${applicationId}.call_sound_provider"
             android:exported="true"/>
 
-        <receiver android:name=".ChatsWidgetProvider">
+        <receiver android:name="org.telegram.messenger.ChatsWidgetProvider">
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/chats_widget_info" />
             <intent-filter>
@@ -473,11 +473,11 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".ChatsWidgetService"
+        <service android:name="org.telegram.messenger.ChatsWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="false" />
 
-        <receiver android:name=".ContactsWidgetProvider">
+        <receiver android:name="org.telegram.messenger.ContactsWidgetProvider">
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/contacts_widget_info" />
             <intent-filter>
@@ -485,7 +485,7 @@
             </intent-filter>
         </receiver>
 
-        <service android:name=".ContactsWidgetService"
+        <service android:name="org.telegram.messenger.ContactsWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"
             android:exported="false" />
 

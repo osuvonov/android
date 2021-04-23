@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.widget.RemoteViews;
 
+import org.rooms.messenger.R;
 import org.telegram.ui.FeedWidgetConfigActivity;
 import org.telegram.ui.LaunchActivity;
 

@@ -800,7 +800,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                     view = headerCell;
                     break;
                 case 2:
-                    view = new GroupCreateUserCell(context, false, 3, false);
+                    view = new GroupCreateUserCell(context, 0, 3, false);
                     break;
                 case 3:
                 default:

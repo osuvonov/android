@@ -505,9 +505,9 @@ public class TwoStepVerificationSetupActivity extends BaseFragment {
                                 } else {
                                     timeString = LocaleController.formatPluralString("Minutes", time / 60);
                                 }
-                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                             } else {
-                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                             }
                         }
                     }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
@@ -1446,7 +1446,7 @@ public class TwoStepVerificationSetupActivity extends BaseFragment {
                         presentFragment(fragment, true);
                     } else {
                         if ("EMAIL_INVALID".equals(error.text)) {
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("PasswordEmailInvalid", R.string.PasswordEmailInvalid));
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("PasswordEmailInvalid", R.string.PasswordEmailInvalid));
                         } else if (error.text.startsWith("FLOOD_WAIT")) {
                             int time = Utilities.parseInt(error.text);
                             String timeString;
@@ -1455,9 +1455,9 @@ public class TwoStepVerificationSetupActivity extends BaseFragment {
                             } else {
                                 timeString = LocaleController.formatPluralString("Minutes", time / 60);
                             }
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                         } else {
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                         }
                     }
                 }

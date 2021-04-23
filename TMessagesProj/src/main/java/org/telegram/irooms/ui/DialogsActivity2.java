@@ -480,7 +480,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
 
         @Override
         protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-            if (child == fragmentContextView && fragmentContextView.getCurrentStyle() == 3) {
+            if (child == fragmentContextView && fragmentContextView.isCallStyle()) {
                 return true;
             }
             if (child == blurredView) {
@@ -590,7 +590,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 windowBackgroundPaint.setAlpha((int) (windowBackgroundPaint.getAlpha() * searchAnimationProgress));
                 canvas.drawRect(0, top + actionBarHeight, getMeasuredWidth(), top + actionBar.getMeasuredHeight() + searchTabsView.getMeasuredHeight(), windowBackgroundPaint);
             }
-            if (fragmentContextView != null && fragmentContextView.getCurrentStyle() == 3) {
+            if (fragmentContextView != null && fragmentContextView.isCallStyle()) {
                 canvas.save();
                 canvas.translate(fragmentContextView.getX(), fragmentContextView.getY());
                 fragmentContextView.setDrawOverlay(true);
@@ -1551,11 +1551,8 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 return !actionBar.isActionModeShowed();
             }
         });
-        searchItem.setClearsTextOnSearchCollapse(false);
         searchItem.setSearchFieldHint(LocaleController.getString("Search", R.string.Search));
         searchItem.setContentDescription(LocaleController.getString("Search", R.string.Search));
-
-
 
         actionBar.setTitle(LocaleController.getInstance().getRoomsString("choose_chat"));
 
@@ -1919,12 +1916,12 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             TLRPC.User user = getUserConfig().getCurrentUser();
             avatarDrawable.setInfo(user);
             imageView.getImageReceiver().setCurrentAccount(currentAccount);
-            imageView.setImage(ImageLocation.getForUser(user, false), "50_50", avatarDrawable, user);
+            imageView.setImage(ImageLocation.getForUser(user, ImageLocation.TYPE_SMALL), "50_50", avatarDrawable, user);
 
             for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
                 TLRPC.User u = AccountInstance.getInstance(a).getUserConfig().getCurrentUser();
                 if (u != null) {
-                    AccountSelectCell cell = new AccountSelectCell(context);
+                    AccountSelectCell cell = new AccountSelectCell(context,false);
                     cell.setAccount(a, true);
                     switchItem.addSubItem(10 + a, cell, AndroidUtilities.dp(230), AndroidUtilities.dp(48));
                 }
@@ -1965,7 +1962,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
             viewPage.listView = new DialogsRecyclerView(context, viewPage);
             viewPage.listView.setClipToPadding(false);
             viewPage.listView.setPivotY(0);
-            viewPage.dialogsItemAnimator = new DialogsItemAnimator() {
+            viewPage.dialogsItemAnimator = new DialogsItemAnimator(viewPage.listView) {
                 @Override
                 public void onRemoveStarting(RecyclerView.ViewHolder item) {
                     super.onRemoveStarting(item);
@@ -2308,8 +2305,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                 viewPage.pullForegroundDrawable.setWillDraw(viewPage.archivePullViewState != ARCHIVE_ITEM_STATE_PINNED);
             }
 
-            viewPage.dialogsAdapter = new DialogsAdapter(context, viewPage.dialogsType, folderId, onlySelect, selectedDialogs, currentAccount) {
-                @Override
+            viewPage.dialogsAdapter = new DialogsAdapter(this, context, viewPage.dialogsType, folderId, onlySelect, selectedDialogs, currentAccount) {                @Override
                 public void notifyDataSetChanged() {
                     viewPage.lastItemsCount = getItemCount();
                     try {
@@ -2755,17 +2751,6 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         return fragmentView;
     }
 
-    boolean creatingTaskFromFAB = false;
-
-    private void startCreatingTaskFromFAB() {
-        creatingTaskFromFAB = true;
-        //1. select member or group from list
-        //2. after selecting open that window
-        //3. automatically show popup dialog fragment
-
-
-    }
-
     private void updateContextViewPosition() {
         float filtersTabsHeight = 0;
         if (filterTabsView != null && filterTabsView.getVisibility() != View.GONE) {
@@ -2791,7 +2776,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         }
     }
 
-    private void updateFiltersView(boolean showMediaFilters, ArrayList<TLObject> users, ArrayList<FiltersView.DateData> dates, boolean animated) {
+    private void updateFiltersView(boolean showMediaFilters, ArrayList<Object> users, ArrayList<FiltersView.DateData> dates, boolean animated) {
         if (!searchIsShowed || onlySelect) {
             return;
         }
@@ -2814,7 +2799,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         boolean hasUsersOrDates = (users != null && !users.isEmpty()) || (dates != null && !dates.isEmpty());
         if (!hasMediaFilter && !hasUsersOrDates && showMediaFilters) {
         } else if (hasUsersOrDates) {
-            ArrayList<TLObject> finalUsers = (users != null && !users.isEmpty() && !hasUserFilter) ? users : null;
+            ArrayList<Object> finalUsers = (users != null && !users.isEmpty() && !hasUserFilter) ? users : null;
             ArrayList<FiltersView.DateData> finalDates = (dates != null && !dates.isEmpty() && !hasDataFilter) ? dates : null;
             if (finalUsers != null || finalDates != null) {
                 visible = true;
@@ -2834,7 +2819,6 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         filtersView.setEnabled(visible);
         filtersView.setVisibility(View.VISIBLE);
     }
-
     private void addSearchFilter(FiltersView.MediaFilterData filter) {
         if (!searchIsShowed) {
             return;
@@ -4441,7 +4425,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                                                 getMessagesController().deleteDialog(selectedDialog, 0, param);
                                             } else {
                                                 TLRPC.User currentUser = getMessagesController().getUser(getUserConfig().getClientUserId());
-                                                getMessagesController().deleteUserFromChat((int) -selectedDialog, currentUser, null);
+                                                getMessagesController().deleteParticipantFromChat((int) -selectedDialog, currentUser, null);
                                             }
                                         } else {
                                             getMessagesController().deleteDialog(selectedDialog, 0, param);
@@ -4474,7 +4458,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                                         getMessagesController().deleteDialog(selectedDialog, 0, false);
                                     } else {
                                         TLRPC.User currentUser = getMessagesController().getUser(getUserConfig().getClientUserId());
-                                        getMessagesController().deleteUserFromChat((int) -selectedDialog, currentUser, null);
+                                        getMessagesController().deleteParticipantFromChat((int) -selectedDialog, currentUser, null);
                                     }
                                 } else {
                                     getMessagesController().deleteDialog(selectedDialog, 0, false);
@@ -4847,7 +4831,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         return searchViewPager.searchListView;
     }
 
-    private UndoView getUndoView() {
+    public UndoView getUndoView() {
         if (undoView[0].getVisibility() == View.VISIBLE) {
             UndoView old = undoView[0];
             undoView[0] = undoView[1];
@@ -5207,7 +5191,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
                     if (ChatObject.isNotInChat(chat)) {
                         getMessagesController().deleteDialog(dialogId, 0, revoke);
                     } else {
-                        getMessagesController().deleteUserFromChat((int) -dialogId, getMessagesController().getUser(getUserConfig().getClientUserId()), null, false, revoke);
+                        getMessagesController().deleteParticipantFromChat((int) -dialogId, getMessagesController().getUser(getUserConfig().getClientUserId()), null,null, false, revoke);
                     }
                 } else {
                     getMessagesController().deleteDialog(dialogId, 0, revoke);
@@ -5264,7 +5248,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         if (showingSuggestion == null) {
             return;
         }
-        getMessagesController().removeSuggestion(showingSuggestion);
+        getMessagesController().removeSuggestion(0,showingSuggestion);
         showingSuggestion = null;
         showNextSupportedSuggestion();
     }
@@ -5313,7 +5297,7 @@ public class DialogsActivity2 extends DialogsActivity implements NotificationCen
         }
     }
 
-    public static ArrayList<TLRPC.Dialog> getDialogsArray(int currentAccount, int dialogsType, int folderId, boolean frozen) {
+    public ArrayList<TLRPC.Dialog> getDialogsArray(int currentAccount, int dialogsType, int folderId, boolean frozen) {
         if (frozen && frozenDialogsList != null) {
             return frozenDialogsList;
         }

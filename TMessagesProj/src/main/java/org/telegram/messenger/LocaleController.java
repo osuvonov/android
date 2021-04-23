@@ -972,7 +972,7 @@ public class LocaleController {
         englishRoomsMap.put("today", "Today");
         englishRoomsMap.put("tomorrow", "Tomorrow");
         englishRoomsMap.put("participants", " participants");
-        englishRoomsMap.put("you_got_task", "Вы получили новое задание. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
+        englishRoomsMap.put("you_got_task", "Вы получили новое задание@company_name. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
         englishRoomsMap.put("no_task_yet", "No tasks here yet");
         englishRoomsMap.put("choose_status", "Choose status");
         englishRoomsMap.put("choose_participants", "Choose participants");
@@ -1025,7 +1025,7 @@ public class LocaleController {
         uzbekRoomsMap.put("today", "Bugun");
         uzbekRoomsMap.put("tomorrow", "Ertaga");
         uzbekRoomsMap.put("participants", " ishtirokchilar");
-        uzbekRoomsMap.put("you_got_task", "Вы получили новое задание. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
+        englishRoomsMap.put("you_got_task", "Вы получили новое задание@company_name. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
         uzbekRoomsMap.put("no_task_yet", "Hali vazifalar yo'q");
         uzbekRoomsMap.put("choose_status", "Holatni tanlang");
         uzbekRoomsMap.put("choose_participants", "Ishtirokchilarni tanlang");
@@ -1078,7 +1078,7 @@ public class LocaleController {
         russianRoomsMap.put("today", "Сегодня");
         russianRoomsMap.put("tomorrow", "Завтра");
         russianRoomsMap.put("participants", " участников");
-        russianRoomsMap.put("you_got_task", "Вы получили новое задание. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
+        englishRoomsMap.put("you_got_task", "Вы получили новое задание@company_name. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
         russianRoomsMap.put("no_task_yet", "Нет задач");
         russianRoomsMap.put("choose_status", "Выберите статус");
         russianRoomsMap.put("choose_participants", "Выбрать участников");

@@ -1657,9 +1657,9 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                             } else {
                                 timeString = LocaleController.formatPluralString("Minutes", time / 60);
                             }
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                         } else {
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                         }
                     }
                 }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
@@ -1898,7 +1898,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                                             if ("APP_VERSION_OUTDATED".equals(error1.text)) {
                                                 AlertsCreator.showUpdateAppAlert(getParentActivity(), LocaleController.getString("UpdateAppAlert", R.string.UpdateAppAlert), true);
                                             } else {
-                                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error1.text);
+                                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error1.text);
                                             }
                                             showEditDoneProgress(true, false);
                                         }
@@ -1930,9 +1930,9 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                                     } else {
                                         timeString = LocaleController.formatPluralString("Minutes", time / 60);
                                     }
-                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                                 } else {
-                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                                 }
                             }
                         });
@@ -2389,7 +2389,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                     if ("APP_VERSION_OUTDATED".equals(error.text)) {
                         AlertsCreator.showUpdateAppAlert(getParentActivity(), LocaleController.getString("UpdateAppAlert", R.string.UpdateAppAlert), true);
                     } else {
-                        showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                        showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                     }
                 }
             }));
@@ -5817,7 +5817,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                 if (errorRunnable != null) {
                     errorRunnable.onError(error.text, null);
                 }
-                showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
             } else {
                 if (documentOnly) {
                     if (documentRequiredType != null) {
@@ -6807,7 +6807,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
             return;
         }
         if (uploadingFileType == UPLOADING_TYPE_DOCUMENTS && documents.size() >= 20) {
-            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("PassportUploadMaxReached", R.string.PassportUploadMaxReached, LocaleController.formatPluralString("Files", 20)));
+            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("PassportUploadMaxReached", R.string.PassportUploadMaxReached, LocaleController.formatPluralString("Files", 20)));
             return;
         }
         createChatAttachView();

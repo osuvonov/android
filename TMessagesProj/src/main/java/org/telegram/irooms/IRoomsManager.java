@@ -38,6 +38,16 @@ public class IRoomsManager {
 
     private static IRoomsManager instance;
 
+    public ArrayList<Company> getCompanyList() {
+        return companyArrayList;
+    }
+
+    public void setCompanyList(ArrayList<Company> companyArrayList) {
+        this.companyArrayList = companyArrayList;
+    }
+
+    private ArrayList<Company> companyArrayList = new ArrayList<>();
+
     public static IRoomsManager getInstance() {
         if (instance == null) {
             instance = new IRoomsManager();
@@ -493,6 +503,20 @@ public class IRoomsManager {
             });
 
         }
+    }
+
+    public Company getTeam(long teamId) {
+        if (companyArrayList == null || companyArrayList.size() == 0) {
+            return null;
+        }
+        for (int i = 0; i < companyArrayList.size(); i++) {
+            Company team = companyArrayList.get(i);
+            if (team.getId() == teamId) {
+                return team;
+            }
+        }
+
+        return null;
     }
 
     public interface IRoomsCallback {

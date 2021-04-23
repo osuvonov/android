@@ -35,6 +35,7 @@ import android.text.style.CharacterStyle;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
 
+import org.rooms.messenger.BuildConfig;
 import org.rooms.messenger.R;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteDatabase;

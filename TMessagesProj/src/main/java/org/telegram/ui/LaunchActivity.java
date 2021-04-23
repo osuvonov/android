@@ -531,7 +531,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             postData.put("platform", "android");
                             postData.put("token", token);
                             postData.put("version", BuildVars.BUILD_VERSION_STRING);
-                             mSocket.emit("auth", postData, (Ack) args1 -> {
+                            mSocket.emit("auth", postData, (Ack) args1 -> {
                                 Log.e("on auth", "authenticated");
                                 authorized = true;
 
@@ -580,7 +580,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
                 List<Task> offlineTasks = RoomsRepository.getInstance(LaunchActivity.this.getApplication(), user.phone).getOfflineTasks();
                 if (offlineTasks.size() > 0 && mSocket != null) {
-                     for (Task task : offlineTasks) {
+                    for (Task task : offlineTasks) {
                         if (task.getLocalStatus() == 1 || task.getId() < 0) {
                             if (user.id == task.getCreatorId()) {
 //                                if ("group".equals(task.getChat_type())) {
@@ -604,14 +604,54 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                             taskListener.onTaskCreated(task);
                                         }
 
-                                        String message = "Task #" + task.getId() + "\n";
-                                        message += LocaleController.getInstance().getRoomsString("you_got_task");
+                                        StringBuilder message = new StringBuilder("Task #" + task.getId() + "\n");
+                                        message.append(LocaleController.getInstance().getRoomsString("you_got_task"));
 
                                         long chatID = task.getChatId();
                                         if (task.getChat_type() != null && task.getChat_type().equals("group")) {
                                             chatID = -chatID;
                                         }
-                                        SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message, chatID, null, null, null, false, null, null, null, true, 0);
+                                        ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
+
+                                        TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
+                                        entityIOS.offset = message.indexOf("iOS");
+                                        entityIOS.length = 3;
+                                        entityIOS.url = "https://apps.apple.com/us/app/rooms-io/id1549819018";
+
+                                        entities.add(entityIOS);
+
+                                        TLRPC.MessageEntity entityAndroid = new TLRPC.TL_messageEntityTextUrl();
+                                        entityAndroid.offset = message.indexOf("Android");
+                                        entityAndroid.length = 7;
+                                        entityAndroid.url = "https://play.google.com/store/apps/details?id=org.rooms.messenger";
+
+                                        entities.add(entityAndroid);
+                                        String fullUrl = "https://irooms.io";
+                                        TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
+                                        entityWeb.offset = message.indexOf("irooms.io");
+                                        entityWeb.length = fullUrl.length();
+                                        entityWeb.url = fullUrl;
+
+                                        entities.add(entityWeb);
+                                        if (task.getCompanyId() != 0) {
+                                            int start = message.indexOf("@company_name");
+                                            int end = start + 13;
+                                            Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
+                                            String teamName = team == null ? "" : " (" + team.getName()+")";
+                                            message = message.replace(start, end, teamName);
+                                            TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
+                                            entityTeam.offset = start+2;
+                                            entityTeam.length = teamName.length()-1;
+
+                                            entities.add(entityTeam);
+                                        } else {
+                                            int start = message.indexOf("@company_name");
+                                            int end = start + 13;
+                                            String teamName = "";
+                                            message = message.replace(start, end, teamName);
+                                        }
+
+                                        SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message.toString(), chatID, null, null, null, false, null, null, null, true, 0);
                                     }
 
                                     @Override
@@ -641,6 +681,78 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }, result -> {
             });
         }
+    }
+
+    private void sendTaskMessage(Task task) {
+        StringBuilder message = new StringBuilder("Task #" + (task.getId() > 0 ? task.getId() : task.getLocal_id()) + "\n");
+        message.append(LocaleController.getInstance().getRoomsString("you_got_task"));
+        ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
+
+        TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
+        entityIOS.offset = message.indexOf("iOS");
+        entityIOS.length = 3;
+        entityIOS.url = "https://apps.apple.com/us/app/rooms-io/id1549819018";
+
+        entities.add(entityIOS);
+
+        TLRPC.MessageEntity entityAndroid = new TLRPC.TL_messageEntityTextUrl();
+        entityAndroid.offset = message.indexOf("Android");
+        entityAndroid.length = 7;
+        entityAndroid.url = "https://play.google.com/store/apps/details?id=org.rooms.messenger";
+
+        entities.add(entityAndroid);
+        String fullUrl = "https://irooms.io";
+        TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
+        entityWeb.offset = message.indexOf("irooms.io");
+        entityWeb.length = fullUrl.length();
+        entityWeb.url = fullUrl;
+
+        entities.add(entityWeb);
+        if (task.getCompanyId() != 0) {
+            int start = message.indexOf("@company_name");
+            int end = start + 13;
+            Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
+            String teamName = team == null ? "" : " " + team.getName();
+            message = message.replace(start, end, teamName);
+            TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
+            entityTeam.offset = start;
+            entityTeam.length = teamName.length();
+
+            entities.add(entityTeam);
+        } else {
+            int start = message.indexOf("@company_name");
+            int end = start + 13;
+            String teamName = "";
+            message = message.replace(start, end, teamName);
+        }
+
+//        message.append("\n");
+//        if (task.getMembers() != null) {
+//            int offset = message.length();
+//            for (int i = 0; i < task.getMembers().size(); i++) {
+//                try {
+//                    TLRPC.TL_messageEntityMentionName entityUser = new TLRPC.TL_messageEntityMentionName();
+//                    entityUser.user_id = task.getMembers().get(i);
+//
+//                    TLRPC.User user = getMessagesController().getUser(task.getMembers().get(i));
+//                    if (user != null) {
+//                        String userName = user.username != null ? ("@" + user.username) : (user.first_name != null ? user.first_name : user.last_name);
+//                        if (userName == null || "".equals(userName)) {
+//                            continue;
+//                        }
+//                        message.append(userName).append(" ");
+//                        entityUser.offset = offset-1;
+//                        entityUser.length = userName.length();
+//                        offset = message.length();
+//                        entities.add(entityUser);
+//                    }
+//                } catch (Exception x) {
+//                }
+//            }
+//        }
+
+        SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message.toString(), task.getChat_id(), null, null, null, false, entities, null, null, true, 0);
+
     }
 
     private Emitter.Listener onDisconnect = args -> {
@@ -714,20 +826,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     };
 
-    public void showBulletin(Function<BulletinFactory, Bulletin> createBulletin) {
-        BaseFragment topFragment = null;
-        if (!layerFragmentsStack.isEmpty()) {
-            topFragment = layerFragmentsStack.get(layerFragmentsStack.size() - 1);
-        } else if (!rightFragmentsStack.isEmpty()) {
-            topFragment = rightFragmentsStack.get(rightFragmentsStack.size() - 1);
-        } else if (!mainFragmentsStack.isEmpty()) {
-            topFragment = mainFragmentsStack.get(mainFragmentsStack.size() - 1);
-        }
-        if (BulletinFactory.canShowBulletin(topFragment)) {
-            createBulletin.apply(BulletinFactory.of(topFragment)).show();
-        }
-    }
-
     private ArrayList<Task> createdTasks = new ArrayList<>();
     private ArrayList<Company> companyList = new ArrayList<>();
 
@@ -735,6 +833,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         synchronized (taskListSynchronizer) {
             companyList.clear();
             companyList.addAll(list);
+            IRoomsManager.getInstance().setCompanyList(companyList);
         }
     }
 
@@ -749,8 +848,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         runner.executeAsync(() -> {
                     synchronized (taskListSynchronizer) {
                         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-
-                        setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication(),user.phone).getCompanyList());
+                        if (user != null)
+                            setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication(), user.phone).getCompanyList());
                     }
                     // loadTasks();
                     return null;
@@ -839,53 +938,54 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 }
             });
         } catch (Exception x) {
-         }
+        }
     }
 
-    private void setLocalTaskChangeListener(){
+    private void setLocalTaskChangeListener() {
         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+        if (user != null) {
+            RoomsRepository.getInstance(LaunchActivity.this.getApplication(), user.phone).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
+                @Override
+                public void onLocalTaskCreated(Task task) {
+                    IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
+                        @Override
+                        public void onCreate(Task task) {
+                            if (backendTaskListener != null) {
+                                backendTaskListener.onBackendTaskForLocalTaskCreated(task);
+                            }
+                            Bundle bundle = new Bundle();
+                            bundle.putString("task_id", task.getId() + "");
+                            bundle.putString("description", task.getDescription());
 
-        RoomsRepository.getInstance(LaunchActivity.this.getApplication(),user.phone).setLocalTaskChangeListener(new RoomsRepository.LocalTaskChangeListener() {
-            @Override
-            public void onLocalTaskCreated(Task task) {
-                IRoomsManager.getInstance().createTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
-                    @Override
-                    public void onCreate(Task task) {
-                        if (backendTaskListener != null) {
-                            backendTaskListener.onBackendTaskForLocalTaskCreated(task);
+                            mFirebaseAnalytics.logEvent("task_created", bundle);
                         }
-                        Bundle bundle = new Bundle();
-                        bundle.putString("task_id", task.getId() + "");
-                        bundle.putString("description", task.getDescription());
 
-                        mFirebaseAnalytics.logEvent("task_created", bundle);
-                    }
+                        @Override
+                        public void onUpdate(Task task) {
 
-                    @Override
-                    public void onUpdate(Task task) {
-
-                    }
-                });
-            }
-
-            @Override
-            public void onLocalTaskUpdated(Task task) {
-                IRoomsManager.getInstance().editTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
-                    @Override
-                    public void onCreate(Task task) {
-                    }
-
-                    @Override
-                    public void onUpdate(Task task) {
-                        if (backendTaskListener != null) {
-                            backendTaskListener.onBackendTaskForOfflineTaskUpdated(task);
                         }
-                    }
-                });
-            }
-        });
+                    });
+                }
 
+                @Override
+                public void onLocalTaskUpdated(Task task) {
+                    IRoomsManager.getInstance().editTaskBySocket(LaunchActivity.this, mSocket, task, new TaskManagerListener() {
+                        @Override
+                        public void onCreate(Task task) {
+                        }
+
+                        @Override
+                        public void onUpdate(Task task) {
+                            if (backendTaskListener != null) {
+                                backendTaskListener.onBackendTaskForOfflineTaskUpdated(task);
+                            }
+                        }
+                    });
+                }
+            });
+        }
     }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         checkRoomsUpdate();
@@ -1593,7 +1693,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }
         }
         if (SharedConfig.noStatusBar) {
-            getWindow().setStatusBarColor(0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                getWindow().setStatusBarColor(0);
+            }
         }
     }
 
@@ -3178,7 +3280,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     }
 
     private void runImportRequest(final Uri importUri,
-                                ArrayList<Uri> documents) {
+                                  ArrayList<Uri> documents) {
         final int intentAccount = UserConfig.selectedAccount;
         final AlertDialog progressDialog = new AlertDialog(this, 3);
         final int[] requestId = new int[]{0};
@@ -3345,7 +3447,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.didReceiveSmsCode, code);
             } else {
                 AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                 builder.setMessage(AndroidUtilities.replaceTags(LocaleController.formatString("OtherLoginCode", R.string.OtherLoginCode, code)));
                 builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
                 showAlertDialog(builder);
@@ -3606,7 +3708,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                             }
                         } else {
                             AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-                            builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                            builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                             if (error.text.startsWith("FLOOD_WAIT")) {
                                 builder.setMessage(LocaleController.getString("FloodWait", R.string.FloodWait));
                             } else if (error.text.startsWith("INVITE_HASH_EXPIRED")) {
@@ -3663,7 +3765,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                 }
                             } else {
                                 AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-                                builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+                                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                                 if (error.text.startsWith("FLOOD_WAIT")) {
                                     builder.setMessage(LocaleController.getString("FloodWait", R.string.FloodWait));
                                 } else if (error.text.equals("USERS_TOO_MUCH")) {
@@ -4173,7 +4275,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     public void showBulletin(Function<BulletinFactory, Bulletin> createBulletin) {
         BaseFragment topFragment = null;
         if (!layerFragmentsStack.isEmpty()) {
-             topFragment = layerFragmentsStack.get(layerFragmentsStack.size() - 1);
+            topFragment = layerFragmentsStack.get(layerFragmentsStack.size() - 1);
         } else if (!rightFragmentsStack.isEmpty()) {
             topFragment = rightFragmentsStack.get(rightFragmentsStack.size() - 1);
         } else if (!mainFragmentsStack.isEmpty()) {
@@ -4557,7 +4659,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 
     private void showPermissionErrorAlert(String message) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         builder.setMessage(message);
         builder.setNegativeButton(LocaleController.getString("PermissionOpenSettings", R.string.PermissionOpenSettings), (dialog, which) -> {
             try {
@@ -4844,7 +4946,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 return;
             }
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+            builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
             if (reason != 2 && reason != 3 && reason != 6) {
                 builder.setNegativeButton(LocaleController.getString("MoreInfo", R.string.MoreInfo), (dialogInterface, i) -> {
                     if (!mainFragmentsStack.isEmpty()) {
@@ -4883,7 +4985,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         } else if (id == NotificationCenter.wasUnableToFindCurrentLocation) {
             final HashMap<String, MessageObject> waitingForLocation = (HashMap<String, MessageObject>) args[0];
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle(LocaleController.getString("AppName", R.string.AppName));
+            builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
             builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
             builder.setNegativeButton(LocaleController.getString("ShareYouLocationUnableManually", R.string.ShareYouLocationUnableManually), (dialogInterface, i) -> {
                 if (mainFragmentsStack.isEmpty()) {

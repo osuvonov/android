@@ -48,6 +48,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.util.Log;
+
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -144,7 +146,7 @@ public class CancelAccountDeletionActivity extends BaseFragment {
 
     @Override
     public View createView(Context context) {
-        actionBar.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+        actionBar.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         actionBar.setBackButtonImage(R.drawable.ic_ab_back);
         actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
             @Override
@@ -250,6 +252,8 @@ public class CancelAccountDeletionActivity extends BaseFragment {
     }
 
     public void setPage(int page, boolean animated, Bundle params, boolean back) {
+        Log.e("Setting page", "page number:" + page + " params: " + params);
+
         if (page == 3 || page == 0) {
             doneButton.setVisibility(View.GONE);
         } else {
@@ -481,7 +485,7 @@ public class CancelAccountDeletionActivity extends BaseFragment {
                     blueImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionBackground), PorterDuff.Mode.MULTIPLY));
                     frameLayout.addView(blueImageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
 
-                    titleTextView.setText(LocaleController.getString("SentAppCodeTitle", R.string.SentAppCodeTitle).replace("Telegram","Rooms"));
+                    titleTextView.setText(LocaleController.getString("SentAppCodeTitle", R.string.SentAppCodeTitle).replace("Telegram", "Rooms"));
                 } else {
                     blueImageView = new RLottieImageView(context);
                     hintDrawable = new RLottieDrawable(R.raw.sms_incoming_info, "" + R.raw.sms_incoming_info, AndroidUtilities.dp(48), AndroidUtilities.dp(48), true, null);
@@ -969,6 +973,7 @@ public class CancelAccountDeletionActivity extends BaseFragment {
             if (nextPressed) {
                 return;
             }
+            Log.e("smsmview next","onnext pressed");
             String code = getCode();
             if (TextUtils.isEmpty(code)) {
                 AndroidUtilities.shakeView(codeFieldContainer, 2, 0);
@@ -1069,9 +1074,13 @@ public class CancelAccountDeletionActivity extends BaseFragment {
                 return;
             }
             if (id == NotificationCenter.didReceiveSmsCode) {
+                Log.e("Did receive sms", "id:"+id+", args"+args.toString());
+
                 codeField[0].setText("" + args[0]);
                 onNextPressed();
             } else if (id == NotificationCenter.didReceiveCall) {
+                Log.e("Did receive call", "id:"+id+", args"+args.toString());
+
                 String num = "" + args[0];
                 if (!AndroidUtilities.checkPhonePattern(pattern, num)) {
                     return;
