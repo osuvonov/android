@@ -21,212 +21,170 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:layout_marginEnd="7dp"
-        android:layout_marginRight="7dp"
         android:background="@drawable/rounded_corner"
         android:gravity="right"
         android:maxWidth="260dp"
         android:minWidth="260dp"
         android:orientation="vertical"
-        android:padding="5dp">
-        <TextView
-            android:ellipsize="end"
-            android:textSize="8sp"
-            android:textColor="@color/notification_blue_color"
-            android:id="@+id/team_title"
-            android:layout_gravity="top|left"
-            android:gravity="left|top"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        >
+
         <LinearLayout
+            android:maxWidth="260dp"
+            android:minWidth="260dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical|right"
-            android:gravity="center_vertical|right"
-            android:orientation="horizontal">
+            android:layout_gravity="right"
+            android:layout_marginEnd="7dp"
+            android:layout_marginRight="7dp"
+            android:gravity="right"
+            android:orientation="vertical"
+            android:padding="5dp">
+
+            <TextView
+                android:id="@+id/team_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:ellipsize="end"
+                android:gravity="left|top"
+                android:textColor="@color/notification_blue_color"
+                android:textSize="8sp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="top">
+                android:layout_gravity="center_vertical|right"
+                android:gravity="center_vertical|right"
+                android:orientation="horizontal">
 
-                <CheckBox
-                    android:id="@+id/tl_status_checkbox"
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical" />
+                    android:gravity="top">
 
-                <TextView
-                    android:id="@+id/tl_status"
+                    <CheckBox
+                        android:id="@+id/tl_status_checkbox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical" />
+
+                    <TextView
+                        android:id="@+id/tl_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:padding="5dp"
+                        android:textColor="@color/holo_blue_bright" />
+
+                    <ImageView
+                        android:id="@+id/tl_status_arrow"
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_gravity="center_vertical"
+                        android:padding="3dp"
+                        android:rotation="90"
+                        android:src="@drawable/arrow_right" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/tl_taskedit"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|right"
+                    android:background="@drawable/btn_click"
                     android:padding="5dp"
-                    android:textColor="@color/holo_blue_bright" />
-
-                <ImageView
-                    android:id="@+id/tl_status_arrow"
-                    android:layout_width="15dp"
-                    android:layout_height="15dp"
-                    android:layout_gravity="center_vertical"
-                    android:padding="3dp"
-                    android:rotation="90"
-                    android:src="@drawable/arrow_right" />
+                    android:src="@drawable/msg_edit" />
             </LinearLayout>
 
-            <ImageButton
-                android:id="@+id/tl_taskedit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|right"
-                android:background="@drawable/btn_click"
-                android:padding="5dp"
-                android:src="@drawable/msg_edit" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tl_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:focusableInTouchMode="false"
-            android:padding="4dp"
-            android:text=""
-            android:textColor="@color/black"
-            android:textSize="16sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <org.telegram.irooms.ui.avatar.UserCell2
-                android:id="@+id/task_owner_avatar"
-                android:layout_width="34dp"
-                android:layout_height="30dp"
-                android:layout_marginBottom="1dp" />
-
-            <ImageView
-                android:id="@+id/task_arrow"
-                android:layout_width="15dp"
-                android:layout_height="15dp"
-                android:padding="3dp"
-                android:src="@drawable/arrow_right" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/tl_avatars"
-                android:layout_width="0dp"
-                android:layout_height="30dp"
-                android:layout_marginLeft="3dp"
-                android:layout_marginTop="3dp"
-                android:layout_weight="1"
-                android:minWidth="200dp"
-                android:minHeight="30dp" />
-
-            <ImageView
-                android:id="@+id/iconDeadline"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:layout_gravity="center_vertical"
-                android:src="@drawable/ic_deadline" />
-
             <TextView
-                android:id="@+id/tl_deadline"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:id="@+id/tl_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusableInTouchMode="false"
+                android:padding="4dp"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:gravity="center_vertical"
-                android:padding="3dp"
-                android:textSize="12sp" />
+                android:orientation="horizontal">
+
+                <org.telegram.irooms.ui.avatar.UserCell2
+                    android:id="@+id/task_owner_avatar"
+                    android:layout_width="34dp"
+                    android:layout_height="30dp"
+                    android:layout_marginBottom="1dp" />
+
+                <ImageView
+                    android:id="@+id/task_arrow"
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:padding="3dp"
+                    android:src="@drawable/arrow_right" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/tl_avatars"
+                    android:layout_width="0dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginTop="3dp"
+                    android:layout_weight="1"
+                    android:minWidth="200dp"
+                    android:minHeight="30dp" />
+
+                <ImageView
+                    android:id="@+id/iconDeadline"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ic_deadline" />
+
+                <TextView
+                    android:id="@+id/tl_deadline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:padding="3dp"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:background="@color/key_dialogBackgroundGray" />
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/comments"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/ripple"
+            android:clickable="true"
+            android:focusable="true">
+
+            <TextView
+                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="Comments"
+                android:textAlignment="center"
+                android:textColor="@color/key_dialogTextGray" />
+
+            <ImageView
+                android:layout_gravity="center"
+                android:layout_marginRight="15dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/comment_arrow" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
-
-    <!--<?xml version="1.0" encoding="utf-8"?>-->
-    <!--<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
-    <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
-    <!--    android:layout_width="match_parent"-->
-    <!--    android:layout_height="wrap_content">-->
-    <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_gravity="right"-->
-    <!--        android:layout_margin="17dp"-->
-    <!--        android:background="@drawable/rounded_corner"-->
-    <!--        android:gravity="right"-->
-    <!--        android:maxWidth="220dp"-->
-    <!--        android:minWidth="220dp"-->
-    <!--        android:orientation="horizontal"-->
-    <!--        android:padding="10dp">-->
-
-    <!--        <TextView-->
-    <!--            android:id="@+id/tl_status"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:layout_gravity="right"-->
-    <!--            android:gravity="right|center_vertical"-->
-    <!--            android:padding="5dp"-->
-    <!--            android:textColor="@color/holo_blue_bright"-->
-    <!--            app:layout_constraintRight_toLeftOf="@+id/tl_taskedit"-->
-    <!--            app:layout_constraintTop_toTopOf="parent" />-->
-
-    <!--        <ImageButton-->
-    <!--            android:id="@+id/tl_taskedit"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:layout_gravity="center_vertical|right"-->
-    <!--            android:background="@drawable/btn_click"-->
-    <!--            android:padding="10dp"-->
-    <!--            android:src="@drawable/menu"-->
-    <!--            app:layout_constraintRight_toRightOf="parent"-->
-    <!--            app:layout_constraintTop_toTopOf="parent" />-->
-
-    <!--        <TextView-->
-    <!--            android:id="@+id/tl_description"-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="0dp"-->
-    <!--            android:layout_weight="1"-->
-    <!--            android:focusableInTouchMode="false"-->
-    <!--            android:padding="4dp"-->
-    <!--            android:text=""-->
-    <!--            android:textColor="@color/black"-->
-    <!--            android:textSize="16sp"-->
-    <!--            app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--            app:layout_constraintTop_toBottomOf="@+id/tl_taskedit" />-->
-
-
-    <!--        <androidx.recyclerview.widget.RecyclerView-->
-    <!--            android:id="@+id/tl_avatars"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="30dp"-->
-    <!--            android:layout_alignParentLeft="true"-->
-    <!--            android:layout_marginTop="3dp"-->
-    <!--            android:minWidth="200dp"-->
-    <!--            android:minHeight="30dp"-->
-    <!--            app:layout_constraintLeft_toLeftOf="parent"-->
-    <!--            app:layout_constraintTop_toBottomOf="@+id/tl_description" />-->
-
-
-    <!--        <ImageView-->
-    <!--            android:id="@+id/iconDeadline"-->
-    <!--            android:layout_width="16dp"-->
-    <!--            android:layout_height="16dp"-->
-    <!--            android:layout_gravity="center_vertical"-->
-    <!--            android:src="@drawable/ic_deadline"-->
-    <!--            app:layout_constraintLeft_toLeftOf="@+id/tl_deadline"-->
-    <!--            app:layout_constraintTop_toBottomOf="@+id/tl_description" />-->
-
-    <!--        <TextView-->
-    <!--            android:id="@+id/tl_deadline"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:layout_gravity="right"-->
-    <!--            android:gravity="bottom"-->
-    <!--            android:padding="3dp"-->
-    <!--            android:textSize="12sp"-->
-    <!--            app:layout_constraintBottom_toBottomOf="parent"-->
-    <!--            app:layout_constraintRight_toRightOf="parent"-->
-    <!--            app:layout_constraintTop_toBottomOf="@+id/tl_description" />-->
-
-    <!--    </androidx.constraintlayout.widget.ConstraintLayout>-->
-    <!--</FrameLayout>-->

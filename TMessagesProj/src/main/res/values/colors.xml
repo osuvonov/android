@@ -12,8 +12,7 @@
     <color name="task_status_blue_dark">#ff3ec1f9</color>
 
     <color name="task_sort_bottom_tab_selected">#394b60</color>
-
-
+    <color name="comments_text">#ff348bc1</color>
 
     <!-- Dark theme task messaging-->
 
