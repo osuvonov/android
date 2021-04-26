@@ -1526,7 +1526,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
         passwordAvatarContainer.addView(avatarImageView, LayoutHelper.createFrame(64, 64, Gravity.CENTER, 0, 8, 0, 0));
 
         AvatarDrawable avatarDrawable = new AvatarDrawable(botUser);
-        avatarImageView.setImage(ImageLocation.getForUser(botUser, false), "50_50", avatarDrawable, botUser);
+        avatarImageView.setForUserOrChat(botUser, avatarDrawable);
 
         passwordRequestTextView = new TextInfoPrivacyCell(context);
         passwordRequestTextView.getTextView().setGravity(Gravity.CENTER_HORIZONTAL);
@@ -1657,9 +1657,9 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                             } else {
                                 timeString = LocaleController.formatPluralString("Minutes", time / 60);
                             }
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                         } else {
-                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                         }
                     }
                 }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
@@ -1898,7 +1898,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                                             if ("APP_VERSION_OUTDATED".equals(error1.text)) {
                                                 AlertsCreator.showUpdateAppAlert(getParentActivity(), LocaleController.getString("UpdateAppAlert", R.string.UpdateAppAlert), true);
                                             } else {
-                                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error1.text);
+                                                showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error1.text);
                                             }
                                             showEditDoneProgress(true, false);
                                         }
@@ -1930,9 +1930,9 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                                     } else {
                                         timeString = LocaleController.formatPluralString("Minutes", time / 60);
                                     }
-                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                                 } else {
-                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                    showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                                 }
                             }
                         });
@@ -2001,7 +2001,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
             avatarContainer.addView(avatarImageView, LayoutHelper.createFrame(64, 64, Gravity.CENTER, 0, 8, 0, 0));
 
             AvatarDrawable avatarDrawable = new AvatarDrawable(botUser);
-            avatarImageView.setImage(ImageLocation.getForUser(botUser, false), "50_50", avatarDrawable, botUser);
+            avatarImageView.setForUserOrChat(botUser, avatarDrawable);
 
             bottomCell = new TextInfoPrivacyCell(context);
             bottomCell.setBackgroundDrawable(Theme.getThemedDrawable(context, R.drawable.greydivider_top, Theme.key_windowBackgroundGrayShadow));
@@ -2389,7 +2389,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                     if ("APP_VERSION_OUTDATED".equals(error.text)) {
                         AlertsCreator.showUpdateAppAlert(getParentActivity(), LocaleController.getString("UpdateAppAlert", R.string.UpdateAppAlert), true);
                     } else {
-                        showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                        showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                     }
                 }
             }));
@@ -4873,7 +4873,19 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
             }
             SecureDocument document1 = (SecureDocument) v.getTag();
             PhotoViewer.getInstance().setParentActivity(getParentActivity());
-            if (type == UPLOADING_TYPE_DOCUMENTS) {
+            if (type == UPLOADING_TYPE_SELFIE) {
+                ArrayList<SecureDocument> arrayList = new ArrayList<>();
+                arrayList.add(selfieDocument);
+                PhotoViewer.getInstance().openPhoto(arrayList, 0, provider);
+            } else if (type == UPLOADING_TYPE_FRONT) {
+                ArrayList<SecureDocument> arrayList = new ArrayList<>();
+                arrayList.add(frontDocument);
+                PhotoViewer.getInstance().openPhoto(arrayList, 0, provider);
+            } else if (type == UPLOADING_TYPE_REVERSE) {
+                ArrayList<SecureDocument> arrayList = new ArrayList<>();
+                arrayList.add(reverseDocument);
+                PhotoViewer.getInstance().openPhoto(arrayList, 0, provider);
+            } else if (type == UPLOADING_TYPE_DOCUMENTS) {
                 PhotoViewer.getInstance().openPhoto(documents, documents.indexOf(document1), provider);
             } else {
                 PhotoViewer.getInstance().openPhoto(translationDocuments, translationDocuments.indexOf(document1), provider);
@@ -5805,7 +5817,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                 if (errorRunnable != null) {
                     errorRunnable.onError(error.text, null);
                 }
-                showAlertWithText(LocaleController.getString("AppName", R.string.AppName), error.text);
+                showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
             } else {
                 if (documentOnly) {
                     if (documentRequiredType != null) {
@@ -6795,7 +6807,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
             return;
         }
         if (uploadingFileType == UPLOADING_TYPE_DOCUMENTS && documents.size() >= 20) {
-            showAlertWithText(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("PassportUploadMaxReached", R.string.PassportUploadMaxReached, LocaleController.formatPluralString("Files", 20)));
+            showAlertWithText(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("PassportUploadMaxReached", R.string.PassportUploadMaxReached, LocaleController.formatPluralString("Files", 20)));
             return;
         }
         createChatAttachView();
@@ -6814,7 +6826,7 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
             return;
         }
         if (chatAttachAlert == null) {
-            chatAttachAlert = new ChatAttachAlert(getParentActivity(), this);
+            chatAttachAlert = new ChatAttachAlert(getParentActivity(), this, false);
             chatAttachAlert.setDelegate(new ChatAttachAlert.ChatAttachViewDelegate() {
 
                 @Override
@@ -7372,8 +7384,8 @@ public class PassportActivity extends BaseFragment implements NotificationCenter
                         PackageInfo pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
                         String version = String.format(Locale.US, "%s (%d)", pInfo.versionName, pInfo.versionCode);
 
-                        Intent mailer = new Intent(Intent.ACTION_SEND);
-                        mailer.setType("message/rfc822");
+                        Intent mailer = new Intent(Intent.ACTION_SENDTO);
+                        mailer.setData(Uri.parse("mailto:"));
                         mailer.putExtra(Intent.EXTRA_EMAIL, new String[]{"sms@stel.com"});
                         mailer.putExtra(Intent.EXTRA_SUBJECT, "Android registration/login issue " + version + " " + phone);
                         mailer.putExtra(Intent.EXTRA_TEXT, "Phone: " + phone + "\nApp version: " + version + "\nOS version: SDK " + Build.VERSION.SDK_INT + "\nDevice Name: " + Build.MANUFACTURER + Build.MODEL + "\nLocale: " + Locale.getDefault() + "\nError: " + lastError);

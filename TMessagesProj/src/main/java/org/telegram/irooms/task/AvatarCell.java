@@ -120,7 +120,7 @@ public class AvatarCell extends FrameLayout {
 
         lastAvatar = photo;
         if (currentUser != null) {
-            avatarImageView.setImage(ImageLocation.getForUser(currentUser, false), "50_50", avatarDrawable, currentUser);
+            avatarImageView.setImage(ImageLocation.getForUser(currentUser, ImageLocation.TYPE_SMALL), "50_50", avatarDrawable, currentUser);
         } else {
             avatarImageView.setImageDrawable(avatarDrawable);
         }

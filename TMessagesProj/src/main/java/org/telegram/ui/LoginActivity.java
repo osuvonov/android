@@ -32,6 +32,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -65,6 +66,8 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.util.Log;
+
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ContactsController;
@@ -96,9 +99,13 @@ import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Components.AlertsCreator;
 import org.telegram.ui.Components.AvatarDrawable;
 import org.telegram.ui.Components.BackupImageView;
+import org.telegram.ui.Components.Bulletin;
+import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.CombinedDrawable;
 import org.telegram.ui.Components.ContextProgressView;
 import org.telegram.ui.Components.EditTextBoldCursor;
+import org.telegram.ui.Components.RLottieDrawable;
+import org.telegram.ui.Components.RLottieImageView;
 import org.telegram.ui.Components.VerticalPositionAutoAnimator;
 import org.telegram.ui.Components.HintEditText;
 import org.telegram.ui.Components.ImageUpdater;
@@ -152,6 +159,8 @@ public class LoginActivity extends BaseFragment {
     private static final int DONE_TYPE_ACTION = 1;
 
     private final static int done_button = 1;
+
+    private boolean needRequestPermissions;
 
     private static class ProgressView extends View {
 
@@ -275,7 +284,20 @@ public class LoginActivity extends BaseFragment {
         doneItem.setContentDescription(LocaleController.getString("Done", R.string.Done));
         doneItem.setVisibility(doneButtonVisible[DONE_TYPE_ACTION] ? View.VISIBLE : View.GONE);
 
-        FrameLayout container = new FrameLayout(context);
+        FrameLayout container = new FrameLayout(context) {
+            @Override
+            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+                MarginLayoutParams marginLayoutParams = (MarginLayoutParams) floatingButtonContainer.getLayoutParams();
+                if (Bulletin.getVisibleBulletin() != null && Bulletin.getVisibleBulletin().isShowing()) {
+                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+                    marginLayoutParams.bottomMargin = AndroidUtilities.dp(14) + Bulletin.getVisibleBulletin().getLayout().getMeasuredHeight() - AndroidUtilities.dp(10);
+                } else {
+                    marginLayoutParams.bottomMargin = AndroidUtilities.dp(14);
+                }
+
+                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            }
+        };
         fragmentView = container;
 
         ScrollView scrollView = new ScrollView(context) {
@@ -443,6 +465,12 @@ public class LoginActivity extends BaseFragment {
         } catch (Exception e) {
             FileLog.e(e);
         }
+        if (currentViewNum == 0 && !needRequestPermissions) {
+            SlideView view = views[currentViewNum];
+            if (view != null) {
+                view.onShow();
+            }
+        }
     }
 
     @Override
@@ -537,6 +565,7 @@ public class LoginActivity extends BaseFragment {
 
                 }
             } else if (dialog == permissionsShowDialog && !permissionsShowItems.isEmpty() && getParentActivity() != null) {
+                AndroidUtilities.runOnUIThread(() -> needRequestPermissions = false, 200);
                 try {
                     getParentActivity().requestPermissions(permissionsShowItems.toArray(new String[0]), 7);
                 } catch (Exception ignore) {
@@ -603,12 +632,12 @@ public class LoginActivity extends BaseFragment {
         AndroidUtilities.shakeView(view, 2, 0);
     }
 
-    private void needShowInvalidAlert(final String phoneNumber, final boolean banned) {
-        if (getParentActivity() == null) {
+    public static void needShowInvalidAlert(BaseFragment fragment, final String phoneNumber, final boolean banned) {
+        if (fragment == null || fragment.getParentActivity() == null) {
             return;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
         if (banned) {
             builder.setMessage(LocaleController.getString("BannedPhoneNumber", R.string.BannedPhoneNumber));
         } else {
@@ -619,8 +648,8 @@ public class LoginActivity extends BaseFragment {
                 PackageInfo pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
                 String version = String.format(Locale.US, "%s (%d)", pInfo.versionName, pInfo.versionCode);
 
-                Intent mailer = new Intent(Intent.ACTION_SEND);
-                mailer.setType("message/rfc822");
+                Intent mailer = new Intent(Intent.ACTION_SENDTO);
+                mailer.setData(Uri.parse("mailto:"));
                 mailer.putExtra(Intent.EXTRA_EMAIL, new String[]{"login@stel.com"});
                 if (banned) {
                     mailer.putExtra(Intent.EXTRA_SUBJECT, "Banned phone number: " + phoneNumber);
@@ -629,13 +658,17 @@ public class LoginActivity extends BaseFragment {
                     mailer.putExtra(Intent.EXTRA_SUBJECT, "Invalid phone number: " + phoneNumber);
                     mailer.putExtra(Intent.EXTRA_TEXT, "I'm trying to use my mobile phone number: " + phoneNumber + "\nBut Telegram says it's invalid. Please help.\n\nApp version: " + version + "\nOS version: SDK " + Build.VERSION.SDK_INT + "\nDevice Name: " + Build.MANUFACTURER + Build.MODEL + "\nLocale: " + Locale.getDefault());
                 }
-                getParentActivity().startActivity(Intent.createChooser(mailer, "Send email..."));
+                fragment.getParentActivity().startActivity(Intent.createChooser(mailer, "Send email..."));
             } catch (Exception e) {
-                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("NoMailInstalled", R.string.NoMailInstalled));
+                AlertDialog.Builder builder2 = new AlertDialog.Builder(fragment.getParentActivity());
+                builder2.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
+                builder2.setMessage(LocaleController.getString("NoMailInstalled", R.string.NoMailInstalled));
+                builder2.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
+                fragment.showDialog(builder2.create());
             }
         });
         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
-        showDialog(builder.create());
+        fragment.showDialog(builder.create());
     }
 
     private void showDoneButton(boolean show, boolean animated) {
@@ -1378,11 +1411,9 @@ public class LoginActivity extends BaseFragment {
                             FileLog.e(e);
                         }
                         if (syncContacts) {
-                            visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOn", R.string.SyncContactsOn), Toast.LENGTH_SHORT);
-                            visibleToast.show();
+                            BulletinFactory.of((FrameLayout) fragmentView).createSimpleBulletin(R.raw.contacts_sync_on, LocaleController.getString("SyncContactsOn", R.string.SyncContactsOn)).show();
                         } else {
-                            visibleToast = Toast.makeText(getParentActivity(), LocaleController.getString("SyncContactsOff", R.string.SyncContactsOff), Toast.LENGTH_SHORT);
-                            visibleToast.show();
+                            BulletinFactory.of((FrameLayout) fragmentView).createSimpleBulletin(R.raw.contacts_sync_off, LocaleController.getString("SyncContactsOff", R.string.SyncContactsOff)).show();
                         }
                     }
                 });
@@ -1530,14 +1561,14 @@ public class LoginActivity extends BaseFragment {
                         if (preferences.getBoolean("firstlogin", true) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_CALL_LOG)) {
                             preferences.edit().putBoolean("firstlogin", false).commit();
                             AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                            builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                            builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                             builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
                             if (!allowCall && (!allowCancelCall || !allowReadCallLog)) {
-                                builder.setMessage(LocaleController.getString("AllowReadCallAndLog", R.string.AllowReadCallAndLog).replace("Telegram","Rooms"));
+                                builder.setMessage(LocaleController.getString("AllowReadCallAndLog", R.string.AllowReadCallAndLog));
                             } else if (!allowCancelCall || !allowReadCallLog) {
-                                builder.setMessage(LocaleController.getString("AllowReadCallLog", R.string.AllowReadCallLog).replace("Telegram","Rooms"));
+                                builder.setMessage(LocaleController.getString("AllowReadCallLog", R.string.AllowReadCallLog));
                             } else {
-                                builder.setMessage(LocaleController.getString("AllowReadCall", R.string.AllowReadCall).replace("Telegram","Rooms"));
+                                builder.setMessage(LocaleController.getString("AllowReadCall", R.string.AllowReadCall));
                             }
                             permissionsDialog = showDialog(builder.create());
                         } else {
@@ -1555,14 +1586,14 @@ public class LoginActivity extends BaseFragment {
             }
 
             if (countryState == 1) {
-                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ChooseCountry", R.string.ChooseCountry));
+                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("ChooseCountry", R.string.ChooseCountry));
                 return;
             } else if (countryState == 2 && !BuildVars.DEBUG_VERSION) {
-                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("WrongCountry", R.string.WrongCountry));
+                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("WrongCountry", R.string.WrongCountry));
                 return;
             }
             if (codeField.length() == 0) {
-                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
+                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
                 return;
             }
             if (phoneField.length() == 0) {
@@ -1580,7 +1611,7 @@ public class LoginActivity extends BaseFragment {
                     if (PhoneNumberUtils.compare(phone, userPhone)) {
                         final int num = a;
                         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                        builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                         builder.setMessage(LocaleController.getString("AccountAlreadyLoggedIn", R.string.AccountAlreadyLoggedIn));
                         builder.setPositiveButton(LocaleController.getString("AccountSwitch", R.string.AccountSwitch), (dialog, which) -> {
                             if (UserConfig.selectedAccount != num) {
@@ -1646,21 +1677,21 @@ public class LoginActivity extends BaseFragment {
                 } else {
                     if (error.text != null) {
                         if (error.text.contains("PHONE_NUMBER_INVALID")) {
-                            needShowInvalidAlert(req.phone_number, false);
+                            needShowInvalidAlert(LoginActivity.this, req.phone_number, false);
                         } else if (error.text.contains("PHONE_PASSWORD_FLOOD")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("FloodWait", R.string.FloodWait));
                         } else if (error.text.contains("PHONE_NUMBER_FLOOD")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("PhoneNumberFlood", R.string.PhoneNumberFlood));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("PhoneNumberFlood", R.string.PhoneNumberFlood));
                         } else if (error.text.contains("PHONE_NUMBER_BANNED")) {
-                            needShowInvalidAlert(req.phone_number, true);
+                            needShowInvalidAlert(LoginActivity.this, req.phone_number, true);
                         } else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidCode", R.string.InvalidCode));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidCode", R.string.InvalidCode));
                         } else if (error.text.contains("PHONE_CODE_EXPIRED")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("CodeExpired", R.string.CodeExpired));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("CodeExpired", R.string.CodeExpired));
                         } else if (error.text.startsWith("FLOOD_WAIT")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("FloodWait", R.string.FloodWait));
                         } else if (error.code != -1000) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                         }
                     }
                 }
@@ -1686,10 +1717,11 @@ public class LoginActivity extends BaseFragment {
                                 if (preferences.getBoolean("firstloginshow", true) || getParentActivity().shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)) {
                                     preferences.edit().putBoolean("firstloginshow", false).commit();
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                                     builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
                                     builder.setMessage(LocaleController.getString("AllowFillNumber", R.string.AllowFillNumber));
                                     permissionsShowDialog = showDialog(builder.create());
+                                    needRequestPermissions = true;
                                 } else {
                                     getParentActivity().requestPermissions(permissionsShowItems.toArray(new String[0]), 7);
                                 }
@@ -1740,13 +1772,18 @@ public class LoginActivity extends BaseFragment {
             }
             AndroidUtilities.runOnUIThread(() -> {
                 if (phoneField != null) {
-                    if (codeField.length() != 0) {
-                        phoneField.requestFocus();
-                        phoneField.setSelection(phoneField.length());
-                        AndroidUtilities.showKeyboard(phoneField);
+                    if (needRequestPermissions) {
+                        codeField.clearFocus();
+                        phoneField.clearFocus();
                     } else {
-                        codeField.requestFocus();
-                        AndroidUtilities.showKeyboard(codeField);
+                        if (codeField.length() != 0) {
+                            phoneField.requestFocus();
+                            phoneField.setSelection(phoneField.length());
+                            AndroidUtilities.showKeyboard(phoneField);
+                        } else {
+                            codeField.requestFocus();
+                            AndroidUtilities.showKeyboard(codeField);
+                        }
                     }
                 }
             }, 100);
@@ -1782,6 +1819,8 @@ public class LoginActivity extends BaseFragment {
         }
     }
 
+    private volatile boolean onceAsked=false;
+
     public class LoginActivitySmsView extends SlideView implements NotificationCenter.NotificationCenterDelegate {
 
         private String phone;
@@ -1793,11 +1832,13 @@ public class LoginActivity extends BaseFragment {
         private TextView confirmTextView;
         private TextView titleTextView;
         private ImageView blackImageView;
-        private ImageView blueImageView;
+        private RLottieImageView blueImageView;
         private TextView timeText;
         private TextView problemText;
         private Bundle currentParams;
         private ProgressView progressView;
+
+        RLottieDrawable hintDrawable;
 
         private Timer timeTimer;
         private Timer codeTimer;
@@ -1816,7 +1857,6 @@ public class LoginActivity extends BaseFragment {
         private String pattern = "*";
         private String catchedPhone;
         private int length;
-        private boolean onceAsked=false;
 
         public LoginActivitySmsView(Context context, final int type) {
             super(context);
@@ -1863,18 +1903,19 @@ public class LoginActivity extends BaseFragment {
                     blackImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), PorterDuff.Mode.MULTIPLY));
                     frameLayout.addView(blackImageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
 
-                    blueImageView = new ImageView(context);
+                    blueImageView = new RLottieImageView(context);
                     blueImageView.setImageResource(R.drawable.sms_bubble);
                     blueImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionBackground), PorterDuff.Mode.MULTIPLY));
                     frameLayout.addView(blueImageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
 
-                    titleTextView.setText(LocaleController.getString("SentAppCodeTitle", R.string.SentAppCodeTitle).replace("Telegram","Rooms"));
+                    titleTextView.setText(LocaleController.getString("SentAppCodeTitle", R.string.SentAppCodeTitle));
                 } else {
-                    blueImageView = new ImageView(context);
-                    blueImageView.setImageResource(R.drawable.sms_code);
-                    blueImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chats_actionBackground), PorterDuff.Mode.MULTIPLY));
-                    frameLayout.addView(blueImageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
-
+                    blueImageView = new RLottieImageView(context);
+                    hintDrawable = new RLottieDrawable(R.raw.sms_incoming_info, "" + R.raw.sms_incoming_info, AndroidUtilities.dp(64), AndroidUtilities.dp(64), true, null);
+                    hintDrawable.setLayerColor("Bubble.**", Theme.getColor(Theme.key_chats_actionBackground));
+                    hintDrawable.setLayerColor("Phone.**", Theme.getColor(Theme.key_chats_actionBackground));
+                    blueImageView.setAnimation(hintDrawable);
+                    frameLayout.addView(blueImageView, LayoutHelper.createFrame(64, 64, Gravity.LEFT | Gravity.TOP, 0, 0, 0, 0));
                     titleTextView.setText(LocaleController.getString("SentSmsCodeTitle", R.string.SentSmsCodeTitle));
                 }
                 addView(titleTextView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.TOP, 0, 18, 0, 0));
@@ -1942,14 +1983,14 @@ public class LoginActivity extends BaseFragment {
                         PackageInfo pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
                         String version = String.format(Locale.US, "%s (%d)", pInfo.versionName, pInfo.versionCode);
 
-                        Intent mailer = new Intent(Intent.ACTION_SEND);
-                        mailer.setType("message/rfc822");
+                        Intent mailer = new Intent(Intent.ACTION_SENDTO);
+                        mailer.setData(Uri.parse("mailto:"));
                         mailer.putExtra(Intent.EXTRA_EMAIL, new String[]{"sms@stel.com"});
                         mailer.putExtra(Intent.EXTRA_SUBJECT, "Android registration/login issue " + version + " " + emailPhone);
                         mailer.putExtra(Intent.EXTRA_TEXT, "Phone: " + requestPhone + "\nApp version: " + version + "\nOS version: SDK " + Build.VERSION.SDK_INT + "\nDevice Name: " + Build.MANUFACTURER + Build.MODEL + "\nLocale: " + Locale.getDefault() + "\nError: " + lastError);
                         getContext().startActivity(Intent.createChooser(mailer, "Send email..."));
                     } catch (Exception e) {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("NoMailInstalled", R.string.NoMailInstalled));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("NoMailInstalled", R.string.NoMailInstalled));
                     }
                 }
             });
@@ -2002,7 +2043,12 @@ public class LoginActivity extends BaseFragment {
             nextPressed = false;
         }
 
-        private void resendCode() {
+        private synchronized void resendCode() {
+            if (onceAsked){
+                return;
+            }
+            onceAsked=true;
+            Log.e("resend code","calling or sending sms code");
             final Bundle params = new Bundle();
             params.putString("phone", phone);
             params.putString("ephone", emailPhone);
@@ -2020,17 +2066,17 @@ public class LoginActivity extends BaseFragment {
                 } else {
                     if (error.text != null) {
                         if (error.text.contains("PHONE_NUMBER_INVALID")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
                         } else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidCode", R.string.InvalidCode));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidCode", R.string.InvalidCode));
                         } else if (error.text.contains("PHONE_CODE_EXPIRED")) {
                             onBackPressed(true);
                             setPage(0, true, null, true);
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("CodeExpired", R.string.CodeExpired));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("CodeExpired", R.string.CodeExpired));
                         } else if (error.text.startsWith("FLOOD_WAIT")) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("FloodWait", R.string.FloodWait));
                         } else if (error.code != -1000) {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
                         }
                     }
                 }
@@ -2185,7 +2231,7 @@ public class LoginActivity extends BaseFragment {
             String number = PhoneFormat.getInstance().format(phone);
             CharSequence str = "";
             if (currentType == 1) {
-                str = AndroidUtilities.replaceTags(LocaleController.getString("SentAppCode", R.string.SentAppCode).replace("Telegram","Rooms"));
+                str = AndroidUtilities.replaceTags(LocaleController.getString("SentAppCode", R.string.SentAppCode));
             } else if (currentType == 2) {
                 str = AndroidUtilities.replaceTags(LocaleController.formatString("SentSmsCode", R.string.SentSmsCode, LocaleController.addNbsp(number)));
             } else if (currentType == 3) {
@@ -2474,7 +2520,7 @@ public class LoginActivity extends BaseFragment {
                                 bundle.putInt("has_recovery", password.has_recovery ? 1 : 0);
                                 setPage(6, true, bundle, false);
                             } else {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), error1.text);
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error1.text);
                             }
                         }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
                         destroyTimer();
@@ -2495,9 +2541,9 @@ public class LoginActivity extends BaseFragment {
                         waitingForEvent = true;
                         if (currentType != 3) {
                             if (error.text.contains("PHONE_NUMBER_INVALID")) {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
                             } else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidCode", R.string.InvalidCode));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidCode", R.string.InvalidCode));
                                 for (int a = 0; a < codeField.length; a++) {
                                     codeField[a].setText("");
                                 }
@@ -2505,11 +2551,11 @@ public class LoginActivity extends BaseFragment {
                             } else if (error.text.contains("PHONE_CODE_EXPIRED")) {
                                 onBackPressed(true);
                                 setPage(0, true, null, true);
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("CodeExpired", R.string.CodeExpired));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("CodeExpired", R.string.CodeExpired));
                             } else if (error.text.startsWith("FLOOD_WAIT")) {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("FloodWait", R.string.FloodWait));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("FloodWait", R.string.FloodWait));
                             } else {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("ErrorOccurred", R.string.ErrorOccurred) + "\n" + error.text);
                             }
                         }
                     }
@@ -2528,7 +2574,7 @@ public class LoginActivity extends BaseFragment {
         public boolean onBackPressed(boolean force) {
             if (!force) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                 builder.setMessage(LocaleController.getString("StopVerification", R.string.StopVerification));
                 builder.setPositiveButton(LocaleController.getString("Continue", R.string.Continue), null);
                 builder.setNegativeButton(LocaleController.getString("Stop", R.string.Stop), (dialogInterface, i) -> {
@@ -2582,11 +2628,13 @@ public class LoginActivity extends BaseFragment {
             if (currentType == 3) {
                 return;
             }
+            if (hintDrawable != null) {
+                hintDrawable.setCurrentFrame(0);
+            }
             AndroidUtilities.runOnUIThread(() -> {
                 try{
                     if(!onceAsked){
                         resendCode();
-                        onceAsked=true;
                     }
 
                 }catch (Exception x){}
@@ -2599,6 +2647,9 @@ public class LoginActivity extends BaseFragment {
                             break;
                         }
                     }
+                }
+                if (hintDrawable != null) {
+                    hintDrawable.start();
                 }
             }, 100);
         }
@@ -2773,9 +2824,9 @@ public class LoginActivity extends BaseFragment {
                                 } else {
                                     timeString = LocaleController.formatPluralString("Minutes", time / 60);
                                 }
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                             } else {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                             }
                         }
                     }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
@@ -2818,7 +2869,7 @@ public class LoginActivity extends BaseFragment {
                             setPage(5, true, params, false);
                         } else {
                             if (error.text.equals("2FA_RECENT_CONFIRM")) {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ResetAccountCancelledAlert", R.string.ResetAccountCancelledAlert));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("ResetAccountCancelledAlert", R.string.ResetAccountCancelledAlert));
                             } else if (error.text.startsWith("2FA_CONFIRM_WAIT_")) {
                                 Bundle params = new Bundle();
                                 params.putString("phoneFormated", requestPhone);
@@ -2828,7 +2879,7 @@ public class LoginActivity extends BaseFragment {
                                 params.putInt("waitTime", Utilities.parseInt(error.text.replace("2FA_CONFIRM_WAIT_", "")));
                                 setPage(8, true, params, false);
                             } else {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                             }
                         }
                     }), ConnectionsManager.RequestFlagWithoutLogin | ConnectionsManager.RequestFlagFailOnServerErrors);
@@ -2976,9 +3027,9 @@ public class LoginActivity extends BaseFragment {
                             } else {
                                 timeString = LocaleController.formatPluralString("Minutes", time / 60);
                             }
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                         } else {
-                            needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                            needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                         }
                     }
                 });
@@ -3125,9 +3176,9 @@ public class LoginActivity extends BaseFragment {
                             setPage(5, true, params, false);
                         } else {
                             if (error.text.equals("2FA_RECENT_CONFIRM")) {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("ResetAccountCancelledAlert", R.string.ResetAccountCancelledAlert));
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("ResetAccountCancelledAlert", R.string.ResetAccountCancelledAlert));
                             } else {
-                                needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                             }
                         }
                     }), ConnectionsManager.RequestFlagWithoutLogin | ConnectionsManager.RequestFlagFailOnServerErrors);
@@ -3356,7 +3407,7 @@ public class LoginActivity extends BaseFragment {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
                     builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), (dialogInterface, i) -> onAuthSuccess((TLRPC.TL_auth_authorization) response));
                     builder.setMessage(LocaleController.getString("PasswordReset", R.string.PasswordReset));
-                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                    builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                     Dialog dialog = showDialog(builder.create());
                     if (dialog != null) {
                         dialog.setCanceledOnTouchOutside(false);
@@ -3373,9 +3424,9 @@ public class LoginActivity extends BaseFragment {
                         } else {
                             timeString = LocaleController.formatPluralString("Minutes", time / 60);
                         }
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.formatString("FloodWaitTime", R.string.FloodWaitTime, timeString));
                     } else {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                     }
                 }
             }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
@@ -3431,7 +3482,7 @@ public class LoginActivity extends BaseFragment {
         private BackupImageView avatarImage;
         private AvatarDrawable avatarDrawable;
         private View avatarOverlay;
-        private ImageView avatarEditor;
+        private RLottieImageView avatarEditor;
         private RadialProgressView avatarProgressView;
         private AnimatorSet avatarAnimation;
         private TextView textView;
@@ -3441,6 +3492,8 @@ public class LoginActivity extends BaseFragment {
         private String phoneHash;
         private Bundle currentParams;
         private boolean nextPressed = false;
+
+        private RLottieDrawable cameraDrawable;
 
         private ImageUpdater imageUpdater;
 
@@ -3558,15 +3611,27 @@ public class LoginActivity extends BaseFragment {
                 }
             };
             editTextContainer.addView(avatarOverlay, LayoutHelper.createFrame(64, 64, Gravity.TOP | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT), 0, 16, 0, 0));
-            avatarOverlay.setOnClickListener(view -> imageUpdater.openMenu(avatar != null, () -> {
-                avatar = null;
-                avatarBig = null;
-                showAvatarProgress(false, true);
-                avatarImage.setImage(null, null, avatarDrawable, null);
-                avatarEditor.setImageResource(R.drawable.actions_setphoto);
-            }));
+            avatarOverlay.setOnClickListener(view -> {
+                imageUpdater.openMenu(avatar != null, () -> {
+                    avatar = null;
+                    avatarBig = null;
+                    showAvatarProgress(false, true);
+                    avatarImage.setImage(null, null, avatarDrawable, null);
+                    avatarEditor.setImageResource(R.drawable.actions_setphoto);
+                    avatarEditor.setAnimation(cameraDrawable);
+                    cameraDrawable.setCurrentFrame(0);
+                }, dialog -> {
+                    cameraDrawable.setCustomEndFrame(86);
+                    avatarEditor.playAnimation();
+                });
+                cameraDrawable.setCurrentFrame(0);
+                cameraDrawable.setCustomEndFrame(43);
+                avatarEditor.playAnimation();
+            });
 
-            avatarEditor = new ImageView(context) {
+            cameraDrawable = new RLottieDrawable(R.raw.camera, "" + R.raw.camera, AndroidUtilities.dp(60), AndroidUtilities.dp(60), false, null);
+
+            avatarEditor = new RLottieImageView(context) {
                 @Override
                 public void invalidate(int l, int t, int r, int b) {
                     super.invalidate(l, t, r, b);
@@ -3580,10 +3645,10 @@ public class LoginActivity extends BaseFragment {
                 }
             };
             avatarEditor.setScaleType(ImageView.ScaleType.CENTER);
-            avatarEditor.setImageResource(R.drawable.actions_setphoto);
+            avatarEditor.setAnimation(cameraDrawable);
             avatarEditor.setEnabled(false);
             avatarEditor.setClickable(false);
-            avatarEditor.setPadding(AndroidUtilities.dp(2), 0, 0, 0);
+            avatarEditor.setPadding(AndroidUtilities.dp(2), 0, 0, AndroidUtilities.dp(1));
             editTextContainer.addView(avatarEditor, LayoutHelper.createFrame(64, 64, Gravity.TOP | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT), 0, 16, 0, 0));
 
             avatarProgressView = new RadialProgressView(context) {
@@ -3753,7 +3818,7 @@ public class LoginActivity extends BaseFragment {
         public boolean onBackPressed(boolean force) {
             if (!force) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms"));
+                builder.setTitle(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"));
                 builder.setMessage(LocaleController.getString("AreYouSureRegistration", R.string.AreYouSureRegistration));
                 builder.setNegativeButton(LocaleController.getString("Stop", R.string.Stop), (dialogInterface, i) -> {
                     onBackPressed(true);
@@ -3856,17 +3921,17 @@ public class LoginActivity extends BaseFragment {
                 } else {
                     needHideProgress(false);
                     if (error.text.contains("PHONE_NUMBER_INVALID")) {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidPhoneNumber", R.string.InvalidPhoneNumber));
                     } else if (error.text.contains("PHONE_CODE_EMPTY") || error.text.contains("PHONE_CODE_INVALID")) {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidCode", R.string.InvalidCode));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidCode", R.string.InvalidCode));
                     } else if (error.text.contains("PHONE_CODE_EXPIRED")) {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("CodeExpired", R.string.CodeExpired));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("CodeExpired", R.string.CodeExpired));
                     } else if (error.text.contains("FIRSTNAME_INVALID")) {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidFirstName", R.string.InvalidFirstName));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidFirstName", R.string.InvalidFirstName));
                     } else if (error.text.contains("LASTNAME_INVALID")) {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), LocaleController.getString("InvalidLastName", R.string.InvalidLastName));
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("InvalidLastName", R.string.InvalidLastName));
                     } else {
-                        needShowAlert(LocaleController.getString("AppName", R.string.AppName), error.text);
+                        needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), error.text);
                     }
                 }
             }), ConnectionsManager.RequestFlagWithoutLogin | ConnectionsManager.RequestFlagFailOnServerErrors);
@@ -3930,6 +3995,7 @@ public class LoginActivity extends BaseFragment {
         }
     }
 
+
     @Override
     public ArrayList<ThemeDescription> getThemeDescriptions() {
         for (int a = 0;a < views.length; a++) {
@@ -3948,6 +4014,18 @@ public class LoginActivity extends BaseFragment {
         LoginActivityResetWaitView waitView = (LoginActivityResetWaitView) views[8];
 
         ArrayList<ThemeDescription> arrayList = new ArrayList<>();
+
+        ThemeDescription.ThemeDescriptionDelegate descriptionDelegate = () -> {
+            for (int i = 0; i < views.length; i++) {
+                if (views[i] instanceof LoginActivitySmsView) {
+                    LoginActivitySmsView smsView = (LoginActivitySmsView) views[i];
+                    if (smsView.hintDrawable != null) {
+                        smsView.hintDrawable.setLayerColor("Bubble.**", Theme.getColor(Theme.key_chats_actionBackground));
+                        smsView.hintDrawable.setLayerColor("Phone.**", Theme.getColor(Theme.key_chats_actionBackground));
+                    }
+                }
+            }
+        };
 
         arrayList.add(new ThemeDescription(fragmentView, ThemeDescription.FLAG_BACKGROUND, null, null, null, null, Theme.key_windowBackgroundWhite));
 
@@ -4069,6 +4147,8 @@ public class LoginActivity extends BaseFragment {
         arrayList.add(new ThemeDescription(smsView4.progressView, 0, new Class[]{ProgressView.class}, new String[]{"paint"}, null, null, null, Theme.key_login_progressOuter));
         arrayList.add(new ThemeDescription(smsView4.blackImageView, ThemeDescription.FLAG_IMAGECOLOR, null, null, null, null, Theme.key_windowBackgroundWhiteBlackText));
         arrayList.add(new ThemeDescription(smsView4.blueImageView, ThemeDescription.FLAG_IMAGECOLOR, null, null, null, null, Theme.key_chats_actionBackground));
+
+        arrayList.add(new ThemeDescription(smsView4.blueImageView, 0, null, null, null, descriptionDelegate, Theme.key_chats_actionBackground));
 
         return arrayList;
     }
