@@ -7995,46 +7995,49 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         StringBuilder message = new StringBuilder("Task #" + (task.getId() > 0 ? task.getId() : task.getLocal_id()) + "\n");
         message.append(LocaleController.getInstance().getRoomsString("you_got_task"));
         ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
+        try {
+            if (task.getCompanyId() != 0) {
+                int start = message.indexOf("@company_name");
+                int end = start + 13;
+                Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
+                String teamName = team == null ? "" : " (" + team.getName() + ")";
+                message = message.replace(start, end, teamName);
+                TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
+                entityTeam.offset = start + 2;
+                entityTeam.length = teamName.length() - 1;
 
-        if (task.getCompanyId() != 0) {
-            int start = message.indexOf("@company_name");
-            int end = start + 13;
-            Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
-            String teamName = team == null ? "" : " (" + team.getName()+")";
-            message = message.replace(start, end, teamName);
-            TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
-            entityTeam.offset = start+2;
-            entityTeam.length = teamName.length()-1;
+                entities.add(entityTeam);
+            } else {
+                int start = message.indexOf("@company_name");
+                int end = start + 13;
+                String teamName = "";
+                message = message.replace(start, end, teamName);
+            }
 
-            entities.add(entityTeam);
-        } else {
-            int start = message.indexOf("@company_name");
-            int end = start + 13;
-            String teamName = "";
-            message = message.replace(start, end, teamName);
+            TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
+            entityIOS.offset = message.indexOf("iOS");
+            entityIOS.length = 3;
+            entityIOS.url = "https://apps.apple.com/us/app/rooms-io/id1549819018";
+
+            entities.add(entityIOS);
+
+            TLRPC.MessageEntity entityAndroid = new TLRPC.TL_messageEntityTextUrl();
+            entityAndroid.offset = message.indexOf("Android");
+            entityAndroid.length = 7;
+            entityAndroid.url = "https://play.google.com/store/apps/details?id=org.rooms.messenger";
+
+            entities.add(entityAndroid);
+
+            String fullUrl = "https://irooms.io";
+            TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
+            entityWeb.offset = message.indexOf("irooms.io");
+            entityWeb.length = fullUrl.length();
+            entityWeb.url = fullUrl;
+
+            entities.add(entityWeb);
+
+        } catch (Exception x) {
         }
-
-        TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
-        entityIOS.offset = message.indexOf("iOS");
-        entityIOS.length = 3;
-        entityIOS.url = "https://apps.apple.com/us/app/rooms-io/id1549819018";
-
-        entities.add(entityIOS);
-
-        TLRPC.MessageEntity entityAndroid = new TLRPC.TL_messageEntityTextUrl();
-        entityAndroid.offset = message.indexOf("Android");
-        entityAndroid.length = 7;
-        entityAndroid.url = "https://play.google.com/store/apps/details?id=org.rooms.messenger";
-
-        entities.add(entityAndroid);
-
-        String fullUrl = "https://irooms.io";
-        TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
-        entityWeb.offset = message.indexOf("irooms.io");
-        entityWeb.length = fullUrl.length();
-        entityWeb.url = fullUrl;
-
-        entities.add(entityWeb);
 
         SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message.toString(), dialog_id, null, null, null, false, entities, null, null, true, 0);
 
