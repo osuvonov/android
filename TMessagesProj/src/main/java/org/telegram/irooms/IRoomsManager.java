@@ -9,12 +9,15 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.exoplayer2.util.Log;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.RequestHistory;
 import org.telegram.irooms.database.Task;
+import org.telegram.irooms.models.TaskMessage;
+import org.telegram.irooms.models.TaskThreading;
 import org.telegram.irooms.network.APIClient;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.network.VolleyCallback;
@@ -518,6 +521,111 @@ public class IRoomsManager {
 
         return null;
     }
+
+    //-----------------Task Threading-----------------
+    public void sendMessage(Socket socket, TaskThreading.SendMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
+        try {
+            APIClient.getInstance().sendMessage(socket, request, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+                    try {
+                        JSONObject msgResponse = new JSONObject(response);
+                        if (msgResponse.opt("success").equals("true")) {
+                            TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
+
+                            messageResponse.onSuccess(taskMessage);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void editMessage(Socket socket, TaskThreading.EditMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
+        try {
+            APIClient.getInstance().editMessage(socket, request, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+                    try {
+                        JSONObject msgResponse = new JSONObject(response);
+                        if (msgResponse.opt("success").equals("true")) {
+                            TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
+
+                            messageResponse.onSuccess(taskMessage);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getTaskMessages(Socket socket, TaskThreading.GetMessagesRequest request, final IRoomCallback<ArrayList<TaskMessage>> messageResponse) {
+        try {
+            APIClient.getInstance().getTaskMessages(socket, request, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+                    try {
+                        JSONObject msgResponse = new JSONObject(response);
+                        if (msgResponse.opt("success").equals("true")) {
+                            ArrayList<TaskMessage> taskMessages = IRoomJsonParser.getTaskMessages(response);
+                            messageResponse.onSuccess(taskMessages);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+//    public void updateThreadInfo(Socket socket, TaskThreading.UpdateThreadInfoRequest updateRequest, VolleyCallback callback) {
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            jsonObject.put("task_id", updateRequest.getTask_id());
+//            jsonObject.put("last_read_message_id", updateRequest.getLast_read_message_id());
+//            makeSocketEmit(socket, "updateThreadInfo", jsonObject, callback);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//
+//    public void getThreadsInfo(Socket socket, TaskThreading.GetThreadsInfoRequest getThreadsInfoRequest, VolleyCallback callback) {
+//        JSONObject jsonObject = new JSONObject();
+//        try {
+//            jsonObject.put("task_id", getThreadsInfoRequest.getTask_id());
+//            jsonObject.put("last_read_message_id", getThreadsInfoRequest.getLast_read_message_id());
+//            makeSocketEmit(socket, "getThreadsInfo", jsonObject, callback);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    //----------------------------------------------------------------------------------
 
     public interface IRoomsCallback {
         void onSuccess(String success);

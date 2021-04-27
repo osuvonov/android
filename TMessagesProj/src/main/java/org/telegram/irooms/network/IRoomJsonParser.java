@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
+import org.telegram.irooms.models.TaskMessage;
 
 import java.util.ArrayList;
 
@@ -228,6 +229,39 @@ public class IRoomJsonParser {
         return null;
     }
 
+    public static TaskMessage getTaskMessage(String messagejson) {
+        try {
+            JSONObject jsonObject = new JSONObject(messagejson);
+
+            JSONObject jsonTaskMessage;
+
+            jsonTaskMessage = jsonObject.getJSONObject("result");
+
+
+            long id = jsonTaskMessage.getLong("id");
+            int from_id = !jsonTaskMessage.isNull("from_id") ? jsonTaskMessage.getInt("from_id") : 0;
+            long task_id = !jsonTaskMessage.isNull("task_id") ? jsonTaskMessage.getLong("task_id") : 0;
+            long reply_to = !jsonTaskMessage.isNull("reply_to") ? jsonTaskMessage.getLong("reply_to") : 0;
+            String date = !jsonTaskMessage.isNull("date") ? jsonTaskMessage.getString("date") : "";
+            String edit_date = !jsonTaskMessage.isNull("edit_date") ? jsonTaskMessage.getString("edit_date") : "";
+            String text = !jsonTaskMessage.isNull("text") ? jsonTaskMessage.getString("text") : "";
+
+            TaskMessage message = new TaskMessage();
+            message.setId(id);
+            message.setDate(date);
+            message.setEdit_date(edit_date);
+            message.setFrom_id(from_id);
+            message.setReply_to(reply_to);
+            message.setTask_id(task_id);
+            message.setText(text);
+            return message;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
     public static ArrayList<Integer> getAddedMembersToTeam(String json) {
         ArrayList<Integer> members = new ArrayList<>();
         try {
@@ -245,5 +279,43 @@ public class IRoomJsonParser {
             e.printStackTrace();
         }
         return members;
+    }
+
+    public static ArrayList<TaskMessage> getTaskMessages(String response) {
+        ArrayList<TaskMessage> messages = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("result");
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonTaskMessage;
+
+                jsonTaskMessage = jsonArray.getJSONObject(i);
+
+
+                long id = jsonTaskMessage.getLong("id");
+                int from_id = !jsonTaskMessage.isNull("from_id") ? jsonTaskMessage.getInt("from_id") : 0;
+                long task_id = !jsonTaskMessage.isNull("task_id") ? jsonTaskMessage.getLong("task_id") : 0;
+                long reply_to = !jsonTaskMessage.isNull("reply_to") ? jsonTaskMessage.getLong("reply_to") : 0;
+                String date = !jsonTaskMessage.isNull("date") ? jsonTaskMessage.getString("date") : "";
+                String edit_date = !jsonTaskMessage.isNull("edit_date") ? jsonTaskMessage.getString("edit_date") : "";
+                String text = !jsonTaskMessage.isNull("text") ? jsonTaskMessage.getString("text") : "";
+
+                TaskMessage message = new TaskMessage();
+                message.setId(id);
+                message.setDate(date);
+                message.setEdit_date(edit_date);
+                message.setFrom_id(from_id);
+                message.setReply_to(reply_to);
+                message.setTask_id(task_id);
+                message.setText(text);
+
+                messages.add(message);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return messages;
     }
 }

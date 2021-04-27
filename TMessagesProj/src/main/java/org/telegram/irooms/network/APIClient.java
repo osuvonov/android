@@ -24,6 +24,7 @@ import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
 import org.telegram.irooms.database.Task;
+import org.telegram.irooms.models.TaskThreading;
 import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
@@ -51,54 +52,6 @@ public class APIClient {
     }
 
     private static String BASE_URL = "https://api.irooms.io";
-
-    private void makeGetRequest(Context context, String hostNameCloud, VolleyCallback callback) {
-
-        getToken(context, new TokenListener() {
-            @Override
-            public void onToken(String token) {
-                JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.GET, hostNameCloud, null,
-                        response -> {
-                            try {
-                                JSONObject jsonObject = new JSONObject(response.toString());
-                                String success = jsonObject.getString("success");
-                                if (success.equals("true")) {
-                                    callback.onSuccess(response.toString());
-                                } else {
-                                    JSONObject error = jsonObject.opt("error") == null ? null : jsonObject.getJSONObject("error");
-                                    String errorDescription = "Unknown error";
-                                    if (error != null) {
-                                        errorDescription = error.getString("description");
-                                    }
-                                    callback.onError(errorDescription);
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        }, error -> {
-                    handleError(context, error);
-                }) {
-                    @Override
-                    public Map<String, String> getHeaders() {
-                        HashMap<String, String> headers = new HashMap<>();
-                        headers.put("Accept", "application/json");
-                        headers.put("Content-Type", "application/json");
-                        headers.put("Api-Key", Constants.API_KEY);
-                        headers.put("Authorization", "Bearer " + token);
-                        return headers;
-                    }
-                };
-                RequestQueue requestQueue = Volley.newRequestQueue(context);
-
-                requestQueue.add(jsonObjectRequest);
-            }
-
-            @Override
-            public void onError(String error) {
-
-            }
-        });
-    }
 
     private void makePostRequest(Context context, JSONObject postData, String hostNameCloud, final VolleyCallback callback) {
 
@@ -162,6 +115,60 @@ public class APIClient {
         }
     }
 
+    //-----------------Task Threading-----------------
+    public void sendMessage(Socket socket, TaskThreading.SendMessageRequest request, final VolleyCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("task_id", request.getTask_id());
+            jsonObject.put("reply_to", request.getReply_to());
+            jsonObject.put("text", request.getText());
+            makeSocketEmit(socket, "sendMessage", jsonObject, callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public void editMessage(Socket socket, TaskThreading.EditMessageRequest edit, VolleyCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("id", edit.getId());
+            jsonObject.put("text", edit.getText());
+            makeSocketEmit(socket, "editMessage", jsonObject, callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public void getTaskMessages(Socket socket, TaskThreading.GetMessagesRequest messagesRequest, VolleyCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("task_id", messagesRequest.getTask_id());
+            jsonObject.put("updated_since", messagesRequest.getUpdated_since());
+            makeSocketEmit(socket, "getMessages", jsonObject, callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public void updateThreadInfo(Socket socket, TaskThreading.UpdateThreadInfoRequest updateRequest, VolleyCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("task_id", updateRequest.getTask_id());
+            jsonObject.put("last_read_message_id", updateRequest.getLast_read_message_id());
+            makeSocketEmit(socket, "updateThreadInfo", jsonObject, callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+    public void getThreadsInfo(Socket socket, TaskThreading.GetThreadsInfoRequest getThreadsInfoRequest, VolleyCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("task_id", getThreadsInfoRequest.getTask_id());
+            jsonObject.put("last_read_message_id", getThreadsInfoRequest.getLast_read_message_id());
+            makeSocketEmit(socket, "getThreadsInfo", jsonObject, callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //----------------------------------------------------------------------------------
     private void makeSocketEmit(Socket socket, String eventName, JSONObject postData, final VolleyCallback callback) {
         if (postData != null) {
             if (!socket.connected()) {
@@ -427,7 +434,7 @@ public class APIClient {
         }
     }
 
-    public void deleteSubscription(Context context,String token, long recordID, final VolleyCallback callback) {
+    public void deleteSubscription(Context context, String token, long recordID, final VolleyCallback callback) {
 
         String hostNameCloud = BASE_URL + "/push-subscription/delete";
 
@@ -470,7 +477,7 @@ public class APIClient {
             RequestQueue requestQueue = Volley.newRequestQueue(context);
 
             requestQueue.add(postRequest);
-         } catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
         }
     }
@@ -492,20 +499,15 @@ public class APIClient {
         makeSocketEmit(socket, "getTasks", jsonObject, callback);
     }
 
-    public void getTask(Context context, long taskId, final VolleyCallback callback) {
-        String url = BASE_URL + "/tasks/" + taskId;
-        makeGetRequest(context, url, callback);
-    }
-
     public void getToken(Context context, TokenListener tokenListener) {
         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-        String phone =new String(user.phone);
+        String phone = new String(user.phone);
         if (user == null) {
             return;
         }
 
-        String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" +phone, "");
-         if (token != null && token.length() > 0) {
+        String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + phone, "");
+        if (token != null && token.length() > 0) {
             try {
                 String ar = token.split("\\.")[1];
                 byte[] data = Base64.decode(ar, Base64.DEFAULT);
