@@ -24,21 +24,18 @@
         app:layout_constraintWidth_min="260dp">
 
         <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:layout_gravity="left"
             android:layout_marginStart="5dp"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
-            android:background="@drawable/rounded_corner"
             android:gravity="left"
-            android:maxWidth="260dp"
-            android:minWidth="260dp"
             android:orientation="vertical"
             android:paddingLeft="10dp"
             android:paddingTop="10dp"
             android:paddingRight="10dp"
-            android:paddingBottom="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:paddingBottom="5dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -156,38 +153,9 @@
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@color/key_dialogBackgroundGray" />
 
-        <LinearLayout
-            android:orientation="horizontal"
+        <include
             android:id="@+id/comments"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="center_vertical"
-            android:background="@drawable/ripple"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="Comments"
-                android:textAlignment="center"
-                android:textColor="@color/key_dialogTextGray" />
-
-            <ImageView
-                android:layout_gravity="center"
-                android:layout_marginRight="15dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/comment_arrow" />
-        </LinearLayout>
+            layout="@layout/comments_layout" />
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

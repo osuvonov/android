@@ -437,6 +437,10 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
         return customDate;
     }
 
+    public CharSequence getCustomText(){
+        return customText;
+    }
+
     private int findMaxWidthAroundLine(int line) {
         int width = (int) Math.ceil(textLayout.getLineWidth(line));
         int count = textLayout.getLineCount();

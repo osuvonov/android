@@ -16,8 +16,15 @@ import org.json.JSONObject;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.RequestHistory;
 import org.telegram.irooms.database.Task;
+import org.telegram.irooms.models.EditMessageRequest;
+import org.telegram.irooms.models.GetMessagesRequest;
+import org.telegram.irooms.models.GetThreadsInfoRequest;
+import org.telegram.irooms.models.SendMessageRequest;
 import org.telegram.irooms.models.TaskMessage;
 import org.telegram.irooms.models.TaskThreading;
+import org.telegram.irooms.models.ThreadInfo;
+import org.telegram.irooms.models.UpdateThreadInfoRequest;
+import org.telegram.irooms.models.UpdateThreadInfoResponse;
 import org.telegram.irooms.network.APIClient;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.network.VolleyCallback;
@@ -311,50 +318,51 @@ public class IRoomsManager {
     public void getMyTasks(Context context, Socket socket, TaskSocketQuery query, IRoomCallback<ArrayList<Task>> callback) {
         TaskRunner runner = new TaskRunner();
         runner.executeAsync(() -> {
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            if (user != null) {
+                String phone = user.phone;
 
-            String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+                RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
+                String date = roomsRepository.getLastRequestDateForChat(query.getChat_id(), user.id);
+                query.setFrom_date("".equals(date) ? null : date);
 
-            RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
-            String date = roomsRepository.getLastRequestDateForChat(query.getChat_id());
-            query.setFrom_date("".equals(date) ? null : date);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(calendar.getTime());
+                calendar.add(Calendar.MINUTE, -1);
 
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(calendar.getTime());
-            calendar.add(Calendar.MINUTE, -1);
+                String currentISODate = TaskUtil.getISODate(calendar.getTime());
 
-            String currentISODate = TaskUtil.getISODate(calendar.getTime());
+                APIClient.getInstance().getTasksBySocket(socket, query, new VolleyCallback() {
+                    @Override
+                    public void onSuccess(String response) {
 
-            APIClient.getInstance().getTasksBySocket(socket, query, new VolleyCallback() {
-                @Override
-                public void onSuccess(String response) {
+                        JSONObject jsonObject;
+                        try {
+                            jsonObject = new JSONObject(response);
+                            ArrayList<Task> tasks = IRoomJsonParser.getTasks(jsonObject.toString());
 
-                    JSONObject jsonObject;
-                    try {
-                        jsonObject = new JSONObject(response);
-                        ArrayList<Task> tasks = IRoomJsonParser.getTasks(jsonObject.toString());
+                            if (tasks.size() > 0) {
+                                RequestHistory history = new RequestHistory(query.getChat_id(), currentISODate, user.id);
+                                roomsRepository.insert(history);
 
-                        if (tasks.size() > 0) {
-                            RequestHistory history = new RequestHistory(query.getChat_id(), currentISODate);
-                            roomsRepository.insert(history);
-
-                            long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
-                            for (Task task : tasks) {
-                                roomsRepository.createOnlineTask(task, userID);
+                                long userID = UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId();
+                                for (Task task : tasks) {
+                                    roomsRepository.createOnlineTask(task, userID);
+                                }
                             }
                             callback.onSuccess(tasks);
-                        } else {
-                            callback.onSuccess(tasks);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
                     }
-                }
 
-                @Override
-                public void onError(String error) {
-                    callback.onError(error);
-                }
-            });
+                    @Override
+                    public void onError(String error) {
+                        callback.onError(error);
+                    }
+                });
+            }
+
             return null;
         }, result -> {
 
@@ -371,25 +379,6 @@ public class IRoomsManager {
 
         preferences.edit().putBoolean(Constants.IS_OWNER, isOwner).commit();
 
-//        try {
-//            Socket socket = ((LaunchActivity) context).getmSocket();
-//            if (socket != null) {
-//                TaskSocketQuery query = new TaskSocketQuery();
-//                query.setCompany_id(company.getId());
-//                getCompanyTask(context, socket, query, new IRoomsCallback() {
-//                    @Override
-//                    public void onSuccess(String success) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(String error) {
-//
-//                    }
-//                });
-//            }
-//        } catch (Exception x) {
-//        }
     }
 
 
@@ -523,14 +512,14 @@ public class IRoomsManager {
     }
 
     //-----------------Task Threading-----------------
-    public void sendMessage(Socket socket, TaskThreading.SendMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
+    public void sendMessage(Socket socket, SendMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
         try {
             APIClient.getInstance().sendMessage(socket, request, new VolleyCallback() {
                 @Override
                 public void onSuccess(String response) {
                     try {
                         JSONObject msgResponse = new JSONObject(response);
-                        if (msgResponse.opt("success").equals("true")) {
+                        if (msgResponse.optBoolean("success")) {
                             TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
 
                             messageResponse.onSuccess(taskMessage);
@@ -550,14 +539,14 @@ public class IRoomsManager {
         }
     }
 
-    public void editMessage(Socket socket, TaskThreading.EditMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
+    public void editMessage(Socket socket, EditMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
         try {
             APIClient.getInstance().editMessage(socket, request, new VolleyCallback() {
                 @Override
                 public void onSuccess(String response) {
                     try {
                         JSONObject msgResponse = new JSONObject(response);
-                        if (msgResponse.opt("success").equals("true")) {
+                        if (msgResponse.optBoolean("success")) {
                             TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
 
                             messageResponse.onSuccess(taskMessage);
@@ -577,14 +566,14 @@ public class IRoomsManager {
         }
     }
 
-    public void getTaskMessages(Socket socket, TaskThreading.GetMessagesRequest request, final IRoomCallback<ArrayList<TaskMessage>> messageResponse) {
+    public void getTaskMessages(Socket socket, GetMessagesRequest request, final IRoomCallback<ArrayList<TaskMessage>> messageResponse) {
         try {
             APIClient.getInstance().getTaskMessages(socket, request, new VolleyCallback() {
                 @Override
                 public void onSuccess(String response) {
                     try {
                         JSONObject msgResponse = new JSONObject(response);
-                        if (msgResponse.opt("success").equals("true")) {
+                        if (msgResponse.optBoolean("success")) {
                             ArrayList<TaskMessage> taskMessages = IRoomJsonParser.getTaskMessages(response);
                             messageResponse.onSuccess(taskMessages);
                         }
@@ -603,27 +592,82 @@ public class IRoomsManager {
         }
     }
 
-//    public void updateThreadInfo(Socket socket, TaskThreading.UpdateThreadInfoRequest updateRequest, VolleyCallback callback) {
-//        JSONObject jsonObject = new JSONObject();
-//        try {
-//            jsonObject.put("task_id", updateRequest.getTask_id());
-//            jsonObject.put("last_read_message_id", updateRequest.getLast_read_message_id());
-//            makeSocketEmit(socket, "updateThreadInfo", jsonObject, callback);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public void getThreadsInfo(Socket socket, TaskThreading.GetThreadsInfoRequest getThreadsInfoRequest, VolleyCallback callback) {
-//        JSONObject jsonObject = new JSONObject();
-//        try {
-//            jsonObject.put("task_id", getThreadsInfoRequest.getTask_id());
-//            jsonObject.put("last_read_message_id", getThreadsInfoRequest.getLast_read_message_id());
-//            makeSocketEmit(socket, "getThreadsInfo", jsonObject, callback);
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    public void getTask(Socket socket, long taskId, final IRoomCallback<Task> messageResponse) {
+        try {
+            APIClient.getInstance().getTask(socket, taskId, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+                    try {
+                        Log.e("get task...",response);
+                        JSONObject msgResponse = new JSONObject(response);
+                        if (msgResponse.optBoolean("success")) {
+                            Task task = IRoomJsonParser.getTask(response, false);
+                            messageResponse.onSuccess(task);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateThreadInfo(Socket socket, UpdateThreadInfoRequest request, final IRoomCallback<UpdateThreadInfoResponse> messageResponse) {
+        try {
+            APIClient.getInstance().updateThreadInfo(socket, request, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+                    try {
+                        JSONObject msgResponse = new JSONObject(response);
+                        UpdateThreadInfoResponse updateThreadInfoResponse = new UpdateThreadInfoResponse();
+                        updateThreadInfoResponse.setTask_id(msgResponse.optLong("task_id"));
+                        updateThreadInfoResponse.setLast_read_message_id(msgResponse.optLong("last_read_message_id"));
+                        messageResponse.onSuccess(updateThreadInfoResponse);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getThreadsInfo(Socket socket, GetThreadsInfoRequest request,
+                               final IRoomCallback<ArrayList<ThreadInfo>> messageResponse) {
+        try {
+            APIClient.getInstance().getThreadsInfo(socket, request, new VolleyCallback() {
+                @Override
+                public void onSuccess(String response) {
+                    try {
+                        JSONObject msgResponse = new JSONObject(response);
+                        if (msgResponse.optBoolean("success")) {
+                            ArrayList<ThreadInfo> threadInfos = IRoomJsonParser.getThreadInfos(response);
+                            messageResponse.onSuccess(threadInfos);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onError(String error) {
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     //----------------------------------------------------------------------------------
 

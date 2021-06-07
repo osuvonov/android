@@ -997,10 +997,17 @@ public class LocaleController {
         englishRoomsMap.put("update_downloaded", "An update has just been downloaded.");
         englishRoomsMap.put("start", "Start");
         englishRoomsMap.put("restart", "Restart app");
-        englishRoomsMap.put("sure_to_delete_member","Are you sure to delete this member?");
-        englishRoomsMap.put("cancel","Cancel");
+        englishRoomsMap.put("sure_to_delete_member", "Are you sure to delete this member?");
+        englishRoomsMap.put("cancel", "Cancel");
         englishRoomsMap.put("help", "Help");
-
+        englishRoomsMap.put("comments", "comments");
+        englishRoomsMap.put("nocomments", "No comments here yet");
+        englishRoomsMap.put("leave_comment", "Leave a comment");
+        englishRoomsMap.put("edited", "edited");
+        englishRoomsMap.put("owner", "Owner");
+        englishRoomsMap.put("delete", "Delete");
+        englishRoomsMap.put("set_reminder","Set reminder");
+        englishRoomsMap.put("reminder","Reminder");
     }
 
     private void inituzRoomsStrings() {
@@ -1048,14 +1055,21 @@ public class LocaleController {
         uzbekRoomsMap.put("update_downloaded", "Yangilash yuklab olindi.");
         uzbekRoomsMap.put("start", "Boshlash");
         uzbekRoomsMap.put("restart", "O'rnatish");
-        uzbekRoomsMap.put("sure_to_delete_member","Ushbu ishtirokchini jamoadan chiqarib yubormoqchimisiz?");
-        uzbekRoomsMap.put("cancel","Bekor qilish");
+        uzbekRoomsMap.put("sure_to_delete_member", "Ushbu ishtirokchini jamoadan chiqarib yubormoqchimisiz?");
+        uzbekRoomsMap.put("cancel", "Bekor qilish");
         uzbekRoomsMap.put("help", "Yordam");
-
+        uzbekRoomsMap.put("comments", "ta izoh");
+        uzbekRoomsMap.put("nocomments", "Hali izohlar yo'q");
+        uzbekRoomsMap.put("leave_comment", "Izoh qoldirish");
+        uzbekRoomsMap.put("edited", "tahrirlangan");
+        uzbekRoomsMap.put("owner", "Guruh egasi");
+        uzbekRoomsMap.put("delete", "O'chirish");
+        uzbekRoomsMap.put("set_reminder","Eslatma qo'yish");
+        uzbekRoomsMap.put("reminder","Eslatma");
     }
 
     private void initruRoomsStrings() {
-        russianRoomsMap.put("cancel","Отмена");
+        russianRoomsMap.put("cancel", "Отмена");
         russianRoomsMap.put("yes", "Да");
         russianRoomsMap.put("all", "Все");
         russianRoomsMap.put("todo", "Надо сделать");
@@ -1099,9 +1113,16 @@ public class LocaleController {
         russianRoomsMap.put("update_downloaded", "Обновление скачано.");
         russianRoomsMap.put("start", "Начать");
         russianRoomsMap.put("restart", "Перезапустить");
-        russianRoomsMap.put("sure_to_delete_member","Вы уверены, что хотите удалить этого участника?");
+        russianRoomsMap.put("sure_to_delete_member", "Вы уверены, что хотите удалить этого участника?");
         russianRoomsMap.put("help", "Помощь");
-
+        russianRoomsMap.put("comments", "комментариев");
+        russianRoomsMap.put("nocomments", "Здесь пока нет комментариев");
+        russianRoomsMap.put("leave_comment", "Прокомментировать");
+        russianRoomsMap.put("edited", "редактировано");
+        russianRoomsMap.put("owner", "Владелец");
+        russianRoomsMap.put("delete", "Удалить");
+        russianRoomsMap.put("set_reminder","Установить напоминание");
+        russianRoomsMap.put("reminder","Напоминание");
     }
 
     public String getRoomsString(String key) {

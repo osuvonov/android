@@ -15,8 +15,8 @@ public abstract class RequestHistoryDao {
     @Query("update request_history set last_request=:date where chat_id=:chat_id")
     public abstract void updateRequestHistory(long chat_id, String date);
 
-    @Query("select * from request_history where chat_id=:chat_id ")
-    public abstract RequestHistory getLastRequestDateForChat(long chat_id);
+    @Query("select * from request_history where chat_id=:chat_id and user_id=:userId")
+    public abstract RequestHistory getLastRequestDateForChat(long chat_id, int userId);
 
     @Query("delete from request_history")
     public abstract void deleteAll();

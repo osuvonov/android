@@ -24,7 +24,12 @@ import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
 import org.telegram.irooms.database.Task;
+import org.telegram.irooms.models.EditMessageRequest;
+import org.telegram.irooms.models.GetMessagesRequest;
+import org.telegram.irooms.models.GetThreadsInfoRequest;
+import org.telegram.irooms.models.SendMessageRequest;
 import org.telegram.irooms.models.TaskThreading;
+import org.telegram.irooms.models.UpdateThreadInfoRequest;
 import org.telegram.irooms.task.TaskSocketQuery;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
@@ -36,6 +41,8 @@ import java.util.Map;
 
 import io.socket.client.Ack;
 import io.socket.client.Socket;
+
+import static org.telegram.irooms.Constants.BASE_URL;
 
 public class APIClient {
 
@@ -50,8 +57,6 @@ public class APIClient {
         }
         return instance;
     }
-
-    private static String BASE_URL = "https://api.irooms.io";
 
     private void makePostRequest(Context context, JSONObject postData, String hostNameCloud, final VolleyCallback callback) {
 
@@ -116,18 +121,20 @@ public class APIClient {
     }
 
     //-----------------Task Threading-----------------
-    public void sendMessage(Socket socket, TaskThreading.SendMessageRequest request, final VolleyCallback callback) {
+    public void sendMessage(Socket socket, SendMessageRequest request, final VolleyCallback callback) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("task_id", request.getTask_id());
-            jsonObject.put("reply_to", request.getReply_to());
+            if (request.getReply_to() != 0)
+                jsonObject.put("reply_to", request.getReply_to());
             jsonObject.put("text", request.getText());
             makeSocketEmit(socket, "sendMessage", jsonObject, callback);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
-    public void editMessage(Socket socket, TaskThreading.EditMessageRequest edit, VolleyCallback callback) {
+
+    public void editMessage(Socket socket, EditMessageRequest edit, VolleyCallback callback) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("id", edit.getId());
@@ -137,7 +144,8 @@ public class APIClient {
             e.printStackTrace();
         }
     }
-    public void getTaskMessages(Socket socket, TaskThreading.GetMessagesRequest messagesRequest, VolleyCallback callback) {
+
+    public void getTaskMessages(Socket socket, GetMessagesRequest messagesRequest, VolleyCallback callback) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("task_id", messagesRequest.getTask_id());
@@ -147,7 +155,18 @@ public class APIClient {
             e.printStackTrace();
         }
     }
-    public void updateThreadInfo(Socket socket, TaskThreading.UpdateThreadInfoRequest updateRequest, VolleyCallback callback) {
+
+    public void getTask(Socket socket, long taskId, VolleyCallback callback) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("task_id", taskId);
+            makeSocketEmit(socket, "getTask", jsonObject, callback);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateThreadInfo(Socket socket, UpdateThreadInfoRequest updateRequest, VolleyCallback callback) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("task_id", updateRequest.getTask_id());
@@ -157,7 +176,8 @@ public class APIClient {
             e.printStackTrace();
         }
     }
-    public void getThreadsInfo(Socket socket, TaskThreading.GetThreadsInfoRequest getThreadsInfoRequest, VolleyCallback callback) {
+
+    public void getThreadsInfo(Socket socket, GetThreadsInfoRequest getThreadsInfoRequest, VolleyCallback callback) {
         JSONObject jsonObject = new JSONObject();
         try {
             jsonObject.put("task_id", getThreadsInfoRequest.getTask_id());
@@ -174,12 +194,15 @@ public class APIClient {
             if (!socket.connected()) {
                 return;
             }
+            Log.e("makeSocketEmit",postData.toString());
             socket.emit(eventName, postData, (Ack) response -> {
-                JSONObject jsonObject = null;
+                JSONObject jsonObject;
                 try {
+                    Log.e("makeSocketEmit result",response[0].toString());
+
                     jsonObject = new JSONObject(response[0].toString());
-                    String success = jsonObject.getString("success");
-                    if (success.equals("true")) {
+                    boolean success = jsonObject.optBoolean("success");
+                    if (success) {
                         callback.onSuccess(response[0].toString());
                     } else {
                         JSONObject error = jsonObject.opt("error") == null ? null : jsonObject.getJSONObject("error");

@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.models.TaskMessage;
+import org.telegram.irooms.models.ThreadInfo;
 
 import java.util.ArrayList;
 
@@ -133,12 +134,18 @@ public class IRoomJsonParser {
                     String status = !jsonTask.isNull("status") ? jsonTask.getString("status") : "";
                     String chatType = !jsonTask.isNull("chat_type") ? jsonTask.getString("chat_type") : "";
                     String platform = !jsonTask.isNull("platform") ? jsonTask.getString("platform") : "";
+                    int commentsCount = jsonTask.optInt("comments_count");
 
                     int status_code = !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code") : 0;
                     ArrayList<Integer> members =
                             new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Integer>>() {
                             }.getType());
-
+                    ArrayList<String> reminders =
+                            new Gson().fromJson(jsonTask.optString("reminders"), new TypeToken<ArrayList<String>>() {
+                            }.getType());
+                    if (reminders==null){
+                        reminders=new ArrayList<>();
+                    }
                     Task task = new Task(id, company_id);
                     task.setChatId(chat_id);
                     task.setCompletedAt(completed_at);
@@ -157,6 +164,9 @@ public class IRoomJsonParser {
                     task.setLastUpdater(lastUpdater);
                     task.setChat_type(chatType);
                     task.setPlatform(platform);
+                    task.setComments_count(commentsCount);
+                    task.setReminders(reminders);
+
                     taskList.add(task);
 
                 } catch (Exception x) {
@@ -198,12 +208,19 @@ public class IRoomJsonParser {
             String status = !jsonTask.isNull("status") ? jsonTask.getString("status") : "";
             String chatType = !jsonTask.isNull("chat_type") ? jsonTask.getString("chat_type") : "";
             String platform = !jsonTask.isNull("platform") ? jsonTask.getString("platform") : "";
+            int commentsCount = jsonTask.optInt("comments_count");
 
             int status_code = !jsonTask.isNull("status_code") ? jsonTask.getInt("status_code") : 0;
             ArrayList<Integer> members =
                     new Gson().fromJson(jsonTask.getString("members"), new TypeToken<ArrayList<Integer>>() {
                     }.getType());
 
+            ArrayList<String> reminders =
+                    new Gson().fromJson(jsonTask.optString("reminders"), new TypeToken<ArrayList<String>>() {
+                    }.getType());
+            if (reminders==null){
+                reminders=new ArrayList<>();
+            }
             Task task = new Task(id, company_id);
             task.setChatId(chat_id);
             task.setCompletedAt(completed_at);
@@ -220,6 +237,8 @@ public class IRoomJsonParser {
             task.setMembers(members);
             task.setLastUpdater(lastUpdater);
             task.setChat_type(chatType);
+            task.setComments_count(commentsCount);
+            task.setReminders(reminders);
 
             task.setLocal_id(localID);
             return task;
@@ -235,7 +254,10 @@ public class IRoomJsonParser {
 
             JSONObject jsonTaskMessage;
 
-            jsonTaskMessage = jsonObject.getJSONObject("result");
+            jsonTaskMessage = jsonObject.optJSONObject("result");
+            if (jsonTaskMessage == null) {
+                jsonTaskMessage = jsonObject;
+            }
 
 
             long id = jsonTaskMessage.getLong("id");
@@ -260,7 +282,6 @@ public class IRoomJsonParser {
         }
         return null;
     }
-
 
     public static ArrayList<Integer> getAddedMembersToTeam(String json) {
         ArrayList<Integer> members = new ArrayList<>();
@@ -318,4 +339,53 @@ public class IRoomJsonParser {
         }
         return messages;
     }
+
+    public static ArrayList<ThreadInfo> getThreadInfos(String response) {
+        ArrayList<ThreadInfo> messages = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("result");
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject jsonTaskMessage;
+
+                jsonTaskMessage = jsonArray.getJSONObject(i);
+
+
+                long id = jsonTaskMessage.optLong("last_read_message_id");
+                long task_id = jsonTaskMessage.optLong("task_id");
+
+                ThreadInfo message = new ThreadInfo();
+                message.setTask_id(task_id);
+                message.setLast_read_message_id(id);
+
+                messages.add(message);
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return messages;
+
+    }
+
+    public static ThreadInfo getThreadInfo(String response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONObject threadI = jsonObject.getJSONObject("result");
+
+            long id = threadI.optLong("last_read_message_id");
+            long task_id = threadI.optLong("task_id");
+
+            ThreadInfo threadInfo = new ThreadInfo();
+            threadInfo.setTask_id(task_id);
+            threadInfo.setLast_read_message_id(id);
+            return threadInfo;
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return new ThreadInfo();
+    }
+
 }

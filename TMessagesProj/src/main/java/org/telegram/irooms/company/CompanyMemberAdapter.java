@@ -95,6 +95,7 @@ public class CompanyMemberAdapter extends ListAdapter<TLRPC.User, CompanyMemberA
             lastSeen.setTextColor(textColor);
 
             remove = itemView.findViewById(R.id.remove_member);
+            remove.setText(LocaleController.getInstance().getRoomsString("delete"));
             remove.setTextColor(mContext.getResources().getColor(R.color.key_dialogRedIcon));
             if (company.getOwner_id() != UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
                 remove.setVisibility(View.GONE);
@@ -109,7 +110,7 @@ public class CompanyMemberAdapter extends ListAdapter<TLRPC.User, CompanyMemberA
             lastSeen.setText(lastSeenText);
             if (company.getOwner_id() == getItem(getAdapterPosition()).id) {
                 remove.setTextColor(mContext.getResources().getColor(R.color.key_actionBarDefaultSelector));
-                remove.setText("Владелец");
+                remove.setText(LocaleController.getInstance().getRoomsString("owner"));
             } else {
                 remove.setOnClickListener(view -> {
                     if (userListener != null) {

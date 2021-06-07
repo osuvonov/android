@@ -6,14 +6,27 @@ import androidx.room.PrimaryKey;
 
 @Entity(tableName = "request_history")
 public class RequestHistory {
-    public RequestHistory(long chat_id, String lastRequest) {
+    public RequestHistory(){}
+    public long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(long user_id) {
+        this.user_id = user_id;
+    }
+
+    public RequestHistory(long chat_id, String lastRequest, int userID) {
         this.chat_id = chat_id;
         this.lastRequest = lastRequest;
+        this.user_id=userID;
     }
 
     @PrimaryKey
     @ColumnInfo(name = "chat_id")
     private long chat_id;
+
+    @ColumnInfo(name = "user_id")
+    private long user_id;
 
     @ColumnInfo(name = "last_request")
     private String lastRequest;

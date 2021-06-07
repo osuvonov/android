@@ -95,4 +95,7 @@ public abstract class TaskDao {
 
     @Query("select * from tbl_tasks where (chat_id in (:chatId)) and (company_id in (:companyId)) order by pId desc limit :limit offset :offset ")
     public abstract List<Task> getTasksByChatAndCompanyId(long chatId, int companyId, int limit, int offset);
+
+    @Query("update tbl_tasks set last_read_message_id=:lastReadId where id=:taskId")
+    public abstract void updateLastReadMessageId(long taskId, long lastReadId);
 }

@@ -25,18 +25,17 @@
         android:gravity="right"
         android:maxWidth="260dp"
         android:minWidth="260dp"
-        android:orientation="vertical"
-        >
+        android:orientation="vertical">
 
         <LinearLayout
-            android:maxWidth="260dp"
-            android:minWidth="260dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:layout_marginEnd="7dp"
             android:layout_marginRight="7dp"
             android:gravity="right"
+            android:maxWidth="260dp"
+            android:minWidth="260dp"
             android:orientation="vertical"
             android:padding="5dp">
 
@@ -153,38 +152,41 @@
             </LinearLayout>
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"
-            android:background="@color/key_dialogBackgroundGray" />
-
-        <LinearLayout
-            android:orientation="horizontal"
+        <include
             android:id="@+id/comments"
-            android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="center_vertical"
-            android:background="@drawable/ripple"
-            android:clickable="true"
-            android:focusable="true">
+            layout="@layout/comments_layout" />
 
-            <TextView
-                android:layout_weight="1"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="Comments"
-                android:textAlignment="center"
-                android:textColor="@color/key_dialogTextGray" />
+        <!--        <LinearLayout-->
+        <!--            android:orientation="horizontal"-->
+        <!--            android:id="@+id/comments"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="40dp"-->
+        <!--            android:layout_gravity="center_vertical"-->
+        <!--            android:background="@drawable/ripple"-->
+        <!--            android:clickable="true"-->
+        <!--            android:focusable="true">-->
+        <!--            <ImageView-->
+        <!--                android:src="@drawable/comment_image"-->
+        <!--                android:id="@+id/comment_image"-->
+        <!--                android:layout_gravity="center"-->
+        <!--                android:layout_width="35dp"-->
+        <!--                android:layout_height="wrap_content"  />-->
 
-            <ImageView
-                android:layout_gravity="center"
-                android:layout_marginRight="15dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/comment_arrow" />
-        </LinearLayout>
+        <!--            <TextView-->
+        <!--                android:id="@+id/leave_comment"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="match_parent"-->
+        <!--                android:gravity="center"-->
+        <!--                android:text="Comments"-->
+        <!--                android:textAlignment="center"-->
+        <!--                android:textColor="@color/key_dialogTextGray" />-->
+
+        <!--            <ImageView-->
+        <!--                android:layout_gravity="center"-->
+        <!--                android:layout_marginRight="15dp"-->
+        <!--                android:layout_width="wrap_content"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:src="@drawable/comment_arrow" />-->
+        <!--        </LinearLayout>-->
     </LinearLayout>
 </LinearLayout>

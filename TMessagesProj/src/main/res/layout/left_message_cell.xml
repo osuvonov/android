@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cl"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:gravity="bottom"
+    android:orientation="horizontal"
+    android:paddingTop="2dp"
+    android:paddingBottom="2dp">
+
+    <org.telegram.irooms.ui.avatar.UserCellAvatarComments
+        android:id="@+id/avatarCell"
+        android:layout_width="58dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingStart="4dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="5dp" />
+
+    <View
+        android:id="@+id/placeholder"
+        android:layout_width="58dp"
+        android:layout_height="1dp"
+        android:visibility="gone" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|bottom"
+        android:background="@drawable/rounded_corner"
+        android:maxWidth="260dp"
+        android:orientation="vertical"
+        android:padding="2dp">
+
+        <TextView
+            android:padding="2dp"
+            android:layout_marginLeft="2dp"
+            android:id="@+id/name_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|left"
+            android:ellipsize="end"
+            android:gravity="left|top"
+            android:textColor="@color/notification_blue_color"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <include
+            android:id="@+id/leftReplyLayout"
+            layout="@layout/left_reply_layout"
+            android:visibility="gone"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/name_title" />
+
+        <TextView
+            android:paddingRight="2dp"
+            android:paddingLeft="4dp"
+            app:layout_constraintHorizontal_bias="0"
+            android:id="@+id/text_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusableInTouchMode="false"
+            android:maxWidth="260dp"
+            android:text=""
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@+id/time"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/time"
+            app:layout_constraintTop_toBottomOf="@+id/name_title" />
+
+        <TextView
+             android:id="@+id/edited"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="2dp"
+            android:textColor="@color/key_chat_inTimeText"
+            android:textSize="9sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toLeftOf="@+id/time"
+            app:layout_constraintTop_toBottomOf="@+id/text_description" />
+
+        <TextView
+            android:id="@+id/time"
+             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/key_chat_inTimeText"
+            android:textSize="9sp"
+            android:paddingRight="3dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</LinearLayout>

@@ -2,11 +2,12 @@ package org.telegram.irooms.task;
 
 import android.app.Application;
 
-import com.google.android.exoplayer2.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import org.telegram.irooms.IRoomsManager;
+import org.telegram.irooms.database.CommentHistoryDao;
+import org.telegram.irooms.database.CommentRequestHistory;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.CompanyDao;
 import org.telegram.irooms.database.RequestHistory;
@@ -14,6 +15,8 @@ import org.telegram.irooms.database.RequestHistoryDao;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.database.TaskDao;
 import org.telegram.irooms.database.TaskDatabase;
+import org.telegram.irooms.database.TaskMessageDao;
+import org.telegram.irooms.models.TaskMessage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +33,8 @@ public class RoomsRepository {
         return taskDao.getOfflineTasks();
     }
 
-    public void deleteCompanies() {
-        companyDao.deleteCompanies();
-    }
-
-    public String getLastRequestDateForChat(long chat_id) {
-        RequestHistory requestHistory = requestHistoryDao.getLastRequestDateForChat(chat_id);
+    public String getLastRequestDateForChat(long chat_id, int userId) {
+        RequestHistory requestHistory = requestHistoryDao.getLastRequestDateForChat(chat_id, userId);
         if (requestHistory == null) {
             return "";
         }
@@ -52,7 +51,7 @@ public class RoomsRepository {
 
 
     public ArrayList<Task> getChatRelatedTasks(long[] chatID, int limit, int offset) {
-         return (ArrayList<Task>) taskDao.getTasksByChatId(chatID, limit, offset);
+        return (ArrayList<Task>) taskDao.getTasksByChatId(chatID, limit, offset);
     }
 
     public ArrayList<Task> getChatAndCompanyRelatedTasks(long chatID, int companyID, int limit, int offset) {
@@ -118,21 +117,25 @@ public class RoomsRepository {
 
     private TaskDao taskDao;
 
+    private TaskMessageDao taskMessageDao;
+
+    private CommentHistoryDao commentHistoryDao;
+
     private CompanyDao companyDao;
 
     private static RoomsRepository instance;
     private static String currentDb;
 
     public static RoomsRepository getInstance(Application application, String dbName) {
-        if (currentDb!=null){
-            if (!currentDb.equals(dbName)){
-                instance=null;
+        if (currentDb != null) {
+            if (!currentDb.equals(dbName)) {
+                instance = null;
             }
         }
         if (instance == null) {
             synchronized (RoomsRepository.class) {
                 if (instance == null) {
-                    currentDb=dbName;
+                    currentDb = dbName;
                     instance = new RoomsRepository(application, dbName);
                 }
             }
@@ -147,13 +150,15 @@ public class RoomsRepository {
         taskDao = db.taskDao();
         companyDao = db.companyDao();
         requestHistoryDao = db.requestHistoryDao();
+        taskMessageDao = db.taskMessageDao();
+        commentHistoryDao = db.commentHistoryDao();
     }
 
     public Company getCompany(int id) {
         return companyDao.getCompany(id);
     }
 
-    public Task getTask(int id) {
+    public Task getTask(long id) {
         return taskDao.getTask(id);
     }
 
@@ -173,7 +178,7 @@ public class RoomsRepository {
     //
     public void createOnlineTask(Task task, long currentAccountId) {
         task.setLocalStatus(3);
-         if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
+        if (task.getLocal_id() != null && !task.getLocal_id().equals("")) {
             Task task1 = taskDao.getTaskByLocalId(task.getLocal_id());
             if (task1 != null && task1.getId() == -1) {
                 taskDao.deleteTask(task.getLocal_id());
@@ -213,6 +218,10 @@ public class RoomsRepository {
         }
         task.setLocalStatus(3);
         taskDao.updateTask(task);
+    }
+
+    public void updateLastReadMessageId(long taskId, long lastReadId) {
+        taskDao.updateLastReadMessageId(taskId, lastReadId);
     }
 
     public ArrayList<Company> getCompanyList() {
@@ -277,4 +286,33 @@ public class RoomsRepository {
         }
     }
 
+    //-------------------------- task messages(comments)-----------------
+    public List<TaskMessage> getTaskMessages(long taskId) {
+        return taskMessageDao.getTaskMessages(taskId);
+    }
+
+    public void insertTaskMessage(TaskMessage taskMessage) {
+        taskMessageDao.createTaskMessage(taskMessage);
+    }
+
+    public void insertTaskMessages(ArrayList<TaskMessage> taskMessages) {
+        taskMessageDao.createTaskMessages(taskMessages);
+    }
+
+    public void updateTaskMessage(TaskMessage taskMessage) {
+        taskMessageDao.updateTaskMessage(taskMessage);
+    }
+
+    //-------------------------- messages request history(comments)-----------------
+    public CommentRequestHistory getLastTaskMessageRequest(long taskId) {
+        return commentHistoryDao.getLastTaskMessageRequest(taskId);
+    }
+
+    public void insertTaskMessageHistory(CommentRequestHistory commentRequestHistory) {
+        commentHistoryDao.insertRequestHistory(commentRequestHistory);
+    }
+
+    public void updateTaskMessageHistory(long taskId, String date) {
+        commentHistoryDao.updateRequestHistory(taskId, date);
+    }
 }

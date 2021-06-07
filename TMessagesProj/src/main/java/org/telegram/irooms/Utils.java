@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.util.TypedValue;
 
+import org.telegram.irooms.task.TaskUtil;
 import org.telegram.messenger.LocaleController;
 import org.telegram.tgnet.TLRPC;
 
@@ -13,8 +14,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -87,6 +90,11 @@ public class Utils {
             }
         }
         return -1;
+    }
+
+    public static String getTimeFromDate(String date){
+        SimpleDateFormat dateFormat= new SimpleDateFormat("HH:mm");
+        return dateFormat.format(TaskUtil.getDateFromISO(date));
     }
 
     public static boolean isNetworkConnected(Context context) {

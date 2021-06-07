@@ -14,6 +14,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.StateListAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -493,6 +494,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
             }
             donePressed = true;
             Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
+            Activity activity = getParentActivity();
 
             if (createCompany) {
                 IRoomsManager.getInstance().registerCompanyBySocket(getParentActivity(), socket, editText.getText().toString(), new IRoomsManager.IRoomsCallback() {
@@ -520,17 +522,32 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                     IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, companyId, selectedContacts, new IRoomsManager.IRoomsCallback() {
                                         @Override
                                         public void onSuccess(String success) {
-                                            ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
-                                            String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
+                                            try {
+                                                ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
+                                                String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
 
-                                            for (Integer integer : members) {
-                                                SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                                for (Integer integer : members) {
+                                                    SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                                }
+                                                Toast.makeText(activity, LocaleController.getInstance().getRoomsString("team_added"), Toast.LENGTH_SHORT).show();
+
+                                                ArrayList<Company> companies = ((LaunchActivity) activity).getCompanyList();
+                                                for (Company company : companies) {
+                                                    if (company.getId() == companyId) {
+                                                        for (int j = 0; j < members.size(); j++) {
+                                                            if (!company.getMembers().contains(members.get(j))) {
+                                                                company.getMembers().add(members.get(j));
+                                                            }
+                                                        }
+                                                        break;
+                                                    }
+                                                }
+                                                ((LaunchActivity) activity).refreshCompany();
+
+                                                getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
+                                                finishFragment();
+                                            } catch (Exception x) {
                                             }
-                                            Toast.makeText(getParentActivity(), LocaleController.getInstance().getRoomsString("team_added"), Toast.LENGTH_SHORT).show();
-                                            ((LaunchActivity) getParentActivity()).refreshCompany();
-
-                                            getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
-                                            finishFragment();
                                         }
 
                                         @Override
@@ -538,10 +555,9 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                             try {
                                                 getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
                                                 finishFragment();
-                                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(activity, error, Toast.LENGTH_SHORT).show();
                                             } catch (Exception d) {
                                             }
-
                                         }
                                     });
                                 }
@@ -558,25 +574,39 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                 });
             } else {
                 if (action == "add") {
-                    IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, IRoomsManager.getInstance().getSelectedCompanyId(context), selectedContacts, new IRoomsManager.IRoomsCallback() {
+                    int companyId = IRoomsManager.getInstance().getSelectedCompanyId(context);
+                    IRoomsManager.getInstance().addMembersToCompanyBySocket(getParentActivity(), socket, companyId, selectedContacts, new IRoomsManager.IRoomsCallback() {
                         @Override
                         public void onSuccess(String success) {
-                            ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
-                            String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
+                            try {
+                                ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
+                                String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
 
-                            for (Integer integer : members) {
-                                SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                for (Integer integer : members) {
+                                    SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                }
+                                Toast.makeText(getParentActivity(), "Выбранные участники добавлены в команду", Toast.LENGTH_SHORT).show();
+                                ArrayList<Company> companies = ((LaunchActivity) activity).getCompanyList();
+                                for (Company company : companies) {
+                                    if (company.getId() == companyId) {
+                                        for (int j = 0; j < members.size(); j++) {
+                                            if (!company.getMembers().contains(members.get(j))) {
+                                                company.getMembers().add(members.get(j));
+                                            }
+                                        }
+                                        break;
+                                    }
+                                }
+                                ((LaunchActivity) getParentActivity()).refreshCompany();
+                                getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
+                                finishFragment();
+                            } catch (Exception x) {
                             }
-                            Toast.makeText(getParentActivity(), "Выбранные участники добавлены в команду", Toast.LENGTH_SHORT).show();
-                            ((LaunchActivity) getParentActivity()).refreshCompany();
-                            getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
-                            finishFragment();
                         }
 
                         @Override
                         public void onError(String error) {
                             Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-
                         }
                     });
                 } else {
@@ -598,14 +628,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                     });
                 }
             }
-
-
             AndroidUtilities.hideKeyboard(editText);
-//            editText.setEnabled(false);
-//
-//            showEditDoneProgress(true);
-//            reqId = MessagesController.getInstance(currentAccount).createChat(editText.getText().toString(), selectedContacts, null, chatType, currentGroupCreateLocation, currentGroupCreateAddress, AddMembersToCompany.this);
-
         });
 
         floatingButtonIcon = new ImageView(context);

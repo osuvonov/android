@@ -16,7 +16,6 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Application;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.ClipData;
@@ -48,7 +47,6 @@ import android.os.SystemClock;
 
 import androidx.core.widget.CompoundButtonCompat;
 import androidx.core.widget.ImageViewCompat;
-import androidx.preference.PreferenceManager;
 
 import android.provider.MediaStore;
 import android.text.Layout;
@@ -109,11 +107,14 @@ import org.rooms.messenger.BuildConfig;
 import org.rooms.messenger.R;
 import org.rooms.messenger.databinding.BottomTaskSortBinding;
 import org.rooms.messenger.databinding.ChatTabBinding;
+import org.rooms.messenger.databinding.CommentsLayoutBinding;
 import org.rooms.messenger.databinding.LeftTaskLayoutBinding;
 import org.rooms.messenger.databinding.LeftTaskLayoutPrivateChatBinding;
 import org.rooms.messenger.databinding.RightTaskLayoutBinding;
 import org.rooms.messenger.databinding.TasklistTaskLayoutBinding;
 import org.telegram.PhoneFormat.PhoneFormat;
+import org.telegram.irooms.models.TaskMessage;
+import org.telegram.irooms.models.ThreadInfo;
 import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.irooms.task.TaskManagerListener;
 import org.telegram.irooms.task.TaskRunner;
@@ -780,6 +781,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private int taskIndex;
     private BottomSheet bottomSheetTask;
     private int migratedFromChatID;
+    private ChatActivityDiscussion chatActivityDiscussion;
 
     public float getChatListViewPadding() {
         return chatListViewPaddingTop;
@@ -791,136 +793,217 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
     private interface ChatActivityDelegate {
         default void openReplyMessage(int mid) {
-
         }
 
         default void openSearch(String text) {
-
         }
 
         default void onUnpin(boolean all, boolean hide) {
         }
 
         default void onReport() {
-
         }
     }
 
     Object lockObject = new Object();
     private volatile boolean onBackPressed = false;
+//    private Map<Long, ArrayList<TaskMessage>> taskMessageList = new HashMap<>();
+
+
+//    private void loadTaskMessages(long task_id) {
+//        try {
+//            if (!taskMessageList.containsKey(task_id)) {
+//                taskMessageList.put(task_id, new ArrayList<TaskMessage>());
+//            }
+//            Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
+//            TaskRunner commentRunner = new TaskRunner();
+//            commentRunner.executeAsync(new Callable<Object>() {
+//                @Override
+//                public Object call() throws Exception {
+//                    CommentRequestHistory history = repository.getLastTaskMessageRequest(task_id);
+//                    if (history == null) {
+//                        history = new CommentRequestHistory();
+//                        Date date = new Date();
+//                        date.setTime(1621340352);
+//                        history.setLastRequest(TaskUtil.getISODate(date));
+//                        history.setTaskId(task_id);
+//                    }
+//
+//                    GetMessagesRequest request = new GetMessagesRequest();
+//                    request.setTask_id(task_id);
+//                    String newDate = TaskUtil.getISODate(new Date());
+//                    request.setUpdated_since(history.getLastRequestDate());
+//
+//                    ArrayList<TaskMessage> taskMessages = (ArrayList<TaskMessage>) repository.getTaskMessages(task_id);
+//                    if (taskMessages != null) {
+//                        taskMessageList.get(task_id).addAll(taskMessages);
+//                    }
+//                    AndroidUtilities.runOnUIThread(() -> {
+//                        if (isChatMode) {
+//                            chatListView.getAdapter().notifyDataSetChanged();
+//                        }
+//                    });
+//                    CommentRequestHistory finalHistory = history;
+//                    IRoomsManager.getInstance().getTaskMessages(socket, request, new IRoomsManager.IRoomCallback<ArrayList<TaskMessage>>() {
+//                        @Override
+//                        public void onSuccess(ArrayList<TaskMessage> messageList) {
+//                            try {
+//                                repository.insertTaskMessages(messageList);
+//                                finalHistory.setLastRequest(newDate);
+//                                repository.insertTaskMessageHistory(finalHistory);
+//                                if (messageList != null) {
+//                                    taskMessageList.get(task_id).removeAll(messageList);
+//                                    taskMessageList.get(task_id).addAll(messageList);
+//                                }
+//                                AndroidUtilities.runOnUIThread(() -> {
+//                                    if (isChatMode) {
+//                                        chatListView.getAdapter().notifyDataSetChanged();
+//                                    }
+//                                });
+//                            } catch (Exception x) {
+//                                x.printStackTrace();
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onError(String error) {
+//                        }
+//                    });
+//                    return null;
+//                }
+//            }, new TaskRunner.TaskCompletionListener<Object>() {
+//                @Override
+//                public void onComplete(Object result) {
+//
+//                }
+//            });
+//        } catch (Exception c) {
+//            c.printStackTrace();
+//        }
+//
+//    }
+
+    TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+    RoomsRepository repository;
+    TaskRunner taskLoader = new TaskRunner();
+    Object taskLoaderObject = new Object();
+    private volatile boolean loadingByPagination = false;
 
     private void loadTaskByPagination() {
-        TaskRunner runner = new TaskRunner();
-        runner.executeAsync(new Callable<ArrayList<Task>>() {
+        Log.e("load task by pagination", "load task by pagination");
+        taskLoader.executeAsync(new Callable<ArrayList<Task>>() {
             @Override
             public ArrayList<Task> call() throws Exception {
-                try {
-                    TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-                    int selectedAccountUserId = user.id;
-                    final int chatId = arguments.getInt("chat_id", 0);
-                    final int userId = arguments.getInt("user_id", 0);
-                    int limit = 20;
-                    boolean isFirstTime = true;
-
-                    int companyId = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
-
-                    if (chatId == 0 && userId == selectedAccountUserId) {
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
-
-                        ArrayList<Task> tempList = repository.getAccountTasks(userId, limit, taskList.size());
-                        while (!onBackPressed && tempList.size() > 0) {
-                            taskList.addAll(tempList);
-
-                            if (isFirstTime) {
-                                if (isChatMode && chatAdapter != null) {
-                                    AndroidUtilities.runOnUIThread(() -> {
-                                        chatAdapter.notifyDataSetChanged();
-                                    });
-                                } else if (!isChatMode && taskAdapter != null) {
-                                    taskAdapter.updateWithCurrentSort();
-                                }
-                            }
-                            tempList = repository.getAccountTasks(userId, limit, taskList.size());
-                        }
-                        if (isChatMode && chatAdapter != null) {
-                            AndroidUtilities.runOnUIThread(() -> {
-                                chatAdapter.notifyDataSetChanged();
-                            });
-                        } else if (!isChatMode && taskAdapter != null) {
-                            taskAdapter.updateWithCurrentSort();
-                        }
-                        requestTasksFromBackend();
-                    } else if (chatId == 0) {
-
-                        //private chat with someone
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
-
-                        ArrayList<Task> tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
-                        while (!onBackPressed && tempList.size() > 0) {
-                            taskList.addAll(tempList);
-                            if (isFirstTime) {
-                                if (isChatMode && chatAdapter != null) {
-                                    AndroidUtilities.runOnUIThread(() -> {
-                                        chatAdapter.notifyDataSetChanged();
-                                    });
-                                } else if (!isChatMode && taskAdapter != null) {
-                                    taskAdapter.updateWithCurrentSort();
-                                }
-                            }
-
-                            tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
-                        }
-                        if (isChatMode && chatAdapter != null) {
-                            AndroidUtilities.runOnUIThread(() -> {
-                                chatAdapter.notifyDataSetChanged();
-                            });
-                        } else if (!isChatMode && taskAdapter != null) {
-                            taskAdapter.updateWithCurrentSort();
-                        }
-                        requestTasksFromBackend();
-
-                    } else {
-                        //group chat
-
-                        long[] chatIds;
-                        if (migratedFromChatID > 0) {
-                            chatIds = new long[2];
-                            chatIds[0] = Math.abs(dialog_id);
-                            chatIds[1] = migratedFromChatID;
-                        } else {
-                            chatIds = new long[1];
-                            chatIds[0] = Math.abs(dialog_id);
-                        }
-                        RoomsRepository repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
-
-                        ArrayList<Task> tempList = repository.getChatRelatedTasks(chatIds, limit, taskList.size());
-
-                        while (!onBackPressed && tempList.size() > 0) {
-                            taskList.addAll(tempList);
-                            if (isFirstTime) {
-                                if (isChatMode && chatAdapter != null) {
-                                    AndroidUtilities.runOnUIThread(() -> {
-                                        chatAdapter.notifyDataSetChanged();
-                                    });
-                                } else if (!isChatMode && taskAdapter != null) {
-                                    taskAdapter.updateWithCurrentSort();
-                                }
-                                isFirstTime = false;
-                            }
-
-                            tempList = repository.getChatRelatedTasks(chatIds, limit, taskList.size());
-                        }
-                        if (isChatMode && chatAdapter != null) {
-                            AndroidUtilities.runOnUIThread(() -> {
-                                chatAdapter.notifyDataSetChanged();
-                            });
-                        } else if (!isChatMode && taskAdapter != null) {
-                            taskAdapter.updateWithCurrentSort();
-                        }
-                        requestTasksFromBackend();
-                    }
-                } catch (Exception x) {
+                if (loadingByPagination) {
+                    return null;
                 }
+                synchronized (taskLoaderObject) {
+                    loadingByPagination = true;
+                    try {
+                        int selectedAccountUserId = user.id;
+                        final int chatId = arguments.getInt("chat_id", 0);
+                        final int userId = arguments.getInt("user_id", 0);
+                        int limit = 20;
+                        boolean isFirstTime = true;
+
+                        int companyId = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
+
+                        if (chatId == 0 && userId == selectedAccountUserId) {
+
+                            ArrayList<Task> tempList = repository.getAccountTasks(userId, limit, taskList.size());
+                            while (!onBackPressed && tempList.size() > 0) {
+                                taskList.addAll(tempList);
+
+                                if (isFirstTime) {
+                                    if (isChatMode && chatAdapter != null) {
+                                        AndroidUtilities.runOnUIThread(() -> {
+                                            chatAdapter.notifyDataSetChanged();
+                                        });
+                                    } else if (!isChatMode && taskAdapter != null) {
+                                        taskAdapter.updateWithCurrentSort();
+                                    }
+                                }
+                                tempList = repository.getAccountTasks(userId, limit, taskList.size());
+                            }
+                            if (isChatMode && chatAdapter != null) {
+                                AndroidUtilities.runOnUIThread(() -> {
+                                    chatAdapter.notifyDataSetChanged();
+                                });
+                            } else if (!isChatMode && taskAdapter != null) {
+                                taskAdapter.updateWithCurrentSort();
+                            }
+                            requestTasksFromBackend();
+                        } else if (chatId == 0) {
+
+                            //private chat with someone
+                            ArrayList<Task> tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
+                            while (!onBackPressed && tempList.size() > 0) {
+                                taskList.addAll(tempList);
+                                if (isFirstTime) {
+                                    if (isChatMode && chatAdapter != null) {
+                                        AndroidUtilities.runOnUIThread(() -> {
+                                            chatAdapter.notifyDataSetChanged();
+                                        });
+                                    } else if (!isChatMode && taskAdapter != null) {
+                                        taskAdapter.updateWithCurrentSort();
+                                    }
+                                }
+
+                                tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
+                            }
+                            if (isChatMode && chatAdapter != null) {
+                                AndroidUtilities.runOnUIThread(() -> {
+                                    chatAdapter.notifyDataSetChanged();
+                                });
+                            } else if (!isChatMode && taskAdapter != null) {
+                                taskAdapter.updateWithCurrentSort();
+                            }
+                            requestTasksFromBackend();
+
+                        } else {
+                            //group chat
+
+                            long[] chatIds;
+                            if (migratedFromChatID > 0) {
+                                chatIds = new long[2];
+                                chatIds[0] = Math.abs(dialog_id);
+                                chatIds[1] = migratedFromChatID;
+                            } else {
+                                chatIds = new long[1];
+                                chatIds[0] = Math.abs(dialog_id);
+                            }
+                            ArrayList<Task> tempList = repository.getChatRelatedTasks(chatIds, limit, taskList.size());
+                            while (!onBackPressed && tempList.size() > 0) {
+                                taskList.addAll(tempList);
+                                if (isFirstTime) {
+                                    if (isChatMode && chatAdapter != null) {
+                                        AndroidUtilities.runOnUIThread(() -> {
+                                            chatAdapter.notifyDataSetChanged();
+                                        });
+                                    } else if (!isChatMode && taskAdapter != null) {
+                                        taskAdapter.updateWithCurrentSort();
+                                    }
+                                    isFirstTime = false;
+                                }
+
+                                tempList = repository.getChatRelatedTasks(chatIds, 50, taskList.size());
+
+                            }
+                            if (isChatMode && chatAdapter != null) {
+                                AndroidUtilities.runOnUIThread(() -> {
+                                    chatAdapter.notifyDataSetChanged();
+                                });
+                            } else if (!isChatMode && taskAdapter != null) {
+                                taskAdapter.updateWithCurrentSort();
+                            }
+                            requestTasksFromBackend();
+                            loadingByPagination = false;
+                        }
+                    } catch (Exception x) {
+                        x.printStackTrace();
+                    }
+                }
+
                 return null;
             }
         }, new TaskRunner.TaskCompletionListener<ArrayList<Task>>() {
@@ -961,66 +1044,77 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 IRoomsManager.getInstance().getMyTasks(getParentActivity(), ((LaunchActivity) getParentActivity()).getmSocket(), query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
                     @Override
                     public void onSuccess(ArrayList<Task> tasks) {
-                        if (tasks.size() > 0) {
-                            if (taskList.size() == 0) {
-                                taskList.addAll(tasks);
-                            } else {
-                                for (Task task : tasks) {
-                                    Task taskToAdd = taskList.stream().filter(task1 -> task1.getId() == task.getId()).findFirst().orElse(null);
-                                    if (taskToAdd == null) {
-                                        taskList.add(task);
+                        try {
+                            Log.e("requestTasksFromBackend", "size: " + tasks.size());
+
+                            if (tasks.size() > 0) {
+                                if (taskList.size() == 0) {
+                                    taskList.addAll(tasks);
+                                } else {
+                                    for (Task task : tasks) {
+                                        Task taskToAdd = taskList.stream().filter(task1 -> task1.getId() == task.getId()).findFirst().orElse(null);
+                                        if (taskToAdd == null) {
+                                            taskList.add(task);
+                                        }
                                     }
                                 }
-                            }
 
-                            if (isChatMode && chatAdapter != null) {
-                                AndroidUtilities.runOnUIThread(() -> {
-                                    chatAdapter.notifyDataSetChanged();
-                                });
-                            } else if (!isChatMode && taskAdapter != null) {
-                                taskAdapter.updateWithCurrentSort();
+                                if (isChatMode && chatAdapter != null) {
+                                    AndroidUtilities.runOnUIThread(() -> {
+                                        chatAdapter.notifyDataSetChanged();
+                                    });
+                                } else if (!isChatMode && taskAdapter != null) {
+                                    taskAdapter.updateWithCurrentSort();
+                                }
                             }
-                        }
-                        if (chatIds.length > 1) {
-                            query.setChat_id(chatIds[1]);
+                            Activity parentActivity = getParentActivity();
+                            if (chatIds.length > 1 && parentActivity != null) {
+                                try {
+                                    query.setChat_id(chatIds[1]);
 
-                            IRoomsManager.getInstance().getMyTasks(getParentActivity(), ((LaunchActivity) getParentActivity()).getmSocket(), query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                                @Override
-                                public void onSuccess(ArrayList<Task> success) {
-                                    if (tasks.size() > 0) {
-                                        if (taskList.size() == 0) {
-                                            taskList.addAll(tasks);
-                                        } else {
-                                            for (Task task : tasks) {
-                                                Task taskToAdd = taskList.stream().filter(task1 -> task1.getId() == task.getId()).findFirst().orElse(null);
-                                                if (taskToAdd == null) {
-                                                    taskList.add(task);
+                                    IRoomsManager.getInstance().getMyTasks(parentActivity, ((LaunchActivity) parentActivity).getmSocket(), query, new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
+                                        @Override
+                                        public void onSuccess(ArrayList<Task> tasks1) {
+                                            try {
+                                                if (tasks1.size() > 0) {
+                                                    if (taskList.size() == 0) {
+                                                        taskList.addAll(tasks1);
+                                                    } else {
+                                                        for (Task task : tasks1) {
+                                                            Task taskToAdd = taskList.stream().filter(task1 -> task1.getId() == task.getId()).findFirst().orElse(null);
+                                                            if (taskToAdd == null) {
+                                                                taskList.add(task);
+                                                            }
+                                                        }
+                                                    }
+                                                    if (isChatMode && chatAdapter != null) {
+                                                        AndroidUtilities.runOnUIThread(() -> {
+                                                            chatAdapter.notifyDataSetChanged();
+                                                        });
+                                                    } else if (!isChatMode && taskAdapter != null) {
+                                                        taskAdapter.updateWithCurrentSort();
+                                                    }
                                                 }
+                                            } catch (Exception x) {
+
+                                            }
+
+                                        }
+
+                                        @Override
+                                        public void onError(String error) {
+                                            try {
+                                                if (parentActivity != null)
+                                                    AndroidUtilities.runOnUIThread(() -> Toast.makeText(parentActivity, error, Toast.LENGTH_SHORT).show());
+                                            } catch (Exception x) {
                                             }
                                         }
-                                        if (isChatMode && chatAdapter != null) {
-                                            AndroidUtilities.runOnUIThread(() -> {
-                                                chatAdapter.notifyDataSetChanged();
-                                            });
-                                        } else if (!isChatMode && taskAdapter != null) {
-                                            taskAdapter.updateWithCurrentSort();
-                                        }
-                                    }
-                                    //   loadChatRelatedTasks(true, false);
+                                    });
+                                } catch (Exception x) {
                                 }
-
-                                @Override
-                                public void onError(String error) {
-                                    try {
-                                        AndroidUtilities.runOnUIThread(() -> Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show());
-                                    } catch (Exception x) {
-                                    }
-                                }
-                            });
+                            }
+                        } catch (Exception x) {
                         }
-//                        if (tasks.size() > 0) {
-//                            loadChatRelatedTasks(true, false);
-//                        }
                     }
 
                     @Override
@@ -1031,115 +1125,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         }
                     }
                 });
-                //   }
-            }
-        } catch (Exception x) {
-        }
-
-    }
-
-    private synchronized void loadChatRelatedTasks(boolean gotLastTasksFromBackend, boolean firstTime) {
-        try {
-            int selectedAccountUserId = UserConfig.getInstance(UserConfig.selectedAccount).clientUserId;
-            final int chatId = arguments.getInt("chat_id", 0);
-            final int userId = arguments.getInt("user_id", 0);
-
-            int companyId = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
-
-            if (chatId == 0 && userId == selectedAccountUserId) {
-                //saved messages/tasks
-                IRoomsManager.getInstance().getAccountTasks(getParentActivity(), userId,
-                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                            @Override
-                            public void onSuccess(ArrayList<Task> list) {
-                                if (list != null) {
-
-                                    taskList.clear();
-
-                                    taskList.addAll(list);
-                                    AndroidUtilities.runOnUIThread(() -> {
-                                        if (isChatMode && chatAdapter != null) {
-                                            chatAdapter.notifyDataSetChanged();
-                                        } else if (!isChatMode && taskAdapter != null) {
-                                            taskAdapter.updateWithCurrentSort();
-                                        }
-                                    });
-                                    if (!gotLastTasksFromBackend) {
-                                        requestTasksFromBackend();
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            } else if (chatId == 0) {
-                //private chat with someone
-                IRoomsManager.getInstance().getUserTasks(companyId, getParentActivity(), selectedAccountUserId, userId,
-                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                            @Override
-                            public void onSuccess(ArrayList<Task> list) {
-                                if (list != null) {
-                                    taskList.clear();
-                                    taskList.addAll(list);
-                                    AndroidUtilities.runOnUIThread(() -> {
-                                        if (isChatMode && chatAdapter != null) {
-                                            chatAdapter.notifyDataSetChanged();
-                                        } else if (!isChatMode && taskAdapter != null) {
-                                            taskAdapter.updateWithCurrentSort();
-                                        }
-                                    });
-                                    if (!gotLastTasksFromBackend) {
-                                        requestTasksFromBackend();
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-            } else {
-                //group chat
-                long[] chatIds;
-                if (migratedFromChatID > 0) {
-                    chatIds = new long[2];
-                    chatIds[0] = Math.abs(dialog_id);
-                    chatIds[1] = migratedFromChatID;
-                } else {
-                    chatIds = new long[1];
-                    chatIds[0] = Math.abs(dialog_id);
-                }
-                IRoomsManager.getInstance().getGroupChatRelatedTasks(getParentActivity(), chatIds, companyId,
-                        new IRoomsManager.IRoomCallback<ArrayList<Task>>() {
-                            @Override
-                            public void onSuccess(ArrayList<Task> list) {
-                                if (list != null) {
-                                    synchronized (lockObject) {
-                                        taskList.clear();
-                                        taskList.addAll(list);
-                                        AndroidUtilities.runOnUIThread(() -> {
-                                            if (isChatMode && chatAdapter != null) {
-                                                chatAdapter.notifyDataSetChanged();
-                                            } else if (!isChatMode && taskAdapter != null) {
-                                                taskAdapter.updateWithCurrentSort();
-                                            }
-                                        });
-                                        if (!gotLastTasksFromBackend) {
-                                            requestTasksFromBackend();
-                                        }
-                                    }
-                                }
-                            }
-
-                            @Override
-                            public void onError(String error) {
-                                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
             }
         } catch (Exception x) {
         }
@@ -1531,11 +1516,17 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     }
 
     boolean createTask = false;
+    boolean isTaskDiscussion = false;
+    long startTaskId = -1;
+    boolean openDiscussion;
 
     @Override
     public boolean onFragmentCreate() {
+        isTaskDiscussion = arguments.getBoolean("isTaskDiscussion");
         createTask = arguments.getBoolean("createTask");
         final int chatId = arguments.getInt("chat_id", 0);
+        startTaskId = arguments.getLong("task_id", -1);
+        openDiscussion = arguments.getBoolean("openDiscussion", false);
         final int userId = arguments.getInt("user_id", 0);
         final int encId = arguments.getInt("enc_id", 0);
         chatMode = arguments.getInt("chatMode", 0);
@@ -1898,7 +1889,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 taskRunner.executeAsync(() -> {
                     TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-                    List<Task> offlineTasks = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone).getOfflineTasks();
+                    List<Task> offlineTasks = repository.getOfflineTasks();
                     if (offlineTasks.size() > 0) {
                         for (Task task : offlineTasks) {
                             if (task.getLocalStatus() == 1) {
@@ -2110,9 +2101,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private Company selectedCompany;
 
     private void initTaskStuff() {
+        Activity parentActivity = getParentActivity();
 
         try {
-            if (getParentActivity() != null) {
+            if (parentActivity != null) {
                 taskList.clear();
                 //      taskList.addAll(((LaunchActivity) getParentActivity()).globalTaskList.stream().filter(task -> task.getChat_id() == Math.abs(dialog_id)).collect(Collectors.toList()));
                 AndroidUtilities.runOnUIThread(() -> {
@@ -2123,8 +2115,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
         } catch (Exception x) {
         }
-        int selectedCompanyID = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
-        ((LaunchActivity) getParentActivity()).setBackendTaskListener(new LaunchActivity.BackendForOfflineTaskListener() {
+        int selectedCompanyID = IRoomsManager.getInstance().getSelectedCompanyId(parentActivity);
+        ((LaunchActivity) parentActivity).setBackendTaskListener(new LaunchActivity.BackendForOfflineTaskListener() {
             @Override
             public void onBackendTaskForLocalTaskCreated(Task task) {
                 ChatActivity.this.onCloudTaskCreatedForOfflineTask(task);
@@ -2139,6 +2131,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         LaunchActivity.TaskListener taskListener = new LaunchActivity.TaskListener() {
             @Override
             public void connectionRestored() {
+                Log.e("connectionRestored", "connectionRestored");
                 requestTasksFromBackend();
             }
 
@@ -2194,7 +2187,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
         };
 
-        IRoomsManager.getInstance().getCompany(getParentActivity(), selectedCompanyID, new IRoomsManager.IRoomCallback<Company>() {
+        IRoomsManager.getInstance().getCompany(parentActivity, selectedCompanyID, new IRoomsManager.IRoomCallback<Company>() {
             @Override
             public void onSuccess(Company company) {
                 selectedCompany = company;
@@ -2206,20 +2199,84 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
             @Override
             public void onError(String error) {
-                Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
+                if (parentActivity != null)
+                    Toast.makeText(parentActivity, error, Toast.LENGTH_SHORT).show();
             }
         });
 
-        ((LaunchActivity) getParentActivity()).setTaskListener(taskListener);
+        ((LaunchActivity) parentActivity).setTaskListener(taskListener);
 
         //loadChatRelatedTasks(false, true);
         loadTaskByPagination();
+
+        ((LaunchActivity) parentActivity).setTaskDiscussionListener(new LaunchActivity.TaskDiscussionListener() {
+            @Override
+            public void onNewTaskMessage(TaskMessage taskMessage) {
+                try {
+//                    if (taskMessageList.containsKey(taskMessage.getTask_id())) {
+//                        taskMessageList.get(taskMessage.getTask_id()).add(taskMessage);
+//                        AndroidUtilities.runOnUIThread(() -> {
+//                            if (chatListView != null && chatListView.getAdapter() != null)
+//                                chatListView.getAdapter().notifyDataSetChanged();
+//                        });
+//                    } else {
+//                        loadTaskMessages(taskMessage.getTask_id());
+//                    }
+                    if (chatActivityDiscussion != null) {
+                        chatActivityDiscussion.onNewTaskMessage(taskMessage);
+                    }
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onTaskMessageEdited(TaskMessage taskMessage) {
+                try {
+//                    if (taskMessageList.containsKey(taskMessage.getTask_id())) {
+//                        ArrayList<TaskMessage> messages = taskMessageList.get(taskMessage.getTask_id());
+//                        for (int i = 0; i < messages.size(); i++) {
+//                            if (taskMessage.getTask_id() == messages.get(i).getTask_id()) {
+//                                messages.remove(i);
+//                                messages.add(i, taskMessage);
+//                                break;
+//                            }
+//                        }
+//                        AndroidUtilities.runOnUIThread(() -> {
+//                            if (chatListView != null && chatListView.getAdapter() != null)
+//                                chatListView.getAdapter().notifyDataSetChanged();
+//                        });
+//                    } else {
+//                        loadTaskMessages(taskMessage.getTask_id());
+//                    }
+                    if (chatActivityDiscussion != null) {
+                        chatActivityDiscussion.onTaskEdited(taskMessage);
+                    }
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onThreadInfoUpdated(ThreadInfo threadInfo) {
+                try {
+                    if (chatActivityDiscussion != null) {
+                        chatActivityDiscussion.onThreadInfo(threadInfo);
+                    }
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+            }
+        });
 
     }
 
 
     @Override
     public View createView(Context context) {
+        repository = RoomsRepository.getInstance(getParentActivity().getApplication(), user.phone);
+
         if (!isChannel()) {
             initTaskStuff();
         }
@@ -7945,7 +8002,75 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         if (createTask && !isChannel()) {
             getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
             createTask(getSelectedUser(), "", dialog_id, 0, 0);
+        } else if (startTaskId > 0 && !isChannel()) {
+            TaskRunner taskRunner = new TaskRunner();
+            taskRunner.executeAsync(new Callable<Task>() {
+                @Override
+                public Task call() throws Exception {
+                    LaunchActivity activity = (LaunchActivity) getParentActivity();
+                    if (activity != null) {
+                        Task task = taskList.stream().filter(task1 -> task1.getId() == startTaskId).findFirst().orElse(null);
+                        if (task == null) {
+                            task = RoomsRepository.getInstance(getParentActivity().getApplication(), UserConfig.getInstance(UserConfig.selectedAccount).getClientPhone()).getTask(startTaskId);
+                            if (task == null) {
+                                IRoomsManager.getInstance().getTask(activity.getmSocket(), startTaskId, new IRoomsManager.IRoomCallback<Task>() {
+                                    @Override
+                                    public void onSuccess(Task success) {
+                                        Log.e("gettask on success", success.getDescription());
+                                        if (success != null) {
+                                            showTaskDialog(activity, success);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onError(String error) {
+
+                                    }
+                                });
+                            } else {
+                                showTaskDialog(activity, task);
+                            }
+                        } else {
+                            showTaskDialog(activity, task);
+                        }
+                    }
+                    return null;
+                }
+            }, new TaskRunner.TaskCompletionListener<Task>() {
+                @Override
+                public void onComplete(Task result) {
+
+                }
+            });
         }
+    }
+
+    private void showTaskDialog(LaunchActivity activity, Task task) {
+        AndroidUtilities.runOnUIThread(() -> {
+            startTaskId = -1;
+            if (openDiscussion) {
+                presentDiscussionFragment(task);
+                openDiscussion = false;
+                return;
+            }
+            bottomSheetTask = AlertsCreator.showTaskDialog(activity, ChatActivity.this, task, getTaskMemberList(), new TaskManagerListener() {
+                @Override
+                public void onCreate(Task task) {
+                }
+
+                @Override
+                public void onUpdate(Task task) {
+                    Task t1 = taskList.stream().filter(t -> t.getId() == task.getId()).findFirst().orElse(null);
+                    if (t1 != null) {
+                        taskList.remove(t1);
+                    }
+                    taskList.add(task);
+                    AndroidUtilities.runOnUIThread(() -> chatListView.getAdapter().notifyDataSetChanged());
+                }
+            });
+
+            showDialog(bottomSheetTask);
+        });
     }
 
     private void createTask(TLRPC.User selectedUser, String text, long chatId, int messageId, int senderId) {
@@ -8040,7 +8165,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         }
 
         SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message.toString(), dialog_id, null, null, null, false, entities, null, null, true, 0);
-
     }
 
     private boolean isChannel() {
@@ -20756,218 +20880,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         updateVisibleRows();
     }
 
-    private void createStatusMenu(float x, float y) {
-        if (actionBar.isActionModeShowed()) {
-            return;
-        }
-
-        hideActionMode();
-        updatePinnedMessageView(true);
-
-        if (scrimPopupWindow != null) {
-            scrimPopupWindow.dismiss();
-            scrimPopupWindow = null;
-            scrimPopupWindowItems = null;
-            return;
-        }
-
-        Rect rect = new Rect();
-
-        ActionBarPopupWindow.ActionBarPopupWindowLayout popupLayout = new ActionBarPopupWindow.ActionBarPopupWindowLayout(getParentActivity());
-        popupLayout.setOnTouchListener(new View.OnTouchListener() {
-
-            private int[] pos = new int[2];
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    if (scrimPopupWindow != null && scrimPopupWindow.isShowing()) {
-                        View contentView = scrimPopupWindow.getContentView();
-                        contentView.getLocationInWindow(pos);
-                        rect.set(pos[0], pos[1], pos[0] + contentView.getMeasuredWidth(), pos[1] + contentView.getMeasuredHeight());
-                        if (!rect.contains((int) event.getX(), (int) event.getY())) {
-                            scrimPopupWindow.dismiss();
-                        }
-                    }
-                } else if (event.getActionMasked() == MotionEvent.ACTION_OUTSIDE) {
-                    if (scrimPopupWindow != null && scrimPopupWindow.isShowing()) {
-                        scrimPopupWindow.dismiss();
-                    }
-                }
-                return false;
-            }
-        });
-        popupLayout.setDispatchKeyEventListener(keyEvent -> {
-            if (keyEvent.getKeyCode() == KeyEvent.KEYCODE_BACK && keyEvent.getRepeatCount() == 0 && scrimPopupWindow != null && scrimPopupWindow.isShowing()) {
-                scrimPopupWindow.dismiss();
-            }
-        });
-        Rect backgroundPaddings = new Rect();
-        Drawable shadowDrawable = getParentActivity().getResources().getDrawable(R.drawable.popup_fixed_alert).mutate();
-        shadowDrawable.getPadding(backgroundPaddings);
-        popupLayout.setBackgroundDrawable(shadowDrawable);
-        popupLayout.setBackgroundColor(Theme.getColor(Theme.key_actionBarDefaultSubmenuBackground));
-
-        LinearLayout linearLayout = new LinearLayout(getParentActivity());
-        ScrollView scrollView;
-        if (Build.VERSION.SDK_INT >= 21) {
-            scrollView = new ScrollView(getParentActivity(), null, 0, R.style.scrollbarShapeStyle) {
-                @Override
-                protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                    super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                    setMeasuredDimension(linearLayout.getMeasuredWidth(), getMeasuredHeight());
-                }
-            };
-        } else {
-            scrollView = new ScrollView(getParentActivity());
-        }
-        scrollView.setClipToPadding(false);
-        popupLayout.addView(scrollView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
-
-        linearLayout.setMinimumWidth(AndroidUtilities.dp(200));
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-
-        int length = Utils.getStatuses().length;
-        scrimPopupWindowItems = new ActionBarMenuSubItem[length];
-        for (int a = 0, N = length; a < N; a++) {
-            ActionBarMenuSubItem cell = new ActionBarMenuSubItem(getParentActivity(), a == 0, a == N - 1);
-            cell.setTextAndIcon(Utils.getStatuses()[a], 0);
-            scrimPopupWindowItems[a] = cell;
-            linearLayout.addView(cell);
-            final int i = a;
-            cell.setOnClickListener(v1 -> {
-                // status selected update task TODO
-                // Toast.makeText(getParentActivity(),Utils.getStatuses()[i],Toast.LENGTH_SHORT).show();
-                if (scrimPopupWindow != null) {
-                    scrimPopupWindow.dismiss();
-                }
-            });
-        }
-        scrollView.addView(linearLayout, LayoutHelper.createScroll(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP));
-        scrimPopupWindow = new ActionBarPopupWindow(popupLayout, LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT) {
-            @Override
-            public void dismiss() {
-                super.dismiss();
-                if (scrimPopupWindow != this) {
-                    return;
-                }
-                scrimPopupWindow = null;
-                scrimPopupWindowItems = null;
-                if (scrimAnimatorSet != null) {
-                    scrimAnimatorSet.cancel();
-                    scrimAnimatorSet = null;
-                }
-                if (scrimView instanceof ChatMessageCell) {
-                    ChatMessageCell cell = (ChatMessageCell) scrimView;
-                    cell.setInvalidatesParent(false);
-                }
-                chatLayoutManager.setCanScrollVertically(true);
-                scrimAnimatorSet = new AnimatorSet();
-                ArrayList<Animator> animators = new ArrayList<>();
-                animators.add(ObjectAnimator.ofInt(scrimPaint, AnimationProperties.PAINT_ALPHA, 0));
-                if (pagedownButton.getTag() != null) {
-                    animators.add(ObjectAnimator.ofFloat(pagedownButton, View.ALPHA, 1.0f));
-                }
-                if (mentiondownButton.getTag() != null) {
-                    animators.add(ObjectAnimator.ofFloat(mentiondownButton, View.ALPHA, 1.0f));
-                }
-                scrimAnimatorSet.playTogether(animators);
-                scrimAnimatorSet.setDuration(220);
-                scrimAnimatorSet.addListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        scrimView = null;
-                        contentView.invalidate();
-                        chatListView.invalidate();
-                    }
-                });
-                scrimAnimatorSet.start();
-                if (chatActivityEnterView != null) {
-                    chatActivityEnterView.getEditField().setAllowDrawCursor(true);
-                }
-            }
-        };
-        scrimPopupWindow.setPauseNotifications(true);
-        scrimPopupWindow.setDismissAnimationDuration(220);
-        scrimPopupWindow.setOutsideTouchable(true);
-        scrimPopupWindow.setClippingEnabled(true);
-        scrimPopupWindow.setAnimationStyle(R.style.PopupContextAnimation);
-        scrimPopupWindow.setFocusable(true);
-        popupLayout.measure(View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(1000), View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(1000), View.MeasureSpec.AT_MOST));
-        scrimPopupWindow.setInputMethodMode(ActionBarPopupWindow.INPUT_METHOD_NOT_NEEDED);
-        scrimPopupWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED);
-        scrimPopupWindow.getContentView().setFocusableInTouchMode(true);
-        int popupX = (int) x - popupLayout.getMeasuredWidth() + backgroundPaddings.left - AndroidUtilities.dp(28);
-        if (popupX < AndroidUtilities.dp(6)) {
-            popupX = AndroidUtilities.dp(6);
-        } else if (popupX > chatListView.getMeasuredWidth() - AndroidUtilities.dp(6) - popupLayout.getMeasuredWidth()) {
-            popupX = chatListView.getMeasuredWidth() - AndroidUtilities.dp(6) - popupLayout.getMeasuredWidth();
-        }
-        if (AndroidUtilities.isTablet()) {
-            int[] location = new int[2];
-            fragmentView.getLocationInWindow(location);
-            popupX += location[0];
-        }
-        int totalHeight = contentView.getHeight();
-        int height = popupLayout.getMeasuredHeight();
-        int keyboardHeight = contentView.measureKeyboardHeight();
-        if (keyboardHeight > AndroidUtilities.dp(20)) {
-            totalHeight += keyboardHeight;
-        }
-        int popupY;
-        if (height < totalHeight) {
-            popupY = (int) (chatListView.getY() + y);
-            if (height - backgroundPaddings.top - backgroundPaddings.bottom > AndroidUtilities.dp(240)) {
-                popupY += AndroidUtilities.dp(240) - height;
-            }
-            if (popupY < chatListView.getY() + AndroidUtilities.dp(24)) {
-                popupY = (int) (chatListView.getY() + AndroidUtilities.dp(24));
-            } else if (popupY > totalHeight - height - AndroidUtilities.dp(8)) {
-                popupY = totalHeight - height - AndroidUtilities.dp(8);
-            }
-        } else {
-            popupY = inBubbleMode ? 0 : AndroidUtilities.statusBarHeight;
-        }
-        scrimPopupWindow.showAtLocation(chatListView, Gravity.LEFT | Gravity.TOP, popupX, popupY);
-        chatListView.stopScroll();
-        chatLayoutManager.setCanScrollVertically(false);
-
-        contentView.invalidate();
-        chatListView.invalidate();
-        if (scrimAnimatorSet != null) {
-            scrimAnimatorSet.cancel();
-        }
-        scrimAnimatorSet = new AnimatorSet();
-        ArrayList<Animator> animators = new ArrayList<>();
-        animators.add(ObjectAnimator.ofInt(scrimPaint, AnimationProperties.PAINT_ALPHA, 0, 50));
-        if (pagedownButton.getTag() != null) {
-            animators.add(ObjectAnimator.ofFloat(pagedownButton, View.ALPHA, 0));
-        }
-        if (mentiondownButton.getTag() != null) {
-            animators.add(ObjectAnimator.ofFloat(mentiondownButton, View.ALPHA, 0));
-        }
-        scrimAnimatorSet.playTogether(animators);
-        scrimAnimatorSet.setDuration(150);
-        scrimAnimatorSet.start();
-        hideHints(false);
-        if (topUndoView != null) {
-            topUndoView.hide(true, 1);
-        }
-        if (undoView != null) {
-            undoView.hide(true, 1);
-        }
-        if (chatActivityEnterView != null) {
-            chatActivityEnterView.getEditField().setAllowDrawCursor(false);
-        }
-
-        final ActionBarMenu actionMode = actionBar.createActionMode();
-        View item = actionMode.getItem(delete);
-        if (item != null) {
-            item.setVisibility(View.VISIBLE);
-        }
-        bottomMessagesActionContainer.setVisibility(View.VISIBLE);
-    }
-
     private void startEditingMessageObject(MessageObject messageObject) {
         if (messageObject == null || getParentActivity() == null) {
             return;
@@ -21745,17 +21657,23 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     IRoomsManager.getInstance().getCompany(getParentActivity(), companyId, new IRoomsManager.IRoomCallback<Company>() {
                         @Override
                         public void onSuccess(Company company) {
-                            selectedCompany = company;
+                            try {
 
-                            if (company == null) {
-                                Toast.makeText(getParentActivity(), "Team null", Toast.LENGTH_SHORT).show();
-                                selectedCompany = new Company();
-                                // return;
+                                selectedCompany = company;
+
+                                if (company == null) {
+                                    Toast.makeText(getParentActivity(), "Team null", Toast.LENGTH_SHORT).show();
+                                    selectedCompany = new Company();
+                                    // return;
+                                }
+
+                                final int messageId = selectedObject.getId();
+                                final int senderId = selectedObject.getSenderId();
+                                createTask(getSelectedUser(), selectedObject.messageText.toString(), selectedObject.getChatId() == 0 ? dialog_id : selectedObject.getChatId(), messageId, senderId);
+
+                            } catch (Exception x) {
+
                             }
-
-                            final int messageId = selectedObject.getId();
-                            final int senderId = selectedObject.getSenderId();
-                            createTask(getSelectedUser(), selectedObject.messageText.toString(), selectedObject.getChatId() == 0 ? dialog_id : selectedObject.getChatId(), messageId, senderId);
                         }
 
                         @Override
@@ -23023,7 +22941,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         return swipeBackEnabled;
     }
 
-    private String getDeadLine(String date) {
+    protected String getDeadLine(String date) {
         if (date == null || date.equals("null") || date.equals("")) {
             return "";
         }
@@ -23036,7 +22954,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         return TaskUtil.getFormattedStringFromISO(date);
     }
 
-    private void setStatus(int statusCode, CheckBox checkbox, TextView statusText, ImageView arrow) {
+    protected void setStatus(int statusCode, CheckBox checkbox, TextView statusText, ImageView arrow) {
         int color = Utils.getColor(statusCode);
         ColorStateList colorStateList = new ColorStateList(
                 new int[][]{
@@ -23092,7 +23010,16 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         task.setReceivers(receiverIds);
         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-        RoomsRepository.getInstance((Application) getParentActivity().getApplicationContext(), user.phone).updateLocalTask(task);
+        repository.updateLocalTask(task);
+    }
+
+    private void presentDiscussionFragment(Task task) {
+        Bundle bundle = new Bundle();
+        bundle.putInt("chat_id", (int) Math.abs(dialog_id));
+        bundle.putParcelable("task", task);
+
+        chatActivityDiscussion = new ChatActivityDiscussion(bundle);
+        presentFragment(chatActivityDiscussion, false);
     }
 
     public class ChatActivityAdapter extends RecyclerAnimationScrollHelper.AnimatableAdapter {
@@ -23979,7 +23906,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                 if (!isChannel()) {
                     if (holder.getItemViewType() == Constants.OWNER_TASK) {
-
+                        holder.setIsRecyclable(false);
                         String taskIdentificationPart = message.messageText.subSequence(0, message.messageText.toString().indexOf('\n')).toString();
 
                         if (taskIdentificationPart.contains("Task #")) {
@@ -24009,8 +23936,27 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     }
                                 }
                                 if (taskItem != null) {
+
+                                    Task finalTaskItem = taskItem;
+                                    Task finalTaskItem1 = taskItem;
                                     taskItem.setMessageId(message.getId());
                                     RightTaskLayoutBinding layout = RightTaskLayoutBinding.bind(holder.itemView);
+                                    CommentsLayoutBinding commentsLayout = layout.comments;
+                                    if (taskItem.getCompany_id() != 0) {
+                                        commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                                        int size = taskItem.getComments_count();
+
+                                        commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+
+                                        commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                presentDiscussionFragment(finalTaskItem);
+                                            }
+                                        });
+                                    } else {
+                                        commentsLayout.getRoot().setVisibility(View.GONE);
+                                    }
 
                                     if (!message.isSent() && ((LaunchActivity) getParentActivity()).getmSocket().connected()) {
                                         if (message.type == 0 || message.type == 20) {
@@ -24024,12 +23970,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     } else {
                                         layout.msgUnsent.setVisibility(View.GONE);
                                     }
-//                                    layout.commentsThread.setOnClickListener(new View.OnClickListener() {
-//                                        @Override
-//                                        public void onClick(View v) {
-//                                            presentFragment(new ChatActivity(new Bundle()));
-//                                        }
-//                                    });
                                     String teamName = LocaleController.getInstance().getRoomsString("no_team");
                                     Company selectedCompany = null;
                                     if (taskItem.getCompanyId() != 0) {
@@ -24057,8 +23997,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     }
                                     layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
 
-                                    Task finalTaskItem = taskItem;
-                                    Task finalTaskItem1 = taskItem;
                                     Company finalSelectedCompany = selectedCompany;
                                     layout.tlTaskedit.setOnClickListener(view -> {
                                         ArrayList userList = getTaskMemberList();
@@ -24149,6 +24087,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             }
                         }
                     } else if (holder.getItemViewType() == Constants.OTHERS_TASK) {
+                        holder.setIsRecyclable(false);
 
                         String taskIdentificationPart = message.messageText.subSequence(0, message.messageText.toString().indexOf('\n')).toString();
 
@@ -24181,6 +24120,35 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                                     return;
                                 }
+                                Task finalTaskItem = taskItem;
+                                Task finalTaskItem1 = taskItem;
+                                CommentsLayoutBinding commentsLayout = layout.comments;
+
+                                if (taskItem.getCompany_id() != 0) {
+                                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                                    commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
+
+//                                    if (taskMessageList.containsKey(finalTaskItem.getId())) {
+//                                        if (taskMessageList.containsKey(finalTaskItem.getId())) {
+//                                            int size = taskMessageList.get(finalTaskItem.getId()).size();
+//
+//                                            if (size != 0 && taskMessageList.get(finalTaskItem.getId()).get(0).isHasTask()) {
+//                                                size -= 1;
+//                                            }
+//                                            commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+//                                        }
+//                                    } else {
+//                                        loadTaskMessages(taskItem.getId());
+//                                    }
+                                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            presentDiscussionFragment(finalTaskItem);
+                                        }
+                                    });
+                                } else {
+                                    commentsLayout.getRoot().setVisibility(View.GONE);
+                                }
                                 if (taskItem.getMembers().size() == 0) {
                                     layout.taskArrow.setVisibility(View.INVISIBLE);
                                 } else {
@@ -24209,8 +24177,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 } else {
                                     layout.iconDeadline.setVisibility(View.VISIBLE);
                                 }
-                                Task finalTaskItem = taskItem;
-                                Task finalTaskItem1 = taskItem;
+
                                 Company finalSelectedCompany = selectedCompany;
                                 layout.tlTaskedit.setOnClickListener(view -> {
                                     ArrayList userList = getTaskMemberList();
@@ -24299,6 +24266,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             }
                         }
                     } else if (holder.getItemViewType() == Constants.PRIVATE_CHAT_TASK) {
+                        holder.setIsRecyclable(false);
 
                         String taskIdentificationPart = message.messageText.subSequence(0, message.messageText.toString().indexOf('\n')).toString();
 
@@ -24351,6 +24319,33 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.teamTitle.setText(teamName);
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
+                                    CommentsLayoutBinding commentsLayout = layout.comments;
+
+                                    if (taskItem.getCompany_id() != 0) {
+                                        commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                                        commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
+
+//                                        if (taskMessageList.containsKey(finalTaskItem.getId())) {
+//                                            if (taskMessageList.containsKey(finalTaskItem.getId())) {
+//                                                int size = taskMessageList.get(finalTaskItem.getId()).size();
+//
+//                                                if (size != 0 && taskMessageList.get(finalTaskItem.getId()).get(0).isHasTask()) {
+//                                                    size -= 1;
+//                                                }
+//                                                commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+//                                            }
+//                                        } else {
+//                                            loadTaskMessages(taskItem.getId());
+//                                        }
+                                        commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View v) {
+                                                presentDiscussionFragment(finalTaskItem);
+                                            }
+                                        });
+                                    } else {
+                                        commentsLayout.getRoot().setVisibility(View.GONE);
+                                    }
                                     Company finalSelectedCompany = selectedCompany;
                                     layout.tlTaskedit.setOnClickListener(view -> {
                                         ArrayList userList = getTaskMemberList();
@@ -24410,23 +24405,17 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                             finalTaskItem1.setStatus(Utils.getStatuses()[Constants.DONE]);
                                             finalTaskItem1.setLocalStatus(2);
                                             setStatus(Constants.DONE, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-                                            updateLocalTask(finalTaskItem1);
-                                            if (isChatMode) {
-                                                chatAdapter.notifyDataSetChanged();
-                                            } else {
-                                                taskAdapter.notifyDataSetChanged();
-                                            }
                                         } else {
                                             finalTaskItem1.setStatus_code(Constants.TODO);
                                             finalTaskItem1.setStatus(Utils.getStatuses()[Constants.TODO]);
                                             finalTaskItem1.setLocalStatus(2);
                                             setStatus(Constants.TODO, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-                                            updateLocalTask(finalTaskItem1);
-                                            if (isChatMode) {
-                                                chatAdapter.notifyDataSetChanged();
-                                            } else {
-                                                taskAdapter.notifyDataSetChanged();
-                                            }
+                                        }
+                                        updateLocalTask(finalTaskItem1);
+                                        if (isChatMode) {
+                                            chatAdapter.notifyDataSetChanged();
+                                        } else {
+                                            taskAdapter.notifyDataSetChanged();
                                         }
                                     });
 
@@ -25127,11 +25116,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
 
             if (i != -1) {
-                if (chatInfo == null) {
-                    sortedList = (ArrayList<Task>) sortedList.stream().filter(task -> task.getStatus_code() == i).collect(Collectors.toList());
-                } else {
-                    sortedList = (ArrayList<Task>) sortedList.stream().filter(task -> task.getStatus_code() == i).collect(Collectors.toList());
-                }
+                sortedList = (ArrayList<Task>) sortedList.stream().filter(task -> task.getStatus_code() == i).collect(Collectors.toList());
+            } else {
+                sortedList = (ArrayList<Task>) sortedList.stream().filter(task -> task.getStatus_code() != 3).collect(Collectors.toList());
             }
             AndroidUtilities.runOnUIThread(this::notifyDataSetChanged);
         }
@@ -25142,6 +25129,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 if (task1 != null && task1.size() > 0) {
                     sortedList.removeAll(task1);
                 }
+            }
+            if (currentSort == -1 && task.getStatus_code() == 3) {
+                AndroidUtilities.runOnUIThread(this::notifyDataSetChanged);
+                return;
             }
             if (currentSort == -1 || task.getStatus_code() == currentSort) {
                 sortedList.add(task);
@@ -25180,7 +25171,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             } else {
                 Collections.sort(sortedList, (o1, o2) -> TaskUtil.getDateFromISO(o1.getUpdated_at()).after(TaskUtil.getDateFromISO(o2.getUpdated_at())) ? 1 : -1);
             }
-
         }
 
         // Create new views (invoked by the layout manager)
@@ -25323,6 +25313,32 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 layout.tlStatusArrow.setOnClickListener(v -> {
                     showStatusSelectPopup(taskItem, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
                 });
+
+                CommentsLayoutBinding commentsLayout = layout.comments;
+                if (taskItem.getCompany_id() != 0) {
+                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                    int size = taskItem.getComments_count();
+//                    if (taskMessageList.containsKey(taskItem.getId())) {
+//                        size = taskMessageList.get(taskItem.getId()).size();
+//
+//                        if (size != 0 && taskMessageList.get(taskItem.getId()).get(0).isHasTask()) {
+//                            size -= 1;
+//                        }
+//                    } else {
+//                        loadTaskMessages(taskItem.getId());
+//                    }
+                    commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+
+                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            presentDiscussionFragment(taskItem);
+                        }
+                    });
+                } else {
+                    commentsLayout.getRoot().setVisibility(View.GONE);
+                }
+
             }
         }
 

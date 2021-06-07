@@ -129,6 +129,10 @@ import java.util.List;
 import java.util.Locale;
 
 public class ChatActivityEnterView extends FrameLayout implements NotificationCenter.NotificationCenterDelegate, SizeNotifierFrameLayout.SizeNotifierFrameLayoutDelegate, StickersAlert.StickersAlertDelegate {
+    private boolean editingTaskMessage = false;
+    public void setEditingTaskMessage(boolean b) {
+        editingTaskMessage=b;
+    }
 
     public interface ChatActivityEnterViewDelegate {
         void onMessageSend(CharSequence message, boolean notify, int scheduleDate);
@@ -336,7 +340,16 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
     private ImageView attachButton;
     private ImageView botButton;
     private ImageView addTaskButton;
-    private ReplaceableIconDrawable addTaskButtonDrawablel;
+
+    public interface TaskDiscussionListener {
+        void onMessageSent(String text);
+    }
+
+    private TaskDiscussionListener taskDiscussionListener;
+
+    public void setTaskDiscussionListener(TaskDiscussionListener ls) {
+        this.taskDiscussionListener = ls;
+    }
 
     private LinearLayout textFieldContainer;
     private FrameLayout sendButtonContainer;
@@ -451,7 +464,7 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
     private boolean clearBotButtonsOnKeyboardOpen;
     private boolean expandStickersWithKeyboard;
     private float doneButtonEnabledProgress = 1f;
-    private final Drawable doneCheckDrawable;
+    private Drawable doneCheckDrawable;
     boolean doneButtonEnabled = true;
     private ValueAnimator doneButtonColorAnimator;
 
@@ -1399,7 +1412,7 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
             }
             drawingCircleRadius = radius;
         }
-        
+
         public void drawIcon(Canvas canvas, int cx, int cy, float alpha) {
             Drawable drawable;
             Drawable replaceDrawable = null;
@@ -1600,10 +1613,18 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
             }
         }
     }
-
+    public ChatActivityEnterView(Activity context, SizeNotifierFrameLayout parent, ChatActivity fragment, final boolean isChat,TaskDiscussionListener ls) {
+        super(context);
+        this.taskDiscussionListener=ls;
+        initChatActivityEnterView(context,parent,fragment,isChat);
+    }
     @SuppressLint("ClickableViewAccessibility")
     public ChatActivityEnterView(Activity context, SizeNotifierFrameLayout parent, ChatActivity fragment, final boolean isChat) {
         super(context);
+        initChatActivityEnterView(context,parent,fragment,isChat);
+    }
+
+    private void initChatActivityEnterView(Activity context, SizeNotifierFrameLayout parent, ChatActivity fragment, final boolean isChat) {
 
         smoothKeyboard = isChat && SharedConfig.smoothKeyboard && !AndroidUtilities.isInMultiwindow && (fragment == null || !fragment.isInBubbleMode());
         dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -2170,21 +2191,24 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
                 }
             });
             //-------
-            addTaskButton = new ImageView(context);
-            addTaskButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
-            addTaskButton.setImageResource(R.drawable.ic_plus_2);
-            addTaskButton.setScaleType(ImageView.ScaleType.CENTER);
-            if (Build.VERSION.SDK_INT >= 21) {
-                addTaskButton.setBackgroundDrawable(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector)));
-            }
-            attachLayout.addView(addTaskButton, LayoutHelper.createLinear(48, 48));
-            addTaskButton.setOnClickListener(v -> {
-                if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
-                    return;
+            if (taskDiscussionListener==null){
+                addTaskButton = new ImageView(context);
+                addTaskButton.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+                addTaskButton.setImageResource(R.drawable.ic_plus_2);
+                addTaskButton.setScaleType(ImageView.ScaleType.CENTER);
+                if (Build.VERSION.SDK_INT >= 21) {
+                    addTaskButton.setBackgroundDrawable(Theme.createSelectorDrawable(Theme.getColor(Theme.key_listSelector)));
                 }
-                delegate.didPressAddTaskButton();
-            });
-            addTaskButton.setContentDescription("Add task");
+                attachLayout.addView(addTaskButton, LayoutHelper.createLinear(48, 48));
+                addTaskButton.setOnClickListener(v -> {
+                    if (adjustPanLayoutHelper != null && adjustPanLayoutHelper.animationInProgress()) {
+                        return;
+                    }
+                    delegate.didPressAddTaskButton();
+                });
+                addTaskButton.setContentDescription("Add task");
+
+            }
 
             //---------------------4
 
@@ -2726,28 +2750,31 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
         }
         sendButtonContainer.addView(expandStickersButton, LayoutHelper.createFrame(48, 48));
         expandStickersButton.setOnClickListener(v -> {
-            if (expandStickersButton.getVisibility() != VISIBLE || expandStickersButton.getAlpha() != 1.0f || waitingForKeyboardOpen || (keyboardVisible && messageEditText.isFocused())) {
-                return;
-            }
-            if (stickersExpanded) {
-                if (searchingType != 0) {
-                    searchingType = 0;
-                    emojiView.closeSearch(true);
-                    emojiView.hideSearchKeyboard();
-                    if (emojiTabOpen) {
-                        checkSendButton(true);
+            try{
+                if (expandStickersButton.getVisibility() != VISIBLE || expandStickersButton.getAlpha() != 1.0f || waitingForKeyboardOpen || (keyboardVisible && messageEditText.isFocused())) {
+                    return;
+                }
+                if (stickersExpanded) {
+                    if (searchingType != 0) {
+                        searchingType = 0;
+                        emojiView.closeSearch(true);
+                        emojiView.hideSearchKeyboard();
+                        if (emojiTabOpen) {
+                            checkSendButton(true);
+                        }
+                    } else if (!stickersDragging) {
+                        if (emojiView != null) {
+                            emojiView.showSearchField(false);
+                        }
                     }
                 } else if (!stickersDragging) {
-                    if (emojiView != null) {
-                        emojiView.showSearchField(false);
-                    }
+                    emojiView.showSearchField(true);
                 }
-            } else if (!stickersDragging) {
-                emojiView.showSearchField(true);
-            }
-            if (!stickersDragging) {
-                setStickersExpanded(!stickersExpanded, true, false);
-            }
+                if (!stickersDragging) {
+                    setStickersExpanded(!stickersExpanded, true, false);
+                }
+            }catch (Exception x){}
+
         });
         expandStickersButton.setContentDescription(LocaleController.getString("AccDescrExpandPanel", R.string.AccDescrExpandPanel));
 
@@ -3847,6 +3874,11 @@ public class ChatActivityEnterView extends FrameLayout implements NotificationCe
     }
 
     private void sendMessage() {
+        if (taskDiscussionListener!=null){
+            taskDiscussionListener.onMessageSent(messageEditText.getText().toString());
+            messageEditText.setText("");
+            return;
+        }
         if (isInScheduleMode()) {
             AlertsCreator.createScheduleDatePickerDialog(parentActivity, parentFragment.getDialogId(), this::sendMessageInternal);
         } else {
