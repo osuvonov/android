@@ -188,7 +188,6 @@ public class IRoomsManager {
                         Task myTask = IRoomJsonParser.getTask(response, false);
 
                         if (myTask != null) {
-
                             String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
                             RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
                             myTask.setLocalStatus(3);

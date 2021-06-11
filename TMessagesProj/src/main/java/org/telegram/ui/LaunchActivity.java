@@ -686,7 +686,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                         String fullUrl = "https://irooms.io";
                                         TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
                                         entityWeb.offset = message.indexOf("irooms.io");
-                                        entityWeb.length = fullUrl.length();
+                                        entityWeb.length = 9;
                                         entityWeb.url = fullUrl;
 
                                         entities.add(entityWeb);
@@ -761,7 +761,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         String fullUrl = "https://irooms.io";
         TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
         entityWeb.offset = message.indexOf("irooms.io");
-        entityWeb.length = fullUrl.length();
+        entityWeb.length = 9;
         entityWeb.url = fullUrl;
 
         entities.add(entityWeb);
@@ -791,7 +791,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 //                    TLRPC.TL_messageEntityMentionName entityUser = new TLRPC.TL_messageEntityMentionName();
 //                    entityUser.user_id = task.getMembers().get(i);
 //
-//                    TLRPC.User user = getMessagesController().getUser(task.getMembers().get(i));
+//                    TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(task.getMembers().get(i));
 //                    if (user != null) {
 //                        String userName = user.username != null ? ("@" + user.username) : (user.first_name != null ? user.first_name : user.last_name);
 //                        if (userName == null || "".equals(userName)) {

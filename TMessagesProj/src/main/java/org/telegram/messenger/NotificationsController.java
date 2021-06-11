@@ -3715,14 +3715,6 @@ public class NotificationsController extends BaseController {
     }
 
     public void showTaskNotification(long taskId, int chatId, String title, String body, int color) {
-        Task task = null;
-        try {
-            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-
-            RoomsRepository repository = RoomsRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext(), user.phone);
-            task = repository.getTask(taskId);
-        } catch (Exception x) {
-        }
 
         Intent intent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
         intent.setAction("com.tmessages.openchat" + Math.random() + Integer.MAX_VALUE);
@@ -3738,19 +3730,23 @@ public class NotificationsController extends BaseController {
         PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         SpannableStringBuilder builder = new SpannableStringBuilder();
-
+        String channelId= channel;
         SpannableString coloredTitle = new SpannableString(title);
         switch (color) {
             case -1:    // new message comment
+                channelId=taskChannel;
                 createNotificationChannel(TASK_CHANNEL);
                 coloredTitle.setSpan(new ForegroundColorSpan(Color.parseColor("#ff348bc1")), 0, title.length(), 0);
 
                 break;
             case -2:    // reminder
                 createNotificationChannel(REMINDER_CHANNEL);
+                channelId=reminderChannel;
                 coloredTitle.setSpan(new ForegroundColorSpan(Color.parseColor("#fff28c48")), 0, title.length(), 0);
                 break;
             default:
+                channelId=taskChannel;
+                createNotificationChannel(TASK_CHANNEL);
                 coloredTitle.setSpan(new ForegroundColorSpan(color), 0, title.length(), 0);
 
                 break;
@@ -3762,6 +3758,7 @@ public class NotificationsController extends BaseController {
                 .setContentTitle(builder)
                 .setSmallIcon(R.drawable.ic_notification_rooms)
                 .setAutoCancel(true)
+                .setChannelId(channelId)
                 .setContentText(body)
                 .setNumber(total_unread_count)
                 .setStyle(new NotificationCompat.BigTextStyle()
@@ -3783,71 +3780,6 @@ public class NotificationsController extends BaseController {
         NotificationManagerCompat compat = NotificationManagerCompat.from(ApplicationLoader.applicationContext);
         compat.notify((int) taskId, mBuilder.build());
 
-    }
-
-    public void showReminderNotification(int taskId, String title, String body) {
-
-        Task task = null;
-        try {
-            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-
-            RoomsRepository repository = RoomsRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext(), user.phone);
-            task = repository.getTask(taskId);
-        } catch (Exception x) {
-        }
-
-        Intent intent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
-        intent.setAction("com.tmessages.openchat" + Math.random() + Integer.MAX_VALUE);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
-        intent.putExtra("currentAccount", currentAccount);
-        if (task != null) {
-            intent.putExtra("chatId", task.getChatId());
-            intent.putExtra("userId", task.getCreator_id());
-        }
-        intent.putExtra("currentAccount", currentAccount);
-
-        PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext,
-                0, intent, PendingIntent.FLAG_ONE_SHOT);
-
-//        RemoteViews customView = new RemoteViews(ApplicationLoader.applicationContext.getPackageName(),
-//                R.layout.collapsed);
-//        customView.setTextViewText(R.id.content_title, title);
-//        customView.setTextViewText(R.id.content_text, body);
-        SpannableStringBuilder builder = new SpannableStringBuilder();
-
-        SpannableString yellowSpan = new SpannableString(title);
-        yellowSpan.setSpan(new ForegroundColorSpan(Color.parseColor("#fff28c48")), 0, title.length(), 0);
-        builder.append(yellowSpan);
-
-        Intent dismissIntent = new Intent(ApplicationLoader.applicationContext, NotificationDismissReceiver.class);
-        dismissIntent.putExtra("currentAccount", currentAccount);
-
-        Notification notification = new NotificationCompat.Builder(ApplicationLoader.applicationContext, channel)
-                .setContentTitle(builder)
-//                .setCustomContentView(customView)
-                // .setCustomBigContentView(customView)
-                .setSmallIcon(R.drawable.ic_notification_rooms)
-                .setAutoCancel(true)
-                .setContentText(body)
-                .setNumber(total_unread_count)
-                .setContentIntent(contentIntent)
-                .setGroup(notificationGroupReminder)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setGroupSummary(true)
-                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
-                .setShowWhen(true)
-                .setColor(0xff11acfa)
-                .setColorized(true)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setDeleteIntent(PendingIntent.getBroadcast(ApplicationLoader.applicationContext, 1, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT))
-                .build();
-
-        createNotificationChannel(REMINDER_CHANNEL);
-
-        NotificationManagerCompat compat = NotificationManagerCompat.from(ApplicationLoader.applicationContext);
-        compat.notify(taskId, notification);
     }
 
     String channel = "rooms_channel";

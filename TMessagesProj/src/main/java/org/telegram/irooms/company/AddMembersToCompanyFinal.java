@@ -408,7 +408,7 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
 
 
         editText = new EditTextEmoji(context, sizeNotifierFrameLayout, this, EditTextEmoji.STYLE_FRAGMENT);
-        editText.setHint("Enter company name");
+        editText.setHint(LocaleController.getInstance().getRoomsString("enter_team"));
         if (nameToSet != null) {
             editText.setText(nameToSet);
             nameToSet = null;
@@ -524,10 +524,43 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                                         public void onSuccess(String success) {
                                             try {
                                                 ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
-                                                String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
+
+                                                String message = "Вас добавили в команду " + companyName +
+                                                        ". Пройдите по ссылке irooms.io или скачайте (iOS, Android) приложение.";
+
+                                                ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
+
+                                                if (companyName!=null){
+                                                    TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
+                                                    entityTeam.offset =message.indexOf(companyName);
+                                                    entityTeam.length = companyName.length();
+
+                                                    entities.add(entityTeam);
+                                                }
+
+                                                String fullUrl = "https://irooms.io";
+                                                TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
+                                                entityWeb.offset = message.indexOf("irooms.io");
+                                                entityWeb.length = 9;
+                                                entityWeb.url = fullUrl;
+
+                                                entities.add(entityWeb);
+                                                TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
+                                                entityIOS.offset = message.indexOf("iOS");
+                                                entityIOS.length = 3;
+                                                entityIOS.url = "https://apps.apple.com/us/app/rooms-io/id1549819018";
+
+                                                entities.add(entityIOS);
+
+                                                TLRPC.MessageEntity entityAndroid = new TLRPC.TL_messageEntityTextUrl();
+                                                entityAndroid.offset = message.indexOf("Android");
+                                                entityAndroid.length = 7;
+                                                entityAndroid.url = "https://play.google.com/store/apps/details?id=org.rooms.messenger";
+
+                                                entities.add(entityAndroid);
 
                                                 for (Integer integer : members) {
-                                                    SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                                    SendMessagesHelper.getInstance(currentAccount).sendMessage(message, integer, null, null, null, false, entities, null, null, true, 0);
                                                 }
                                                 Toast.makeText(activity, LocaleController.getInstance().getRoomsString("team_added"), Toast.LENGTH_SHORT).show();
 
@@ -579,13 +612,47 @@ public class AddMembersToCompanyFinal extends BaseFragment implements Notificati
                         @Override
                         public void onSuccess(String success) {
                             try {
-                                ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
-                                String inviteMessage = "Вас добавили в команду " + companyName + ". Пройдите по ссылке https://irooms.io или скачайте приложение на https://play.google.com/store/apps/details?id=org.rooms.messenger.";
+                                 ArrayList<Integer> members = IRoomJsonParser.getAddedMembersToTeam(success);
+
+                                String message = "Вас добавили в команду " + companyName +
+                                        ". Пройдите по ссылке irooms.io или скачайте (iOS, Android) приложение.";
+
+                                ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
+
+                                if (companyName!=null){
+                                    TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
+                                    entityTeam.offset =message.indexOf(companyName);
+                                    entityTeam.length = companyName.length();
+
+                                    entities.add(entityTeam);
+                                }
+
+
+                                String fullUrl = "https://irooms.io";
+                                TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
+                                entityWeb.offset = message.indexOf("irooms.io");
+                                entityWeb.length = 9;
+                                entityWeb.url = fullUrl;
+
+                                entities.add(entityWeb);
+                                TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
+                                entityIOS.offset = message.indexOf("iOS");
+                                entityIOS.length = 3;
+                                entityIOS.url = "https://apps.apple.com/us/app/rooms-io/id1549819018";
+
+                                entities.add(entityIOS);
+
+                                TLRPC.MessageEntity entityAndroid = new TLRPC.TL_messageEntityTextUrl();
+                                entityAndroid.offset = message.indexOf("Android");
+                                entityAndroid.length = 7;
+                                entityAndroid.url = "https://play.google.com/store/apps/details?id=org.rooms.messenger";
+
+                                entities.add(entityAndroid);
 
                                 for (Integer integer : members) {
-                                    SendMessagesHelper.getInstance(currentAccount).sendMessage(inviteMessage, integer, null, null, null, false, null, null, null, true, 0);
+                                    SendMessagesHelper.getInstance(currentAccount).sendMessage(message, integer, null, null, null, false, entities, null, null, true, 0);
                                 }
-                                Toast.makeText(getParentActivity(), "Выбранные участники добавлены в команду", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(activity, LocaleController.getInstance().getRoomsString("team_added"), Toast.LENGTH_SHORT).show();
                                 ArrayList<Company> companies = ((LaunchActivity) activity).getCompanyList();
                                 for (Company company : companies) {
                                     if (company.getId() == companyId) {

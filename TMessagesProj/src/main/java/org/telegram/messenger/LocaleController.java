@@ -1008,6 +1008,8 @@ public class LocaleController {
         englishRoomsMap.put("delete", "Delete");
         englishRoomsMap.put("set_reminder","Set reminder");
         englishRoomsMap.put("reminder","Reminder");
+        englishRoomsMap.put("enter_team","Enter team name");
+
     }
 
     private void inituzRoomsStrings() {
@@ -1066,6 +1068,8 @@ public class LocaleController {
         uzbekRoomsMap.put("delete", "O'chirish");
         uzbekRoomsMap.put("set_reminder","Eslatma qo'yish");
         uzbekRoomsMap.put("reminder","Eslatma");
+        uzbekRoomsMap.put("enter_team","Jamoa nomini kiriting");
+
     }
 
     private void initruRoomsStrings() {
@@ -1123,6 +1127,7 @@ public class LocaleController {
         russianRoomsMap.put("delete", "Удалить");
         russianRoomsMap.put("set_reminder","Установить напоминание");
         russianRoomsMap.put("reminder","Напоминание");
+        russianRoomsMap.put("enter_team","Введите название команды");
     }
 
     public String getRoomsString(String key) {

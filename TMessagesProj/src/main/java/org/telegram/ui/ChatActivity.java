@@ -8048,28 +8048,28 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private void showTaskDialog(LaunchActivity activity, Task task) {
         AndroidUtilities.runOnUIThread(() -> {
             startTaskId = -1;
-            if (openDiscussion) {
+          //  if (openDiscussion) {
                 presentDiscussionFragment(task);
                 openDiscussion = false;
                 return;
-            }
-            bottomSheetTask = AlertsCreator.showTaskDialog(activity, ChatActivity.this, task, getTaskMemberList(), new TaskManagerListener() {
-                @Override
-                public void onCreate(Task task) {
-                }
-
-                @Override
-                public void onUpdate(Task task) {
-                    Task t1 = taskList.stream().filter(t -> t.getId() == task.getId()).findFirst().orElse(null);
-                    if (t1 != null) {
-                        taskList.remove(t1);
-                    }
-                    taskList.add(task);
-                    AndroidUtilities.runOnUIThread(() -> chatListView.getAdapter().notifyDataSetChanged());
-                }
-            });
-
-            showDialog(bottomSheetTask);
+        //    }
+//            bottomSheetTask = AlertsCreator.showTaskDialog(activity, ChatActivity.this, task, getTaskMemberList(), new TaskManagerListener() {
+//                @Override
+//                public void onCreate(Task task) {
+//                }
+//
+//                @Override
+//                public void onUpdate(Task task) {
+//                    Task t1 = taskList.stream().filter(t -> t.getId() == task.getId()).findFirst().orElse(null);
+//                    if (t1 != null) {
+//                        taskList.remove(t1);
+//                    }
+//                    taskList.add(task);
+//                    AndroidUtilities.runOnUIThread(() -> chatListView.getAdapter().notifyDataSetChanged());
+//                }
+//            });
+//
+//            showDialog(bottomSheetTask);
         });
     }
 
@@ -8113,6 +8113,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             showDialog(bottomSheetTask);
 
         } catch (Exception x) {
+            x.printStackTrace();
         }
     }
 
@@ -8121,9 +8122,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         message.append(LocaleController.getInstance().getRoomsString("you_got_task"));
         ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
         try {
+            int start = message.indexOf("@company_name");
+            int end = start + 13;
             if (task.getCompanyId() != 0) {
-                int start = message.indexOf("@company_name");
-                int end = start + 13;
                 Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
                 String teamName = team == null ? "" : " (" + team.getName() + ")";
                 message = message.replace(start, end, teamName);
@@ -8133,8 +8134,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                 entities.add(entityTeam);
             } else {
-                int start = message.indexOf("@company_name");
-                int end = start + 13;
                 String teamName = "";
                 message = message.replace(start, end, teamName);
             }
@@ -8156,11 +8155,35 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             String fullUrl = "https://irooms.io";
             TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
             entityWeb.offset = message.indexOf("irooms.io");
-            entityWeb.length = fullUrl.length();
+            entityWeb.length = 9;
             entityWeb.url = fullUrl;
 
             entities.add(entityWeb);
+//            message.append("\n");
 
+//            if (task.getMembers() != null) {
+//                int offset = message.length();
+//                for (int i = 0; i < task.getMembers().size(); i++) {
+//                    try {
+//                        TLRPC.TL_messageEntityMentionName entityUser = new TLRPC.TL_messageEntityMentionName();
+//                        entityUser.user_id = task.getMembers().get(i);
+//
+//                        TLRPC.User user = getMessagesController().getUser(task.getMembers().get(i));
+//                        if (user != null) {
+//                            String userName = user.username != null ? ("@" + user.username) : (user.first_name != null ? user.first_name : user.last_name);
+//                            if (userName == null || "".equals(userName)) {
+//                                continue;
+//                            }
+//                            message.append(userName).append(" ");
+//                            entityUser.offset = offset-1;
+//                            entityUser.length = userName.length();
+//                            offset = message.length();
+//                            entities.add(entityUser);
+//                        }
+//                    } catch (Exception x) {
+//                    }
+//                }
+//            }
         } catch (Exception x) {
         }
 

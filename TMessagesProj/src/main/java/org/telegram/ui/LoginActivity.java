@@ -917,12 +917,12 @@ public class LoginActivity extends BaseFragment {
         }
     }
 
-    private void needShowProgress(final int reqiestId) {
-        needShowProgress(reqiestId, true);
+    private void needShowProgress(final int requestId) {
+        needShowProgress(requestId, true);
     }
 
-    private void needShowProgress(final int reqiestId, boolean animated) {
-        progressRequestId = reqiestId;
+    private void needShowProgress(final int requestId, boolean animated) {
+        progressRequestId = requestId;
         showEditDoneProgress(true, animated);
     }
 
@@ -3994,7 +3994,6 @@ public class LoginActivity extends BaseFragment {
             privacyView.animate().alpha(0f).setDuration(150).setStartDelay(0).setInterpolator(AndroidUtilities.accelerateInterpolator).start();
         }
     }
-
 
     @Override
     public ArrayList<ThemeDescription> getThemeDescriptions() {

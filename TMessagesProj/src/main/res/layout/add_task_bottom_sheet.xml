@@ -259,6 +259,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="8dp"
+                    android:visibility="gone"
                     android:text="Напоминание"
                     android:textColor="@color/holo_blue_bright"
                     android:textSize="14sp"
@@ -267,6 +268,7 @@
                     app:layout_constraintTop_toBottomOf="@+id/ll_task_deadline" />
 
                 <LinearLayout
+                    android:visibility="gone"
                     android:id="@+id/ll_task_reminder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -168,11 +168,13 @@ public class AlertsCreator {
             for (Company company : companies) {
                 if (company.getId() == companyId[0]) {
                     found = true;
+                    break;
                 }
             }
-            if (!found) {
+            if (found) {
                 bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
                 bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+            } else {
                 companyId[0] = 0;// no team id
                 selectedTeamPositionInList[0] = companies.size() - 1;//no team as selected
             }
@@ -181,6 +183,7 @@ public class AlertsCreator {
         ArrayList<String> teamList2 = new ArrayList<>();
 
         teamList.add(noTeam);
+
         teamList2.add(LocaleController.getInstance().getRoomsString("no_team"));
 
         if (userList.size() == 2 && selectedUser != null) {
@@ -198,10 +201,13 @@ public class AlertsCreator {
                 }
             }
         }
-
+        if (teamList.size() == 1) {
+            companyId[0] = 0;
+        }
         for (int i = 0; i < teamList.size(); i++) {
             if (companyId[0] == teamList.get(i).getId()) {
                 selectedTeamPositionInList[0] = i;
+                break;
             }
         }
 
@@ -410,7 +416,7 @@ public class AlertsCreator {
             bottomSheet.tvLabelReminder.setVisibility(View.GONE);
             bottomSheet.llTaskReminder.setVisibility(View.GONE);
         }
-        bottomSheet.teamSpinner.setText(teamList2.get(selectedTeamPositionInList[0]));
+        bottomSheet.teamSpinner.setText(teamList2.get(selectedTeamPositionInList[0] == -1 ? 0 : selectedTeamPositionInList[0]));
         bottomSheet.teamSpinner.setTextColor(textColor);
         bottomSheet.teamSpinner.setOnClickListener(view -> {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
@@ -419,6 +425,13 @@ public class AlertsCreator {
             builder1.setItems(teamList2.toArray(new CharSequence[teamList2.size()]), (dialog, which) -> {
                 selectedTeamPositionInList[0] = which;
                 companyId[0] = teamList.get(which).getId();
+                if (companyId[0] == 0) {
+                    bottomSheet.tvLabelReminder.setVisibility(View.GONE);
+                    bottomSheet.llTaskReminder.setVisibility(View.GONE);
+                } else {
+                    bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
+                    bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+                }
                 bottomSheet.teamSpinner.setText(teamList2.get(which));
                 dialog.dismiss();
             });
@@ -895,6 +908,10 @@ public class AlertsCreator {
         });
         //-----------------------reminder------------------
 
+        if (task.getCompany_id() > 0) {
+            bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
+            bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+        }
         bottomSheet.btnTaskReminderAdd.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
         bottomSheet.btnTaskReminderDelete.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_recordedVoiceDot), PorterDuff.Mode.MULTIPLY));
         bottomSheet.btnTaskReminderAdd.setOnClickListener(new View.OnClickListener() {
@@ -1092,7 +1109,7 @@ public class AlertsCreator {
         boolean[] checkedItems = new boolean[task.getMembers().size()];
 
         AccountInstance instance = fragment.getAccountInstance();
-         for (int i = 0; i < task.getMembers().size(); i++) {
+        for (int i = 0; i < task.getMembers().size(); i++) {
             String userName = "";
             checkedItems[i] = false;
             TLRPC.User user = instance.getMessagesController().getUser(task.getMembers().get(i));
@@ -1137,7 +1154,8 @@ public class AlertsCreator {
                 selectedUsers.clear();
                 selectedMembers.clear();
                 for (int i1 = 0; i1 < task.getMembers().size(); i1++) {
-                    TLRPC.User user = instance.getMessagesController().getUser(task.getMembers().get(i1));;
+                    TLRPC.User user = instance.getMessagesController().getUser(task.getMembers().get(i1));
+                    ;
 
                     if (user != null && checkedItems[i1]) {
                         selectedMembers.add(user.id);

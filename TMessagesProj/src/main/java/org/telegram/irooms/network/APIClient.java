@@ -194,11 +194,11 @@ public class APIClient {
             if (!socket.connected()) {
                 return;
             }
-            Log.e("makeSocketEmit",postData.toString());
+            Log.e("makeSocketEmit", postData.toString());
             socket.emit(eventName, postData, (Ack) response -> {
                 JSONObject jsonObject;
                 try {
-                    Log.e("makeSocketEmit result",response[0].toString());
+                    Log.e("makeSocketEmit result", response[0].toString());
 
                     jsonObject = new JSONObject(response[0].toString());
                     boolean success = jsonObject.optBoolean("success");
@@ -242,7 +242,7 @@ public class APIClient {
 
     public void createTaskBySocket(Socket socket, Task task, final VolleyCallback callback) {
 
-        JSONObject postData = null;
+        JSONObject postData;
         try {
             String json = new Gson().toJson(task);
             postData = new JSONObject(json);
