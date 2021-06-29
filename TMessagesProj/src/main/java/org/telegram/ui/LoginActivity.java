@@ -18,6 +18,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
@@ -917,12 +918,12 @@ public class LoginActivity extends BaseFragment {
         }
     }
 
-    private void needShowProgress(final int reqiestId) {
-        needShowProgress(reqiestId, true);
+    private void needShowProgress(final int requestId) {
+        needShowProgress(requestId, true);
     }
 
-    private void needShowProgress(final int reqiestId, boolean animated) {
-        progressRequestId = reqiestId;
+    private void needShowProgress(final int requestId, boolean animated) {
+        progressRequestId = requestId;
         showEditDoneProgress(true, animated);
     }
 
@@ -1819,7 +1820,7 @@ public class LoginActivity extends BaseFragment {
         }
     }
 
-    private volatile boolean onceAsked=false;
+ //   private volatile boolean onceAsked=false;
 
     public class LoginActivitySmsView extends SlideView implements NotificationCenter.NotificationCenterDelegate {
 
@@ -1968,6 +1969,7 @@ public class LoginActivity extends BaseFragment {
                 problemText.setText(LocaleController.getString("DidNotGetTheCode", R.string.DidNotGetTheCode));
             }
             addView(problemText, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL | Gravity.TOP));
+
             problemText.setOnClickListener(v -> {
                 if (nextPressed) {
                     return;
@@ -2044,11 +2046,11 @@ public class LoginActivity extends BaseFragment {
         }
 
         private synchronized void resendCode() {
-            if (onceAsked){
-                return;
-            }
-            onceAsked=true;
-            Log.e("resend code","calling or sending sms code");
+//            if (onceAsked){
+//                return;
+//            }
+//            onceAsked=true;
+       //     Log.e("resend code","calling or sending sms code");
             final Bundle params = new Bundle();
             params.putString("phone", phone);
             params.putString("ephone", emailPhone);
@@ -2632,12 +2634,49 @@ public class LoginActivity extends BaseFragment {
                 hintDrawable.setCurrentFrame(0);
             }
             AndroidUtilities.runOnUIThread(() -> {
-                try{
-                    if(!onceAsked){
-                        resendCode();
-                    }
+//                try{
+//                    if(!onceAsked){
+//                        resendCode();
+//                    }
+//
+//                }catch (Exception x){}
+                AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                builder.setTitle("Rooms");
+                builder.setMessage(LocaleController.getInstance().getRoomsString("send_the_code_assms"));
+                builder.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (nextPressed) {
+                            return;
+                        }
+                        boolean email = nextType == 4 && currentType == 2 || nextType == 0;
+                        if (!email) {
+                            if (doneProgressView.getTag() != null) {
+                                return;
+                            }
+                            resendCode();
+                        } else {
+                            try {
+                                PackageInfo pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
+                                String version = String.format(Locale.US, "%s (%d)", pInfo.versionName, pInfo.versionCode);
 
-                }catch (Exception x){}
+                                Intent mailer = new Intent(Intent.ACTION_SENDTO);
+                                mailer.setData(Uri.parse("mailto:"));
+                                mailer.putExtra(Intent.EXTRA_EMAIL, new String[]{"sms@stel.com"});
+                                mailer.putExtra(Intent.EXTRA_SUBJECT, "Android registration/login issue " + version + " " + emailPhone);
+                                mailer.putExtra(Intent.EXTRA_TEXT, "Phone: " + requestPhone + "\nApp version: " + version + "\nOS version: SDK " + Build.VERSION.SDK_INT + "\nDevice Name: " + Build.MANUFACTURER + Build.MODEL + "\nLocale: " + Locale.getDefault() + "\nError: " + lastError);
+                                getContext().startActivity(Intent.createChooser(mailer, "Send email..."));
+                            } catch (Exception e) {
+                                needShowAlert(LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms"), LocaleController.getString("NoMailInstalled", R.string.NoMailInstalled));
+                            }
+                        }
+                    }
+                });
+                builder.setNegativeButton(LocaleController.getInstance().getRoomsString("cancel"), (dialogInterface, i) -> {
+
+                });
+                showDialog(builder.create());
+
                 if (codeField != null) {
                     for (int a = codeField.length - 1; a >= 0; a--) {
                         if (a == 0 || codeField[a].length() != 0) {
@@ -3994,7 +4033,6 @@ public class LoginActivity extends BaseFragment {
             privacyView.animate().alpha(0f).setDuration(150).setStartDelay(0).setInterpolator(AndroidUtilities.accelerateInterpolator).start();
         }
     }
-
 
     @Override
     public ArrayList<ThemeDescription> getThemeDescriptions() {

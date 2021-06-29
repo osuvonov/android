@@ -6,6 +6,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -26,6 +30,24 @@ public class TaskUtil {
         DateFormat df = new SimpleDateFormat(utcIsoFormat);
 
         return df.format(calendar.getTime());
+    }
+
+    public static String getDay(String date) {
+
+        return getFormattedStringFromISO(date);
+    }
+
+    public static int diffDays(String date1, String date2) {
+
+        Date d1 = getDateFromISO(date1);
+        Date d2 = getDateFromISO(date2);
+
+        LocalDate localDate1 = d1.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate localDate2 = d2.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+        int diffDays = (int) ChronoUnit.DAYS.between(localDate1, localDate2);
+
+        return diffDays;
     }
 
     public static String getEndOfTomorrow() {

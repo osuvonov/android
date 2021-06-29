@@ -13,6 +13,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.app.TimePickerDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -60,12 +61,14 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
@@ -148,78 +151,83 @@ public class AlertsCreator {
         if (context == null) {
             return null;
         }
-        final int[] teamSelectionPosition = {-1};
+        AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
 
-        final int[] companyId = {IRoomsManager.getInstance().getSelectedCompanyId(context)};
+//        final int[] selectedTeamPositionInList = {-1};
+//
+//        final int[] companyId = {IRoomsManager.getInstance().getSelectedCompanyId(context)};
 
-        ArrayList<Company> companies = new ArrayList<>(((LaunchActivity) context).getCompanyList());
+//        ArrayList<Company> companies = new ArrayList<>(((LaunchActivity) context).getCompanyList());
 
-        Company noTeam = new Company(0, LocaleController.getInstance().getRoomsString("no_team"));
-        companies.add(noTeam);
+//        Company noTeam = new Company(0, LocaleController.getInstance().getRoomsString("no_team"));
+//        companies.add(noTeam);
         TLRPC.User currentUser = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-        if (companyId[0] != 0) {
-            boolean found = false;
-            for (Company company : companies) {
-                if (company.getId() == companyId[0]) {
-                    found = true;
-                }
-            }
-            if (!found) {
-                companyId[0] = 0;
-                teamSelectionPosition[0] = companies.size() - 1;
-            }
-        }
-        ArrayList<Company> teamList = new ArrayList<>();
-        teamList.add(noTeam);
+//        if (companyId[0] != 0) {
+//            boolean found = false;
+//            for (Company company : companies) {
+//                if (company.getId() == companyId[0]) {
+//                    found = true;
+//                    break;
+//                }
+//            }
+//            if (found) {
+////                bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
+////                bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+//            } else {
+//                companyId[0] = 0;// no team id
+//                selectedTeamPositionInList[0] = companies.size() - 1;//no team as selected
+//            }
+//        }
+//        ArrayList<Company> teamList = new ArrayList<>();
+//        ArrayList<String> teamList2 = new ArrayList<>();
+//
+//        teamList.add(noTeam);
+//
+//        teamList2.add(LocaleController.getInstance().getRoomsString("no_team"));
 
-        if (userList.size() == 2 && selectedUser != null) {
-            for (Company company : companies) {
-                if (company.getMembers() != null && company.getMembers().contains(selectedUser.id) && company.getMembers().contains(currentUser.id)) {
-                    teamList.add(company);
-                }
-            }
-        } else {
-            for (Company company : companies) {
-                if (company.getMembers() != null && company.getMembers().contains(currentUser.id)) {
-                    teamList.add(company);
-                }
-            }
-        }
-
-        for (int i = 0; i < teamList.size(); i++) {
-            if (companyId[0] == teamList.get(i).getId()) {
-                teamSelectionPosition[0] = i;
-            }
-        }
+//        if (userList.size() == 2 && selectedUser != null) {
+//            boolean selectedCompanyFound = false;
+//            for (Company company : companies) {
+//                if (company.getMembers() != null && company.getMembers().contains(selectedUser.id) && company.getMembers().contains(currentUser.id)) {
+//                    teamList.add(company);
+//                    selectedCompanyFound = true;
+//                    teamList2.add(company.getName());
+//                }
+//            }
+//            if (!selectedCompanyFound) {
+//                companyId[0] = 0;
+//            }
+//        } else {
+//            boolean selectedCompanyFound = false;
+//
+//            for (Company company : companies) {
+//                if (company.getMembers() != null && company.getMembers().contains(currentUser.id)) {
+//                    teamList.add(company);
+//                    selectedCompanyFound = true;
+//                    teamList2.add(company.getName());
+//                }
+//            }
+//            if (!selectedCompanyFound) {
+//                companyId[0] = 0;
+//            }
+//        }
+//        if (teamList.size() == 1) {
+//            companyId[0] = 0;
+//        }
+//        for (int i = 0; i < teamList.size(); i++) {
+//            if (companyId[0] == teamList.get(i).getId()) {
+//                selectedTeamPositionInList[0] = i;
+//                break;
+//            }
+//        }
 
         int textColor = context.getResources().getColor(android.R.color.black);
         if (IRoomsManager.getInstance().isDarkMode(context)) {
             textColor = context.getResources().getColor(R.color.white);
         }
-        int finalTextColor = textColor;
-        ArrayAdapter<Company> spinnerAdapter = new ArrayAdapter<Company>(context,
-                R.layout.team_spinner_item, teamList) {
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View v = super.getView(position, convertView, parent);
-                if (IRoomsManager.getInstance().isDarkMode(context)) {
-                    ((TextView) v).setBackgroundColor(R.color.lighter_gray);
-                }
-                ((TextView) v).setTextColor(finalTextColor);
-                return v;
-            }
-
-            public View getDropDownView(int position, View convertView, ViewGroup parent) {
-                View v = super.getDropDownView(position, convertView, parent);
-                ((TextView) v).setTextColor(finalTextColor);
-                if (IRoomsManager.getInstance().isDarkMode(context)) {
-                    ((TextView) v).setBackgroundColor(R.color.lighter_gray);
-                }
-                return v;
-            }
-        };
-
         final String[] deadline = {TaskUtil.getMaxDate()};
+        ArrayList<String> reminders = new ArrayList<>();
 
         ArrayList<Integer> selectedMembers = new ArrayList<>();
 
@@ -230,7 +238,6 @@ public class AlertsCreator {
         BottomSheet.Builder builder = new BottomSheet.Builder(context, false);
         builder.setApplyBottomPadding(false);
 
-        AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
 
         bottomSheet.etTaskDescription.setOnClickListener(click -> {
             bottomSheet.etTaskDescription.requestFocus();
@@ -252,12 +259,12 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 1;
                 deadline[0] = TaskUtil.getEndOfTheDay();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
-
+        //-- status
         bottomSheet.etTaskStatus.setText(Utils.getStatuses()[0]);
         bottomSheet.etTaskStatus.setTextColor(textColor);
         bottomSheet.etTaskStatus.setOnClickListener(view -> {
@@ -335,37 +342,45 @@ public class AlertsCreator {
                         bottomSheet.tvSelectMembers.setText(selectedUsers);
                     }
 
-                    teamList.clear();
-                    for (Company company : companies) {
-                        if (company != null) {
-                            boolean add = true;
-                            for (int c = 0; c < selectedMembers.size(); c++) {
-                                if (company.getId() != 0 && company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
-                                    add = false;
-                                    break;
-                                }
-                            }
-                            if (add) {
-                                teamList.add(company);
-                            }
-                        }
-                    }
-                    spinnerAdapter.notifyDataSetChanged();
-                    boolean teamFound = false;
-                    for (int j = 0; j < teamList.size(); j++) {
-                        if (teamList.get(j).getId() == companyId[0]) {
-                            teamFound = true;
-                            teamSelectionPosition[0] = j;
-                            break;
-                        }
-                    }
-                    if (!teamFound) {
-                        companyId[0] = teamList.get(0).getId();
-                        teamSelectionPosition[0] = 0;
-                    }
-                    bottomSheet.teamSpinner.setSelection(teamSelectionPosition[0]);
-                    companyId[0] = teamList.get(teamSelectionPosition[0]).getId();
-
+//                    teamList.clear();
+//                    teamList2.clear();
+//                    for (Company company : companies) {
+//                        if (company != null) {
+//                            boolean add = true;//should we add this company to selectable team list
+//                            for (int c = 0; c < selectedMembers.size(); c++) {
+//                                if (company.getId() != 0 && company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
+//                                    add = false;
+//                                    break;
+//                                }
+//                            }
+//                            if (add) {
+//                                teamList2.add(company.getName());
+//                                teamList.add(company);
+//                            }
+//                        }
+//                    }
+//                    //   spinnerAdapter.notifyDataSetChanged();
+//                    boolean teamFound = false;
+//                    for (int j = 0; j < teamList.size(); j++) {
+//                        if (teamList.get(j).getId() == companyId[0]) {
+//                            teamFound = true;
+//                            selectedTeamPositionInList[0] = j;
+//                            break;
+//                        }
+//                    }
+//                    if (!teamFound) {
+//                        companyId[0] = teamList.get(0).getId();
+//                        selectedTeamPositionInList[0] = 0;
+//                    }
+//                    bottomSheet.teamSpinner.setText(teamList.get(selectedTeamPositionInList[0]).getName());
+//                    companyId[0] = teamList.get(selectedTeamPositionInList[0]).getId();
+//                    if (companyId[0] == 0) {
+//                        bottomSheet.tvLabelReminder.setVisibility(View.GONE);
+//                        bottomSheet.llTaskReminder.setVisibility(View.GONE);
+//                    } else {
+//                        bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
+//                        bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+//                    }
                 }
             });
             builder12.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), (dialogInterface, j) -> {
@@ -384,24 +399,40 @@ public class AlertsCreator {
             bottomSheet.tvSelectMembers.setText(userName);
         }
 
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        //------ team
+//        if (companyId[0] <= 0) {
+//            bottomSheet.tvLabelReminder.setVisibility(View.GONE);
+//            bottomSheet.llTaskReminder.setVisibility(View.GONE);
+//        }
+//        bottomSheet.teamSpinner.setText(teamList2.get(selectedTeamPositionInList[0] == -1 ? 0 : selectedTeamPositionInList[0]));
+//        bottomSheet.teamSpinner.setTextColor(textColor);
+//        bottomSheet.teamSpinner.setOnClickListener(view -> {
+//            AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+//            builder1.setTitle(LocaleController.getInstance().getRoomsString("team"));
+//
+//            builder1.setItems(teamList2.toArray(new CharSequence[teamList2.size()]), (dialog, which) -> {
+//                selectedTeamPositionInList[0] = which;
+//                companyId[0] = teamList.get(which).getId();
+////                if (companyId[0] == 0) {
+////                    bottomSheet.tvLabelReminder.setVisibility(View.GONE);
+////                    bottomSheet.llTaskReminder.setVisibility(View.GONE);
+////                } else {
+////                    bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
+////                    bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+////                }
+//                bottomSheet.teamSpinner.setText(teamList2.get(which));
+//                dialog.dismiss();
+//            });
+//
+//            // create and show the alert dialog
+//            AlertDialog dialog = builder1.create();
+//            dialog.show();
+//        });
+        bottomSheet.teamSpinner.setVisibility(View.GONE);
 
-        bottomSheet.teamSpinner.setAdapter(spinnerAdapter);
-        bottomSheet.teamSpinner.setSelection(teamSelectionPosition[0] == -1 ? 0 : teamSelectionPosition[0]);
-        bottomSheet.teamSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                companyId[0] = teamList.get(position).getId();
-                teamSelectionPosition[0] = position;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-        bottomSheet.tvTeamEmptyRow.setVisibility(View.VISIBLE);
-        bottomSheet.teamSpinner.setVisibility(View.VISIBLE);
-        bottomSheet.tvLabelTeam.setVisibility(View.VISIBLE);
+        bottomSheet.tvTeamEmptyRow.setVisibility(View.GONE);
+        bottomSheet.teamSpinner.setVisibility(View.GONE);
+        bottomSheet.tvLabelTeam.setVisibility(View.GONE);
         bottomSheet.tvLabelPersonInCharge.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
         bottomSheet.tvLabelTask.setText(LocaleController.getInstance().getRoomsString("description"));
         bottomSheet.tvLabelTeam.setText(LocaleController.getInstance().getRoomsString("team"));
@@ -421,33 +452,43 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 2;
                 deadline[0] = TaskUtil.getEndOfTomorrow();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
 
         bottomSheet.btnTaskCalendar.setOnClickListener(select -> {
-            final Calendar cldr = Calendar.getInstance();
-            int day = cldr.get(Calendar.DAY_OF_MONTH);
-            int month = cldr.get(Calendar.MONTH);
+            final Calendar currentDate = Calendar.getInstance();
+            Calendar date = Calendar.getInstance();
+            DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
 
-            int year = cldr.get(Calendar.YEAR);
-            new DatePickerDialog(context,
-                    (view1, year1, monthOfYear, dayOfMonth) -> {
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.set(year1, monthOfYear, dayOfMonth, 23, 59);
-                        deadline[0] = TaskUtil.getISODate(calendar.getTime());
-                        bottomSheet.btnTaskCalendar.setText(year1 + "/" + monthOfYear + "/" + dayOfMonth);
-                        bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
-                        bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
-                        bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
-                    }, year, month, day).show();
+                @Override
+                public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                    date.set(year, monthOfYear, dayOfMonth);
+                    new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            date.set(Calendar.MINUTE, minute);
+
+                            deadline[0] = TaskUtil.getISODate(date.getTime());
+                            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                        }
+                    }, 18, 0, false).show();
+
+                }
+            }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+            datePickerDialog.getDatePicker().setMinDate(new Date().getTime());
+            datePickerDialog.show();
         });
         bottomSheet.btnTaskSave.setText(LocaleController.getInstance().getRoomsString("save"));
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
-            Task task = new Task(-1, companyId[0]);
+            Task task = new Task(-1,0);
             String description = bottomSheet.etTaskDescription.getText().toString();
             if ("".equals(description)) {
                 bottomSheet.btnTaskSave.setEnabled(true);
@@ -455,22 +496,22 @@ public class AlertsCreator {
             }
             task.setDescription(description);
             task.setMembers(selectedMembers);
-            task.setCreatorId(UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
+            task.setCreatorId(currentUser.id);
             task.setExpiresAt(deadline[0]);
             task.setStatus(Utils.getStatuses()[selectedState[0]]);
             task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
-            task.setCompanyId(companyId[0]);
+           // task.setCompanyId(0);
             task.setLocal_id(Utils.generateLocalId());
             task.setLocalStatus(1);
-
-            List<Integer> receiverIds = userList.stream().map(user -> user.id).collect(Collectors.toList());
-            task.setReceivers(receiverIds);
+            task.setReminders(reminders);
+//            List<Integer> receiverIds = userList.stream().map(user -> user.id).collect(Collectors.toList());
+//            task.setReceivers(receiverIds);
             task.setChat_type(chatType);
 
             if (!socket.connected() || !((LaunchActivity) context).isAuthorized()) {
                 callback.onCreate(task);
-                RoomsRepository.getInstance((Application) context.getApplicationContext(),currentUser.phone).createLocalTask(task);
+                RoomsRepository.getInstance((Application) context.getApplicationContext(), currentUser.phone).createLocalTask(task);
             } else {
                 IRoomsManager.getInstance().createTaskBySocket(context, socket, task, new TaskManagerListener() {
                     @Override
@@ -494,6 +535,94 @@ public class AlertsCreator {
             builder.getDismissRunnable().run();
         });
 
+        //-----------------------reminder------------------
+
+        bottomSheet.btnTaskReminderAdd.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+        bottomSheet.btnTaskReminderDelete.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_recordedVoiceDot), PorterDuff.Mode.MULTIPLY));
+        bottomSheet.btnTaskReminderAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Calendar currentDate = Calendar.getInstance();
+                Calendar date = Calendar.getInstance();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+
+                        date.set(year, monthOfYear, dayOfMonth);
+                        new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                date.set(Calendar.MINUTE, minute);
+
+                                bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                                bottomSheet.tvReminderDate.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                                bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+                                bottomSheet.tvReminderDate.setVisibility(View.VISIBLE);
+                                bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+
+                                reminders.add(TaskUtil.getISODate(date.getTime()));
+                            }
+                        }, 18, 0, false).show();
+
+                    }
+                }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+                datePickerDialog.getDatePicker().setMinDate(currentDate.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+        bottomSheet.btnTaskReminderDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reminders.clear();
+                bottomSheet.tvReminderDate.setText(LocaleController.getInstance().getRoomsString("set_reminder"));
+                bottomSheet.btnTaskReminderAdd.setVisibility(View.VISIBLE);
+                bottomSheet.btnTaskReminderDelete.setVisibility(View.GONE);
+            }
+        });
+        bottomSheet.tvReminderDate.setText(LocaleController.getInstance().getRoomsString("set_reminder"));
+        bottomSheet.tvReminderDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    final Calendar currentDate = Calendar.getInstance();
+                    Date date1 = TaskUtil.getDateFromISO(reminders.size() > 0 ? reminders.get(0) : "");
+                    if (date1 != null) {
+                        currentDate.setTime(date1);
+                    }
+                    Calendar date = Calendar.getInstance();
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                            date.set(year, monthOfYear, dayOfMonth);
+                            new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                    date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                    date.set(Calendar.MINUTE, minute);
+
+                                    bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                                    bottomSheet.tvReminderDate.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                                    bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+                                    bottomSheet.tvReminderDate.setVisibility(View.VISIBLE);
+                                    bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+                                    reminders.clear();
+                                    reminders.add(TaskUtil.getISODate(date.getTime()));
+                                }
+                            }, currentDate.get(Calendar.HOUR), currentDate.get(Calendar.MINUTE), false).show();
+
+                        }
+                    }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+                    datePickerDialog.getDatePicker().setMinDate(new Date().getTime());
+                    datePickerDialog.show();
+                } catch (Exception x) {
+                }
+            }
+        });
+
+        //----------------------------------------------
         builder.setCustomView(bottomSheet.getRoot());
 
         return builder;
@@ -506,7 +635,10 @@ public class AlertsCreator {
         }
 
         final String[] deadline = {TaskUtil.getMaxDate()};
-
+        ArrayList<String> reminders = new ArrayList<>();
+        if (task.getReminders() != null) {
+            reminders.addAll(task.getReminders());
+        }
         final int[] selectedState = {0};
 
         final int[] selectedDeadLineView = {-1};
@@ -515,6 +647,7 @@ public class AlertsCreator {
         builder.setApplyBottomPadding(false);
 
         AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
+        bottomSheet.teamSpinner.setVisibility(View.GONE);
         // ------------  handling day/night theme   ------------------------------------------------
         int textColor = context.getResources().getColor(android.R.color.black);
         if (IRoomsManager.getInstance().isDarkMode(context)) {
@@ -528,6 +661,13 @@ public class AlertsCreator {
             bottomSheet.etTaskDescription.requestFocus();
             AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
         });
+//        if (task.getCreator_id()!=UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId()){
+//            bottomSheet.etTaskDescription.setEnabled(false);
+//            bottomSheet.btnTaskDeadlineToday.setEnabled(false);
+//            bottomSheet.btnTaskCalendar.setEnabled(false);
+//            bottomSheet.btnTaskDeadlineTomorrow.setEnabled(false);
+//            bottomSheet.tvSelectMembers.setEnabled(false);
+//        }
         bottomSheet.etTaskDescription.setText(text);
         bottomSheet.etTaskDescription.requestFocus();
 
@@ -542,7 +682,7 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 1;
                 deadline[0] = TaskUtil.getEndOfTheDay();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
         });
@@ -551,7 +691,7 @@ public class AlertsCreator {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(new Date());
             deadline[0] = task.getExpires_at();
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(calendar.getTime()));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
         } else if (task.getExpires_at().equals(TaskUtil.getEndOfTheDay())) {
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
@@ -565,7 +705,7 @@ public class AlertsCreator {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(TaskUtil.getDateFromISO(task.getExpires_at()) == null ? new Date() : TaskUtil.getDateFromISO(task.getExpires_at()));
             deadline[0] = task.getExpires_at();
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(calendar.getTime()));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(calendar.getTime()));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
         }
         bottomSheet.btnTaskSave.setText(LocaleController.getInstance().getRoomsString("save"));
@@ -662,6 +802,364 @@ public class AlertsCreator {
             dialog.show();
         });
 
+        bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
+            boolean tomorrowSelected = selectedDeadLineView[0] == 2;
+            if (tomorrowSelected) {
+                selectedDeadLineView[0] = -1;
+
+                deadline[0] = TaskUtil.getMaxDate();
+                bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            } else {
+                bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                selectedDeadLineView[0] = 2;
+                deadline[0] = TaskUtil.getEndOfTomorrow();
+            }
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
+
+            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+        });
+        bottomSheet.tvLabelPersonInCharge.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
+        bottomSheet.tvLabelTask.setText(LocaleController.getInstance().getRoomsString("description"));
+        bottomSheet.tvLabelTeam.setText(LocaleController.getInstance().getRoomsString("team"));
+        bottomSheet.tvLabelStatus.setText(LocaleController.getInstance().getRoomsString("status"));
+        bottomSheet.tvLabelDeadline.setText(LocaleController.getInstance().getRoomsString("deadline"));
+        bottomSheet.btnTaskDeadlineToday.setText(LocaleController.getInstance().getRoomsString("today"));
+        bottomSheet.btnTaskDeadlineTomorrow.setText(LocaleController.getInstance().getRoomsString("tomorrow"));
+        bottomSheet.btnTaskCalendar.setOnClickListener(select -> {
+            final Calendar currentDate = Calendar.getInstance();
+            Calendar date = Calendar.getInstance();
+            DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+
+                    date.set(year, monthOfYear, dayOfMonth);
+                    new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            date.set(Calendar.MINUTE, minute);
+
+                            deadline[0] = TaskUtil.getISODate(date.getTime());
+                            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+
+                        }
+                    }, 18, 0, false).show();
+
+                }
+            }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+            datePickerDialog.getDatePicker().setMinDate(currentDate.getTimeInMillis());
+            datePickerDialog.show();
+
+        });
+
+        bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
+            bottomSheet.btnTaskSave.setEnabled(false);
+            String description = bottomSheet.etTaskDescription.getText().toString();
+            if ("".equals(description)) {
+                bottomSheet.btnTaskSave.setEnabled(true);
+                return;
+            }
+            task.setDescription(description);
+            task.setReminders(reminders);
+            task.setMembers(selectedMembers);
+
+            if (deadline[0] == null || deadline[0].equals("null")) {
+                deadline[0] = TaskUtil.getMaxDate();
+            }
+            task.setExpiresAt(deadline[0]);
+            task.setStatus(Utils.getStatuses()[selectedState[0]]);
+            task.setStatus_code(selectedState[0]);
+            if (task.getLocal_id().equals("") || task.getLocal_id().equals("local")) {
+                task.setLocal_id(Utils.generateLocalId());
+            }
+
+//            ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
+//            task.setReceivers(receiverIds);
+
+            callback.onUpdate(task);
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            RoomsRepository.getInstance((Application) context.getApplicationContext(), user.phone).updateLocalTask(task);
+            builder.getDismissRunnable().run();
+
+        });
+        //-----------------------reminder------------------
+
+//        if (task.getCompany_id() > 0) {
+//            bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
+//            bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
+//        }
+        bottomSheet.btnTaskReminderAdd.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+        bottomSheet.btnTaskReminderDelete.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_recordedVoiceDot), PorterDuff.Mode.MULTIPLY));
+        bottomSheet.btnTaskReminderAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Calendar currentDate = Calendar.getInstance();
+                Calendar date = Calendar.getInstance();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+
+                        date.set(year, monthOfYear, dayOfMonth);
+                        new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                date.set(Calendar.MINUTE, minute);
+
+                                bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                                bottomSheet.tvReminderDate.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                                bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+                                bottomSheet.tvReminderDate.setVisibility(View.VISIBLE);
+                                bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+
+                                reminders.add(TaskUtil.getISODate(date.getTime()));
+                            }
+                        }, 18, 0, false).show();
+
+                    }
+                }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+                datePickerDialog.getDatePicker().setMinDate(currentDate.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+        bottomSheet.btnTaskReminderDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reminders.clear();
+                bottomSheet.tvReminderDate.setText(LocaleController.getInstance().getRoomsString("set_reminder"));
+                bottomSheet.btnTaskReminderAdd.setVisibility(View.VISIBLE);
+                bottomSheet.btnTaskReminderDelete.setVisibility(View.GONE);
+            }
+        });
+        bottomSheet.tvReminderDate.setText(LocaleController.getInstance().getRoomsString("set_reminder"));
+        bottomSheet.tvReminderDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    final Calendar currentDate = Calendar.getInstance();
+                    Date date1 = TaskUtil.getDateFromISO(reminders.size() > 0 ? reminders.get(0) : "");
+                    if (date1 != null) {
+                        currentDate.setTime(date1);
+                    }
+                    Calendar date = Calendar.getInstance();
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                            date.set(year, monthOfYear, dayOfMonth);
+                            new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                    date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                    date.set(Calendar.MINUTE, minute);
+
+                                    bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                                    bottomSheet.tvReminderDate.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                                    bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+                                    bottomSheet.tvReminderDate.setVisibility(View.VISIBLE);
+                                    bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+                                    reminders.clear();
+                                    reminders.add(TaskUtil.getISODate(date.getTime()));
+                                }
+                            }, currentDate.get(Calendar.HOUR), currentDate.get(Calendar.MINUTE), false).show();
+
+                        }
+                    }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+                    datePickerDialog.getDatePicker().setMinDate(new Date().getTime());
+                    datePickerDialog.show();
+                } catch (Exception x) {
+                }
+            }
+        });
+
+        if (reminders.size() > 0) {
+            bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+            bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+            Date reminderDate = TaskUtil.getDateFromISO(reminders.get(0));
+            if (reminderDate != null) {
+                bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(reminderDate.getTime()));
+            }
+        }
+        //----------------------------------------------
+        builder.setCustomView(bottomSheet.getRoot());
+
+        return builder;
+    }
+
+    public static BottomSheet showTaskDialog(LaunchActivity context, ChatActivity fragment, Task task, ArrayList<TLRPC.User> userList, TaskManagerListener callback) {
+        if (context == null) {
+            return null;
+        }
+
+        final String[] deadline = {TaskUtil.getMaxDate()};
+        ArrayList<String> reminders = new ArrayList<>();
+
+        if (task.getReminders() != null) {
+            reminders.addAll(task.getReminders());
+        }
+        final int[] selectedState = {0};
+
+        final int[] selectedDeadLineView = {-1};
+
+        BottomSheet.Builder builder = new BottomSheet.Builder(context, false);
+        builder.setApplyBottomPadding(false);
+
+        AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
+        bottomSheet.teamSpinner.setVisibility(View.GONE);
+        // ------------  handling day/night theme   ------------------------------------------------
+        int textColor = context.getResources().getColor(android.R.color.black);
+        if (IRoomsManager.getInstance().isDarkMode(context)) {
+            textColor = context.getResources().getColor(R.color.white);
+        }
+        bottomSheet.etTaskDescription.setTextColor(textColor);
+        bottomSheet.tvSelectMembers.setTextColor(textColor);
+        bottomSheet.etTaskStatus.setTextColor(textColor);
+        // -----------------------------------------------------------------------------------------
+        bottomSheet.etTaskDescription.setOnClickListener(click -> {
+            bottomSheet.etTaskDescription.requestFocus();
+            AndroidUtilities.showKeyboard(bottomSheet.etTaskDescription);
+        });
+        bottomSheet.etTaskDescription.setText(task.getDescription());
+
+        bottomSheet.btnTaskDeadlineToday.setOnClickListener(today -> {
+            boolean todaySelected = selectedDeadLineView[0] == 1;
+            if (todaySelected) {
+                selectedDeadLineView[0] = -1;
+                deadline[0] = TaskUtil.getMaxDate();
+                bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            } else {
+                bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                selectedDeadLineView[0] = 1;
+                deadline[0] = TaskUtil.getEndOfTheDay();
+            }
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+        });
+
+        if (task.getExpires_at() == null) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(new Date());
+            deadline[0] = task.getExpires_at();
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(calendar.getTime()));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+        } else if (task.getExpires_at().equals(TaskUtil.getEndOfTheDay())) {
+            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+            selectedDeadLineView[0] = 1;
+            deadline[0] = TaskUtil.getEndOfTheDay();
+        } else if (task.getExpires_at().equals(TaskUtil.getEndOfTomorrow())) {
+            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+            selectedDeadLineView[0] = 2;
+            deadline[0] = TaskUtil.getEndOfTomorrow();
+        } else if (task.getExpires_at() != null && !task.getExpires_at().equals("")) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(TaskUtil.getDateFromISO(task.getExpires_at()) == null ? new Date() : TaskUtil.getDateFromISO(task.getExpires_at()));
+            deadline[0] = task.getExpires_at();
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(calendar.getTime()));
+            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+        }
+        bottomSheet.btnTaskSave.setText(LocaleController.getInstance().getRoomsString("save"));
+
+        bottomSheet.etTaskStatus.setText(Utils.getStatuses()[0]);
+        bottomSheet.etTaskStatus.setOnClickListener(view -> {
+            AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
+            builder1.setTitle(LocaleController.getInstance().getRoomsString("choose_status"));
+
+            builder1.setItems(Utils.getStatuses(), (dialog, which) -> {
+                selectedState[0] = which;
+                bottomSheet.etTaskStatus.setText(Utils.getStatuses()[which]);
+                dialog.dismiss();
+            });
+
+            // create and show the alert dialog
+            AlertDialog dialog = builder1.create();
+            dialog.show();
+        });
+        bottomSheet.etTaskStatus.setText(Utils.getStatuses()[task.getStatus_code()]);
+        selectedState[0] = task.getStatus_code();
+
+
+        CharSequence[] memberList = new CharSequence[task.getMembers().size()];
+        SpannableStringBuilder selectedUsers = new SpannableStringBuilder();
+        boolean[] checkedItems = new boolean[task.getMembers().size()];
+
+        AccountInstance instance = fragment.getAccountInstance();
+        for (int i = 0; i < task.getMembers().size(); i++) {
+            String userName = "";
+            checkedItems[i] = false;
+            TLRPC.User user = instance.getMessagesController().getUser(task.getMembers().get(i));
+
+            if (user != null) {
+
+                userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+                if (task.getMembers().contains(user.id)) {
+                    checkedItems[i] = true;
+                    if (selectedUsers.length() > 0) {
+                        selectedUsers.append(", ");
+                    }
+                    selectedUsers.append(userName);
+                }
+                memberList[i] = userName;
+            }
+        }
+
+        if (selectedUsers.toString().length() == 0) {
+            bottomSheet.tvSelectMembers.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
+        } else {
+            bottomSheet.tvSelectMembers.setText(selectedUsers);
+        }
+
+        ArrayList<Integer> selectedMembers = new ArrayList<>(task.getMembers());
+
+        bottomSheet.tvSelectMembers.setOnClickListener(view -> {
+            android.app.AlertDialog.Builder builder12 = new android.app.AlertDialog.Builder(context);
+            if (IRoomsManager.getInstance().isDarkMode(context)) {
+                builder12 = new android.app.AlertDialog.Builder(context, android.app.AlertDialog.THEME_DEVICE_DEFAULT_DARK);
+            }
+            builder12.setTitle(LocaleController.getInstance().getRoomsString("choose_participants"));
+
+            ListView listview = new ListView(context);
+            listview.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+            ArrayAdapter<CharSequence> adapter = new ArrayAdapter<CharSequence>(context,
+                    android.R.layout.simple_list_item_multiple_choice, memberList);
+            listview.setAdapter(adapter);
+
+            builder12.setMultiChoiceItems(memberList, checkedItems, (dialogInterface, i, b) -> {
+                checkedItems[i] = b;
+                selectedUsers.clear();
+                selectedMembers.clear();
+                for (int i1 = 0; i1 < task.getMembers().size(); i1++) {
+                    TLRPC.User user = instance.getMessagesController().getUser(task.getMembers().get(i1));
+                    ;
+
+                    if (user != null && checkedItems[i1]) {
+                        selectedMembers.add(user.id);
+                        if (selectedUsers.length() > 0) {
+                            selectedUsers.append(", ");
+                        }
+                        String userName = ((user.first_name == null ? "" : user.first_name) + " " + (user.last_name == null ? "" : user.last_name));
+
+                        selectedUsers.append(userName);
+                    }
+                }
+                if (selectedUsers.toString().length() == 0) {
+                    bottomSheet.tvSelectMembers.setText(LocaleController.getInstance().getRoomsString("choose_participants"));
+                } else {
+                    bottomSheet.tvSelectMembers.setText(selectedUsers);
+                }
+            });
+            builder12.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), (dialogInterface, j) -> {
+            });
+
+            // create and show the alert dialog
+            android.app.AlertDialog dialog = builder12.create();
+            dialog.show();
+        });
 
         bottomSheet.btnTaskDeadlineTomorrow.setOnClickListener(tomorrow -> {
             boolean tomorrowSelected = selectedDeadLineView[0] == 2;
@@ -675,7 +1173,7 @@ public class AlertsCreator {
                 selectedDeadLineView[0] = 2;
                 deadline[0] = TaskUtil.getEndOfTomorrow();
             }
-            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
+            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(TaskUtil.getDateFromISO(deadline[0]) == null ? new Date() : TaskUtil.getDateFromISO(deadline[0])));
 
             bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
             bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
@@ -688,32 +1186,44 @@ public class AlertsCreator {
         bottomSheet.btnTaskDeadlineToday.setText(LocaleController.getInstance().getRoomsString("today"));
         bottomSheet.btnTaskDeadlineTomorrow.setText(LocaleController.getInstance().getRoomsString("tomorrow"));
         bottomSheet.btnTaskCalendar.setOnClickListener(select -> {
-            final Calendar cldr = Calendar.getInstance();
-            int day = cldr.get(Calendar.DAY_OF_MONTH);
-            int month = cldr.get(Calendar.MONTH);
+            final Calendar currentDate = Calendar.getInstance();
+            Calendar date = Calendar.getInstance();
+            DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+                @Override
+                public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
 
-            int year = cldr.get(Calendar.YEAR);
-            new DatePickerDialog(context,
-                    (view1, year1, monthOfYear, dayOfMonth) -> {
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.set(year1, monthOfYear, dayOfMonth, 23, 59);
-                        deadline[0] = TaskUtil.getISODate(calendar.getTime());
-                        bottomSheet.btnTaskCalendar.setText(year1 + "/" + monthOfYear + "/" + dayOfMonth);
-                        bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
-                        bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
-                        bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
-                    }, year, month, day).show();
+                    date.set(year, monthOfYear, dayOfMonth);
+                    new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                        @Override
+                        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                            date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                            date.set(Calendar.MINUTE, minute);
+
+                            deadline[0] = TaskUtil.getISODate(date.getTime());
+                            bottomSheet.btnTaskCalendar.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                            bottomSheet.btnTaskCalendar.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                            bottomSheet.btnTaskDeadlineToday.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+                            bottomSheet.btnTaskDeadlineTomorrow.setTextColor(context.getResources().getColor(R.color.disabled_text_color));
+
+                        }
+                    }, 18, 0, false).show();
+
+                }
+            }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+            datePickerDialog.getDatePicker().setMinDate(currentDate.getTimeInMillis());
+            datePickerDialog.show();
+
         });
 
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
             String description = bottomSheet.etTaskDescription.getText().toString();
-            if ("".equals(description) || description == null) {
+            if ("".equals(description)) {
                 bottomSheet.btnTaskSave.setEnabled(true);
                 return;
             }
             task.setDescription(description);
-
+            task.setReminders(reminders);
             task.setMembers(selectedMembers);
 
             if (deadline[0] == null || deadline[0].equals("null")) {
@@ -726,19 +1236,114 @@ public class AlertsCreator {
                 task.setLocal_id(Utils.generateLocalId());
             }
 
-            ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
-            task.setReceivers(receiverIds);
+//            ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
+//            task.setReceivers(receiverIds);
 
             callback.onUpdate(task);
             TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-            RoomsRepository.getInstance((Application) context.getApplicationContext(),user.phone).updateLocalTask(task);
+            RoomsRepository.getInstance((Application) context.getApplicationContext(), user.phone).updateLocalTask(task);
             builder.getDismissRunnable().run();
 
         });
+        //-----------------------reminder------------------
 
+        bottomSheet.btnTaskReminderAdd.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+        bottomSheet.btnTaskReminderDelete.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_recordedVoiceDot), PorterDuff.Mode.MULTIPLY));
+        bottomSheet.btnTaskReminderAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Calendar currentDate = Calendar.getInstance();
+                Calendar date = Calendar.getInstance();
+                DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+
+                        date.set(year, monthOfYear, dayOfMonth);
+                        new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                            @Override
+                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                date.set(Calendar.MINUTE, minute);
+
+                                bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                                bottomSheet.tvReminderDate.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                                bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+                                bottomSheet.tvReminderDate.setVisibility(View.VISIBLE);
+                                bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+
+                                reminders.add(TaskUtil.getISODate(date.getTime()));
+                            }
+                        }, 18, 0, false).show();
+
+                    }
+                }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+                datePickerDialog.getDatePicker().setMinDate(currentDate.getTimeInMillis());
+                datePickerDialog.show();
+            }
+        });
+        bottomSheet.btnTaskReminderDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                reminders.clear();
+                bottomSheet.tvReminderDate.setText(LocaleController.getInstance().getRoomsString("set_reminder"));
+                bottomSheet.btnTaskReminderAdd.setVisibility(View.VISIBLE);
+                bottomSheet.btnTaskReminderDelete.setVisibility(View.GONE);
+            }
+        });
+        bottomSheet.tvReminderDate.setText(LocaleController.getInstance().getRoomsString("set_reminder"));
+        bottomSheet.tvReminderDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    final Calendar currentDate = Calendar.getInstance();
+                    Date date1 = TaskUtil.getDateFromISO(reminders.size() > 0 ? reminders.get(0) : "");
+                    if (date1 != null) {
+                        currentDate.setTime(date1);
+                    }
+                    Calendar date = Calendar.getInstance();
+                    DatePickerDialog datePickerDialog = new DatePickerDialog(context, new DatePickerDialog.OnDateSetListener() {
+
+                        @Override
+                        public void onDateSet(DatePicker datePicker, int year, int monthOfYear, int dayOfMonth) {
+                            date.set(year, monthOfYear, dayOfMonth);
+                            new TimePickerDialog(context, new TimePickerDialog.OnTimeSetListener() {
+                                @Override
+                                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                                    date.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                                    date.set(Calendar.MINUTE, minute);
+
+                                    bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(date.getTime()));
+                                    bottomSheet.tvReminderDate.setTextColor(context.getResources().getColor(R.color.holo_blue_bright));
+                                    bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+                                    bottomSheet.tvReminderDate.setVisibility(View.VISIBLE);
+                                    bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+                                    reminders.clear();
+                                    reminders.add(TaskUtil.getISODate(date.getTime()));
+                                }
+                            }, currentDate.get(Calendar.HOUR), currentDate.get(Calendar.MINUTE), false).show();
+
+                        }
+                    }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE));
+                    datePickerDialog.getDatePicker().setMinDate(new Date().getTime());
+                    datePickerDialog.show();
+                } catch (Exception x) {
+                }
+            }
+        });
+
+        if (reminders.size() > 0) {
+            bottomSheet.btnTaskReminderAdd.setVisibility(View.GONE);
+            bottomSheet.btnTaskReminderDelete.setVisibility(View.VISIBLE);
+            Date reminderDate = TaskUtil.getDateFromISO(reminders.get(0));
+            if (reminderDate != null) {
+                bottomSheet.tvReminderDate.setText(new SimpleDateFormat("dd/MM/yyyy h:mm a").format(reminderDate.getTime()));
+            }
+        }
+        //----------------------------------------------
         builder.setCustomView(bottomSheet.getRoot());
 
-        return builder;
+        return builder.create();
     }
 
     public static Dialog processError(int currentAccount, TLRPC.TL_error error, BaseFragment fragment, TLObject request, Object... args) {
@@ -749,7 +1354,7 @@ public class AlertsCreator {
             TLRPC.InputPeer peer;
             if (request instanceof TLRPC.TL_messages_initHistoryImport) {
                 peer = ((TLRPC.TL_messages_initHistoryImport) request).peer;
-            } else  if (request instanceof TLRPC.TL_messages_startHistoryImport) {
+            } else if (request instanceof TLRPC.TL_messages_startHistoryImport) {
                 peer = ((TLRPC.TL_messages_startHistoryImport) request).peer;
             } else {
                 peer = null;
@@ -1484,7 +2089,7 @@ public class AlertsCreator {
                     setting = NotificationsController.SETTING_MUTE_HOUR;
                 } else if (i == 2) {
                     setting = NotificationsController.SETTING_MUTE_2_DAYS;
-                } else if (i == 4){
+                } else if (i == 4) {
                     setting = NotificationsController.SETTING_MUTE_FOREVER;
                 }
                 if (setting >= 0) {
@@ -2199,7 +2804,7 @@ public class AlertsCreator {
         checkTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4));
         checkTextView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
         dialogView.addView(checkTextView, LayoutHelper.createFrame(20, 20, LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT, 0, 14, 21, 0));
-        editTextView.setPadding(LocaleController.isRTL ? AndroidUtilities.dp(24) : 0,  AndroidUtilities.dp(8), LocaleController.isRTL ? 0 : AndroidUtilities.dp(24), AndroidUtilities.dp(8));
+        editTextView.setPadding(LocaleController.isRTL ? AndroidUtilities.dp(24) : 0, AndroidUtilities.dp(8), LocaleController.isRTL ? 0 : AndroidUtilities.dp(24), AndroidUtilities.dp(8));
         editTextView.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -2213,7 +2818,7 @@ public class AlertsCreator {
 
             @Override
             public void afterTextChanged(Editable s) {
-                int count = maxSymbolsCount -  Character.codePointCount(s, 0, s.length());
+                int count = maxSymbolsCount - Character.codePointCount(s, 0, s.length());
                 if (count < 30) {
                     checkTextView.setNumber(count, checkTextView.getVisibility() == View.VISIBLE);
                     AndroidUtilities.updateViewVisibilityAnimated(checkTextView, true);

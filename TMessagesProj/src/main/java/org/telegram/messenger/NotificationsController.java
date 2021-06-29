@@ -43,27 +43,35 @@ import android.os.Build;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
+
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.core.text.HtmlCompat;
 
+import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.util.LongSparseArray;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import android.widget.RemoteViews;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
- import org.rooms.messenger.R;
+import org.rooms.messenger.R;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.RoomsRepository;
 import org.telegram.messenger.support.SparseLongArray;
@@ -138,7 +146,13 @@ public class NotificationsController extends BaseController {
     private AlarmManager alarmManager;
 
     private int notificationId;
+    private int notificationTaskId;
+    private int notificationReminderId;
+
     private String notificationGroup;
+    private String notificationGroupTask;
+    private String notificationGroupReminder;
+
 
     static {
         if (Build.VERSION.SDK_INT >= 26 && ApplicationLoader.applicationContext != null) {
@@ -148,7 +162,7 @@ public class NotificationsController extends BaseController {
         }
         audioManager = (AudioManager) ApplicationLoader.applicationContext.getSystemService(Context.AUDIO_SERVICE);
     }
-    
+
     private static volatile NotificationsController[] Instance = new NotificationsController[UserConfig.MAX_ACCOUNT_COUNT];
 
     public static NotificationsController getInstance(int num) {
@@ -166,9 +180,15 @@ public class NotificationsController extends BaseController {
 
     public NotificationsController(int instance) {
         super(instance);
-        
+
         notificationId = currentAccount + 1;
+        notificationTaskId = notificationId + 112;
+        notificationReminderId = notificationId + 113;
+
         notificationGroup = "messages" + (currentAccount == 0 ? "" : currentAccount);
+        notificationGroupTask = "tasks" + (currentAccount == 0 ? "" : currentAccount);
+        notificationGroupReminder = "reminders" + (currentAccount == 0 ? "" : currentAccount);
+
         SharedPreferences preferences = getAccountInstance().getNotificationsSettings();
         inChatSoundEnabled = preferences.getBoolean("EnableInChatSound", true);
         showBadgeNumber = preferences.getBoolean("badgeNumber", true);
@@ -2454,6 +2474,9 @@ public class NotificationsController extends BaseController {
     public void hideNotifications() {
         notificationsQueue.postRunnable(() -> {
             notificationManager.cancel(notificationId);
+            notificationManager.cancel(notificationTaskId);
+            notificationManager.cancel(notificationReminderId);
+
             lastWearNotifiedMessageId.clear();
             for (int a = 0; a < wearNotificationsIds.size(); a++) {
                 notificationManager.cancel(wearNotificationsIds.valueAt(a));
@@ -2465,6 +2488,9 @@ public class NotificationsController extends BaseController {
     private void dismissNotification() {
         try {
             notificationManager.cancel(notificationId);
+            notificationManager.cancel(notificationTaskId);
+            notificationManager.cancel(notificationReminderId);
+
             pushMessages.clear();
             pushMessagesDict.clear();
             lastWearNotifiedMessageId.clear();
@@ -3268,7 +3294,7 @@ public class NotificationsController extends BaseController {
                         name = LocaleController.getString("NotificationHiddenName", R.string.NotificationHiddenName);
                     }
                 } else {
-                    name = LocaleController.getString("AppName", R.string.AppName).replace("Telegram","Rooms");
+                    name = LocaleController.getString("AppName", R.string.AppName).replace("Telegram", "Rooms");
                 }
                 replace = false;
             } else {
@@ -3619,7 +3645,7 @@ public class NotificationsController extends BaseController {
                         } else {
                             if (Build.VERSION.SDK_INT >= 24 && soundPath.startsWith("file://") && !AndroidUtilities.isInternalUri(Uri.parse(soundPath))) {
                                 try {
-                                    Uri uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext,ApplicationLoader.applicationContext.getPackageName() + ".provider", new File(soundPath.replace("file://", "")));
+                                    Uri uri = FileProvider.getUriForFile(ApplicationLoader.applicationContext, ApplicationLoader.applicationContext.getPackageName() + ".provider", new File(soundPath.replace("file://", "")));
                                     ApplicationLoader.applicationContext.grantUriPermission("com.android.systemui", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
                                     mBuilder.setSound(uri, AudioManager.STREAM_NOTIFICATION);
                                 } catch (Exception e) {
@@ -3687,104 +3713,118 @@ public class NotificationsController extends BaseController {
             FileLog.e(e);
         }
     }
-    public void showTaskNotification(int taskId, String title, String body) {
-        Task task = null;
-        try {
-            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-            RoomsRepository repository = RoomsRepository.getInstance((Application) ApplicationLoader.applicationContext.getApplicationContext(),user.phone);
-            task = repository.getTask(taskId);
-        } catch (Exception x) {
-        }
+    public void showTaskNotification(long taskId, int chatId, int creatorId, String type, String chatType, String title, String body, int color) {
 
         Intent intent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
         intent.setAction("com.tmessages.openchat" + Math.random() + Integer.MAX_VALUE);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//        if ((int) dialog_id != 0) {
-//            if (pushDialogs.size() == 1) {
-//                if (chat_id != 0) {
-//                    intent.putExtra("chatId", chat_id);
-//                } else if (user_id != 0) {
-//                    intent.putExtra("userId", user_id);
-//                }
-//            }
-//            if (AndroidUtilities.needShowPasscode() || SharedConfig.isWaitingForPasscodeEnter) {
-//                photoPath = null;
-//            } else {
-//                if (pushDialogs.size() == 1 && Build.VERSION.SDK_INT < 28) {
-//                    if (chat != null) {
-//                        if (chat.photo != null && chat.photo.photo_small != null && chat.photo.photo_small.volume_id != 0 && chat.photo.photo_small.local_id != 0) {
-//                            photoPath = chat.photo.photo_small;
-//                        }
-//                    } else if (user != null) {
-//                        if (user.photo != null && user.photo.photo_small != null && user.photo.photo_small.volume_id != 0 && user.photo.photo_small.local_id != 0) {
-//                            photoPath = user.photo.photo_small;
-//                        }
-//                    }
-//                }
-//            }
-//        } else {
-//            if (pushDialogs.size() == 1 && dialog_id != globalSecretChatId) {
-//                intent.putExtra("encId", (int) (dialog_id >> 32));
-//            }
-//        }
+
         intent.putExtra("currentAccount", currentAccount);
-        if (task != null) {
-            intent.putExtra("chatId", task.getChatId());
-            intent.putExtra("userId", task.getCreator_id());
+        intent.putExtra("chatId", chatId);
+        intent.putExtra("task_id", taskId);
+        intent.putExtra("creator_id", creatorId);
+
+        if ("private".equals(chatType)) {
+            intent.putExtra("chatId", 0);
+
+            if (chatId == UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId()) {
+                intent.putExtra("userId", creatorId);
+            } else {
+                intent.putExtra("userId", chatId);
+            }
         }
-        intent.putExtra("currentAccount", currentAccount);
+
+        if (color == -1) {
+            intent.putExtra("openDiscussion", true);
+        }
 
         PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         SpannableStringBuilder builder = new SpannableStringBuilder();
+        String channelId = channel;
+        SpannableString coloredTitle = new SpannableString(title);
+        switch (color) {
+            case -1:    // new message comment
+                channelId = taskChannel;
+                createNotificationChannel(TASK_CHANNEL);
+                coloredTitle.setSpan(new ForegroundColorSpan(Color.parseColor("#ff348bc1")), 0, title.length(), 0);
 
-        if (title.contains("overdue")) {
-            title = title.replace("overdue", "");
-            String red = "OVERDUE";
-            SpannableString redSpannable = new SpannableString(red);
-            redSpannable.setSpan(new ForegroundColorSpan(Color.parseColor("#ffe25050")), 0, red.length(), 0);
-            builder.append(title).append(redSpannable);
-        } else {
-            builder.append(title);
+                break;
+            case -2:    // reminder
+                createNotificationChannel(REMINDER_CHANNEL);
+                channelId = reminderChannel;
+                coloredTitle.setSpan(new ForegroundColorSpan(Color.parseColor("#fff28c48")), 0, title.length(), 0);
+                break;
+            default:
+                channelId = taskChannel;
+                createNotificationChannel(TASK_CHANNEL);
+                coloredTitle.setSpan(new ForegroundColorSpan(color), 0, title.length(), 0);
+
+                break;
         }
+
+        builder.append(coloredTitle);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ApplicationLoader.applicationContext, channel)
                 .setContentTitle(builder)
                 .setSmallIcon(R.drawable.ic_notification_rooms)
                 .setAutoCancel(true)
+                .setChannelId(channelId)
                 .setContentText(body)
                 .setNumber(total_unread_count)
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(body))
                 .setContentIntent(contentIntent)
-                .setGroup(notificationGroup)
+                .setGroup(notificationGroupTask)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setGroupSummary(true)
                 .setShowWhen(true)
                 .setColor(0xff11acfa);
 
-        mBuilder.setCategory(NotificationCompat.CATEGORY_MESSAGE);
+        mBuilder.setCategory(NotificationCompat.CATEGORY_EVENT);
         mBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(body));
 
         Intent dismissIntent = new Intent(ApplicationLoader.applicationContext, NotificationDismissReceiver.class);
         dismissIntent.putExtra("currentAccount", currentAccount);
         mBuilder.setDeleteIntent(PendingIntent.getBroadcast(ApplicationLoader.applicationContext, 1, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT));
-        createNotificationChannel();
+
         NotificationManagerCompat compat = NotificationManagerCompat.from(ApplicationLoader.applicationContext);
-        compat.notify(taskId, mBuilder.build());
+        compat.notify((int) taskId, mBuilder.build());
 
     }
 
     String channel = "rooms_channel";
+    String taskChannel = "task_channel";
+    String reminderChannel = "reminder_channel";
+    private static final int ROOMS_CHANNEL = 0;
+    private static final int TASK_CHANNEL = 1;
+    private static final int REMINDER_CHANNEL = 2;
 
-    private void createNotificationChannel() {
+    private void createNotificationChannel(int type) {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = channel;
             String description = "Rooms channel";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
+
+            switch (type) {
+                case ROOMS_CHANNEL:
+                    break;
+
+                case TASK_CHANNEL:
+                    name = taskChannel;
+                    description = "Rooms task channel";
+                    importance = NotificationManager.IMPORTANCE_HIGH;
+
+                    break;
+                case REMINDER_CHANNEL:
+                    name = reminderChannel;
+                    description = "Rooms reminder channel";
+                    importance = NotificationManager.IMPORTANCE_HIGH;
+                    break;
+            }
             NotificationChannel channel = new NotificationChannel(name.toString(), name, importance);
             channel.setDescription(description);
             // Register the channel with the system; you can't change the importance

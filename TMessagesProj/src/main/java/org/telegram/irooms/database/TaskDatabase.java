@@ -2,6 +2,8 @@ package org.telegram.irooms.database;
 
 import android.content.Context;
 
+import org.telegram.irooms.models.TaskMessage;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -13,7 +15,8 @@ import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @TypeConverters(Converters.class)
-@Database(entities = {Task.class, Company.class, RequestHistory.class}, version = 21, exportSchema = false)
+@Database(entities = {Task.class, Company.class, RequestHistory.class,
+        TaskMessage.class, CommentRequestHistory.class}, version = 29, exportSchema = false)
 public abstract class TaskDatabase extends RoomDatabase {
 
     private static String currentDb;
@@ -23,6 +26,10 @@ public abstract class TaskDatabase extends RoomDatabase {
     public abstract CompanyDao companyDao();
 
     public abstract RequestHistoryDao requestHistoryDao();
+
+    public abstract TaskMessageDao taskMessageDao();
+
+    public abstract CommentHistoryDao commentHistoryDao();
 
 
     // marking the instance as volatile to ensure atomic access to the variable
@@ -71,6 +78,10 @@ public abstract class TaskDatabase extends RoomDatabase {
                 companyDao.deleteAll();
                 RequestHistoryDao requestHistory = INSTANCE.requestHistoryDao();
                 requestHistory.deleteAll();
+                TaskMessageDao taskMessageDao = INSTANCE.taskMessageDao();
+                taskMessageDao.deleteAll();
+                CommentHistoryDao commentHistoryDao = INSTANCE.commentHistoryDao();
+                commentHistoryDao.deleteAll();
             });
         }
 

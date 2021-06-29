@@ -8,6 +8,7 @@
 
 package org.rooms.messenger;
 
+import android.graphics.Color;
 import android.os.Environment;
 import android.os.SystemClock;
 
@@ -25,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.rooms.messenger.R;
+import org.telegram.irooms.Utils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
@@ -69,18 +71,45 @@ public class GcmPushListenerService extends FirebaseMessagingService {
             if (data.keySet().contains("task")) {
                 try {
                     String taskJson = (String) data.get("task");
+
                     JSONObject jsonObject = new JSONObject(taskJson);
 
-                    int taskId = jsonObject.getInt("task_id");
+                    long taskId = jsonObject.getLong("task_id");
+
+                    int chatId = jsonObject.optInt("chat_id");
+                    int creatorId = jsonObject.optInt("creator_id");
                     String title = jsonObject.getString("title");
                     String body = jsonObject.getString("body");
-                    NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, title, body);
+                    String type = jsonObject.optString("type");
+                    String chat_type = jsonObject.optString("chat_type");
+
+
+                    switch (type) {
+                        case "taskReminder":
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, -2);
+                            break;
+
+                        case "taskExpired":
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, Utils.getColor(5));
+                            break;
+
+                        case "taskDone":
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, Utils.getColor(2));
+                            break;
+
+                        case "newTask":
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, Utils.getColor(0));
+                            break;
+
+                        case "newMessage":
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, -1);
+                            break;
+                    }
                     return;
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
         }
         final long time = message.getSentTime();
         final long receiveTime = SystemClock.elapsedRealtime();

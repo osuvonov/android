@@ -1,5 +1,8 @@
 package org.telegram.irooms.database;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.List;
 
 import androidx.annotation.NonNull;
@@ -10,7 +13,7 @@ import androidx.room.TypeConverters;
 
 // Task status localCreated=1,localUpdated=2, online=3
 @Entity(tableName = "tbl_tasks")
-public class Task {
+public class Task implements Parcelable {
     public Task(long id, long company_id) {
         this.id = id;
         this.platform = "android";
@@ -78,11 +81,70 @@ public class Task {
     @ColumnInfo(name = "members")
     private List<Integer> members;
 
+    @TypeConverters(Converters.class)
     @ColumnInfo(name = "receivers")
     private List<Integer> receivers;
 
+    @TypeConverters(Converters.class)
+    @ColumnInfo(name = "reminders")
+    private List<String> reminders;
+
     @ColumnInfo(name = "chat_type")
     private String chat_type;
+
+    @ColumnInfo(name = "comments_count")
+    private int comments_count;
+
+    protected Task(Parcel in) {
+        pId = in.readLong();
+        id = in.readLong();
+        status_code = in.readInt();
+        company_id = in.readLong();
+        chat_id = in.readLong();
+        message_id = in.readLong();
+        description = in.readString();
+        status = in.readString();
+        created_at = in.readString();
+        updated_at = in.readString();
+        completed_at = in.readString();
+        expires_at = in.readString();
+        creator_id = in.readLong();
+        lastUpdater = in.readLong();
+        tag = in.readString();
+        logo = in.readString();
+        localStatus = in.readInt();
+        local_id = in.readString();
+        chat_type = in.readString();
+        last_read_message_id = in.readLong();
+        platform = in.readString();
+        comments_count = in.readInt();
+        in.readList(reminders, String.class.getClassLoader());
+        in.readList(receivers, Integer.class.getClassLoader());
+        in.readList(members, Integer.class.getClassLoader());
+    }
+
+    public static final Creator<Task> CREATOR = new Creator<Task>() {
+        @Override
+        public Task createFromParcel(Parcel in) {
+            return new Task(in);
+        }
+
+        @Override
+        public Task[] newArray(int size) {
+            return new Task[size];
+        }
+    };
+
+    public long getLast_read_message_id() {
+        return last_read_message_id;
+    }
+
+    public void setLast_read_message_id(long last_read_message_id) {
+        this.last_read_message_id = last_read_message_id;
+    }
+
+    @ColumnInfo(name = "last_read_message_id")
+    private long last_read_message_id;
 
     public String getPlatform() {
         return platform;
@@ -95,6 +157,13 @@ public class Task {
     @ColumnInfo(name = "platform")
     private String platform;
 
+    public List<String> getReminders() {
+        return reminders;
+    }
+
+    public void setReminders(List<String> reminders) {
+        this.reminders = reminders;
+    }
 
     public String getChat_type() {
         return chat_type;
@@ -326,5 +395,47 @@ public class Task {
 
     public void setLastUpdater(long lastUpdater) {
         this.lastUpdater = lastUpdater;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(pId);
+        dest.writeLong(id);
+        dest.writeInt(status_code);
+        dest.writeLong(company_id);
+        dest.writeLong(chat_id);
+        dest.writeLong(message_id);
+        dest.writeString(description);
+        dest.writeString(status);
+        dest.writeString(created_at);
+        dest.writeString(updated_at);
+        dest.writeString(completed_at);
+        dest.writeString(expires_at);
+        dest.writeLong(creator_id);
+        dest.writeLong(lastUpdater);
+        dest.writeString(tag);
+        dest.writeString(logo);
+        dest.writeInt(localStatus);
+        dest.writeString(local_id);
+        dest.writeString(chat_type);
+        dest.writeLong(last_read_message_id);
+        dest.writeString(platform);
+        dest.writeInt(comments_count);
+        dest.writeList(receivers);
+        dest.writeList(reminders);
+        dest.writeList(members);
+    }
+
+    public int getComments_count() {
+        return comments_count;
+    }
+
+    public void setComments_count(int comments_count) {
+        this.comments_count = comments_count;
     }
 }

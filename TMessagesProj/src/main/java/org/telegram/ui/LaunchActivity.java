@@ -99,6 +99,8 @@ import org.telegram.irooms.company.CompanyFragment;
 import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.models.SocketAuthObject;
+import org.telegram.irooms.models.TaskMessage;
+import org.telegram.irooms.models.ThreadInfo;
 import org.telegram.irooms.network.APIClient;
 import org.telegram.irooms.network.IRoomJsonParser;
 import org.telegram.irooms.network.SocketSSL;
@@ -497,11 +499,65 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 case "taskUpdated":
                     onTaskUpdated(data);
                     break;
+                case "updateThreadInfo":
+                    onThreadUpdateInfo(data);
+                    break;
+                case "editMessage":
+                    onEditTaskMessage(data);
+                    break;
+                case "newMessage":
+                    onNewTaskMessage(data);
+                    break;
+
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
     };
+
+    private void onThreadUpdateInfo(String json) {
+        try {
+            JSONObject data = new JSONObject(json);
+
+            ThreadInfo threadInfo = IRoomJsonParser.getThreadInfo(data.toString());
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            if (taskDiscussionListener != null) {
+                taskDiscussionListener.onThreadInfoUpdated(threadInfo);
+            }
+            RoomsRepository.getInstance(getApplication(), user.phone).updateLastReadMessageId(threadInfo.getTask_id(), threadInfo.getLast_read_message_id());
+        } catch (Exception x) {
+            return;
+        }
+    }
+
+    private void onEditTaskMessage(String json) {
+        try {
+            JSONObject data = new JSONObject(json);
+
+            TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(data.toString());
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            if (taskDiscussionListener != null) {
+                taskDiscussionListener.onTaskMessageEdited(taskMessage);
+            }
+            RoomsRepository.getInstance(getApplication(), user.phone).updateTaskMessage(taskMessage);
+        } catch (Exception x) {
+            return;
+        }
+    }
+
+    private void onNewTaskMessage(String json) {
+        try {
+            JSONObject data = new JSONObject(json);
+            TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(data.toString());
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+            if (taskDiscussionListener != null) {
+                taskDiscussionListener.onNewTaskMessage(taskMessage);
+            }
+            RoomsRepository.getInstance(getApplication(), user.phone).insertTaskMessage(taskMessage);
+        } catch (Exception x) {
+            return;
+        }
+    }
 
     private void onJoinedToCompany(boolean joined, String company) {
         try {
@@ -629,7 +685,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                         String fullUrl = "https://irooms.io";
                                         TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
                                         entityWeb.offset = message.indexOf("irooms.io");
-                                        entityWeb.length = fullUrl.length();
+                                        entityWeb.length = 9;
                                         entityWeb.url = fullUrl;
 
                                         entities.add(entityWeb);
@@ -637,11 +693,11 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                             int start = message.indexOf("@company_name");
                                             int end = start + 13;
                                             Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
-                                            String teamName = team == null ? "" : " (" + team.getName()+")";
+                                            String teamName = team == null ? "" : " (" + team.getName() + ")";
                                             message = message.replace(start, end, teamName);
                                             TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
-                                            entityTeam.offset = start+2;
-                                            entityTeam.length = teamName.length()-1;
+                                            entityTeam.offset = start + 2;
+                                            entityTeam.length = teamName.length() - 1;
 
                                             entities.add(entityTeam);
                                         } else {
@@ -704,7 +760,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         String fullUrl = "https://irooms.io";
         TLRPC.MessageEntity entityWeb = new TLRPC.TL_messageEntityTextUrl();
         entityWeb.offset = message.indexOf("irooms.io");
-        entityWeb.length = fullUrl.length();
+        entityWeb.length = 9;
         entityWeb.url = fullUrl;
 
         entities.add(entityWeb);
@@ -734,7 +790,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
 //                    TLRPC.TL_messageEntityMentionName entityUser = new TLRPC.TL_messageEntityMentionName();
 //                    entityUser.user_id = task.getMembers().get(i);
 //
-//                    TLRPC.User user = getMessagesController().getUser(task.getMembers().get(i));
+//                    TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(task.getMembers().get(i));
 //                    if (user != null) {
 //                        String userName = user.username != null ? ("@" + user.username) : (user.first_name != null ? user.first_name : user.last_name);
 //                        if (userName == null || "".equals(userName)) {
@@ -802,6 +858,20 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         if (taskListener != null) {
             taskListener.onTaskCreated(task);
         }
+    }
+
+    public void setTaskDiscussionListener(TaskDiscussionListener ls) {
+        taskDiscussionListener = ls;
+    }
+
+    private TaskDiscussionListener taskDiscussionListener;
+
+    interface TaskDiscussionListener {
+        void onNewTaskMessage(TaskMessage taskMessage);
+
+        void onTaskMessageEdited(TaskMessage taskMessage);
+
+        void onThreadInfoUpdated(ThreadInfo threadInfo);
     }
 
     public TaskListener taskListener;
@@ -1311,7 +1381,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     presentFragment(new ChatActivity(args));
                     drawerLayoutContainer.closeDrawer(false);
                 }
-                if (id == 13) {
+                if (id == 25) {
                     Bundle args = new Bundle();
 //                    args.putString("action", "delete");
                     args.putBoolean("create_company", true);
@@ -2007,6 +2077,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         //FileLog.d("UI create14 time = " + (SystemClock.elapsedRealtime() - ApplicationLoader.startTime));
         int push_user_id = 0;
         int push_chat_id = 0;
+        long push_task_id = 0;
+        boolean push_open_discussion = false;
         int push_enc_id = 0;
         int push_msg_id = 0;
         int open_settings = 0;
@@ -2834,6 +2906,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     int chatId = intent.getIntExtra("chatId", 0);
                     int userId = intent.getIntExtra("userId", 0);
                     int encId = intent.getIntExtra("encId", 0);
+                    long taskId = intent.getLongExtra("task_id", -1);
+                    boolean openDiscussion = intent.getBooleanExtra("openDiscussion", false);
                     int widgetId = intent.getIntExtra("appWidgetId", 0);
                     if (widgetId != 0) {
                         open_settings = 6;
@@ -2846,9 +2920,14 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                         if (chatId != 0) {
                             NotificationCenter.getInstance(intentAccount[0]).postNotificationName(NotificationCenter.closeChats);
                             push_chat_id = chatId;
+                            push_task_id = taskId;
+                            push_open_discussion = openDiscussion;
+                            push_user_id = userId;
                         } else if (userId != 0) {
                             NotificationCenter.getInstance(intentAccount[0]).postNotificationName(NotificationCenter.closeChats);
                             push_user_id = userId;
+                            push_task_id = taskId;
+                            push_open_discussion = openDiscussion;
                         } else if (encId != 0) {
                             NotificationCenter.getInstance(intentAccount[0]).postNotificationName(NotificationCenter.closeChats);
                             push_enc_id = encId;
@@ -2896,6 +2975,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 } else {
                     Bundle args = new Bundle();
                     args.putInt("user_id", push_user_id);
+                    args.putLong("task_id", push_task_id);
+                    args.putBoolean("openDiscussion", push_open_discussion);
+
                     if (push_msg_id != 0) {
                         args.putInt("message_id", push_msg_id);
                     }
@@ -2910,6 +2992,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             } else if (push_chat_id != 0) {
                 Bundle args = new Bundle();
                 args.putInt("chat_id", push_chat_id);
+                args.putLong("task_id", push_task_id);
+                args.putBoolean("openDiscussion", push_open_discussion);
+                args.putInt("user_id", push_user_id);
                 if (push_msg_id != 0) {
                     args.putInt("message_id", push_msg_id);
                 }

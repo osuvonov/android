@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="4dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:padding="5dp"
+        android:textSize="15sp"
+        android:text="dkds f sdfsd fsd fk sdf dsfk "
+        android:textColor="@color/task_status_yellow_dark"
+        android:id="@+id/reminder_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical"
+        android:gravity="left|center_vertical" />
+
+    <TextView
+        android:padding="5dp"
+        android:textSize="17sp"
+        android:text="dkds f sdfsd fsd fk sdf dsfk "
+        android:textColor="@color/task_status_yellow_dark"
+        android:id="@+id/reminder_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left|center_vertical"
+        android:gravity="left|center_vertical" />
+
+</LinearLayout>

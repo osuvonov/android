@@ -314,7 +314,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
             items.add(new Item(21, LocaleController.getInstance().getRoomsString("add_members"), newGroupIcon));
         }
         if (!IRoomsManager.getInstance().getHasCompany(mContext)) {
-            items.add(new Item(13, LocaleController.getInstance().getRoomsString("create_team"), companyIcon));
+            items.add(new Item(25, LocaleController.getInstance().getRoomsString("create_team"), companyIcon));
         }
         items.add(new Item(11, LocaleController.getInstance().getRoomsString("saved_tasks"), savedIcon));
         items.add(new Item(2, LocaleController.getString("NewGroup", R.string.NewGroup), newGroupIcon));

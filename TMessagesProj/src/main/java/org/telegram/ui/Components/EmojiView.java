@@ -39,6 +39,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
+
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -321,8 +322,11 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
 
     public interface DragListener {
         void onDragStart();
+
         void onDragEnd(float velocity);
+
         void onDragCancel();
+
         void onDrag(int offset);
     }
 
@@ -384,6 +388,7 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
     };
 
     private static final Field superListenerField;
+
     static {
         Field f = null;
         try {
@@ -2050,7 +2055,7 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
             if (parent != null) {
                 float y = getY() - parent.getHeight();
                 if (getLayoutParams().height > 0) {
-                    y +=  getLayoutParams().height;
+                    y += getLayoutParams().height;
                 } else {
                     y += getMeasuredHeight();
                 }
@@ -2116,19 +2121,22 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
     }
 
     public void showSearchField(boolean show) {
-        for (int a = 0; a < 3; a++) {
-            final GridLayoutManager layoutManager = getLayoutManagerForType(a);
-            int position = layoutManager.findFirstVisibleItemPosition();
-            if (show) {
-                if (position == 1 || position == 2) {
-                    layoutManager.scrollToPosition(0);
-                    resetTabsY(a);
-                }
-            } else {
-                if (position == 0) {
-                    layoutManager.scrollToPositionWithOffset(1, 0);
+        try {
+            for (int a = 0; a < 3; a++) {
+                final GridLayoutManager layoutManager = getLayoutManagerForType(a);
+                int position = layoutManager.findFirstVisibleItemPosition();
+                if (show) {
+                    if (position == 1 || position == 2) {
+                        layoutManager.scrollToPosition(0);
+                        resetTabsY(a);
+                    }
+                } else {
+                    if (position == 0) {
+                        layoutManager.scrollToPositionWithOffset(1, 0);
+                    }
                 }
             }
+        } catch (Exception x) {
         }
     }
 
@@ -2626,9 +2634,12 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
 
     private ScrollSlidingTabStrip getTabsForType(@Type int type) {
         switch (type) {
-            case Type.STICKERS: return stickersTab;
-            case Type.EMOJIS: return emojiTabs;
-            case Type.GIFS: return gifTabs;
+            case Type.STICKERS:
+                return stickersTab;
+            case Type.EMOJIS:
+                return emojiTabs;
+            case Type.GIFS:
+                return gifTabs;
             default:
                 throw new IllegalArgumentException("Unexpected argument: " + type);
         }
@@ -2636,9 +2647,12 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
 
     private RecyclerListView getListViewForType(@Type int type) {
         switch (type) {
-            case Type.STICKERS: return stickersGridView;
-            case Type.EMOJIS: return emojiGridView;
-            case Type.GIFS: return gifGridView;
+            case Type.STICKERS:
+                return stickersGridView;
+            case Type.EMOJIS:
+                return emojiGridView;
+            case Type.GIFS:
+                return gifGridView;
             default:
                 throw new IllegalArgumentException("Unexpected argument: " + type);
         }
@@ -2646,9 +2660,12 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
 
     private GridLayoutManager getLayoutManagerForType(@Type int type) {
         switch (type) {
-            case Type.STICKERS: return stickersLayoutManager;
-            case Type.EMOJIS: return emojiLayoutManager;
-            case Type.GIFS: return gifLayoutManager;
+            case Type.STICKERS:
+                return stickersLayoutManager;
+            case Type.EMOJIS:
+                return emojiLayoutManager;
+            case Type.GIFS:
+                return gifLayoutManager;
             default:
                 throw new IllegalArgumentException("Unexpected argument: " + type);
         }
@@ -2656,9 +2673,12 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
 
     private SearchField getSearchFieldForType(@Type int type) {
         switch (type) {
-            case Type.STICKERS: return stickersSearchField;
-            case Type.EMOJIS: return emojiSearchField;
-            case Type.GIFS: return gifSearchField;
+            case Type.STICKERS:
+                return stickersSearchField;
+            case Type.EMOJIS:
+                return emojiSearchField;
+            case Type.GIFS:
+                return gifSearchField;
             default:
                 throw new IllegalArgumentException("Unexpected argument: " + type);
         }
@@ -4298,7 +4318,7 @@ public class EmojiView extends FrameLayout implements NotificationCenter.Notific
         }
 
         public CharSequence getPageTitle(int position) {
-            switch(position) {
+            switch (position) {
                 case 0:
                     return LocaleController.getString("Emoji", R.string.Emoji);
                 case 1:

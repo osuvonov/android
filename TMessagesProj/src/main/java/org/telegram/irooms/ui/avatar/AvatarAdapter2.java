@@ -37,6 +37,11 @@ public class AvatarAdapter2 extends RecyclerView.Adapter<AvatarAdapter2.AvatarVi
         return userList.get(position);
     }
 
+    @Override
+    public long getItemId(int position) {
+        return userList.get(position).id;
+    }
+
     @NonNull
     @Override
     public AvatarViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
