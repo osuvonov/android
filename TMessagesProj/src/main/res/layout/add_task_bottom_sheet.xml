@@ -268,7 +268,6 @@
                     app:layout_constraintTop_toBottomOf="@+id/ll_task_deadline" />
 
                 <LinearLayout
-                    android:visibility="gone"
                     android:id="@+id/ll_task_reminder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

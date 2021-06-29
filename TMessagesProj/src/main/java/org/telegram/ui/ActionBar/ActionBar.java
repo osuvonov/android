@@ -32,12 +32,16 @@ import android.view.ViewGroup;
 import android.view.ViewPropertyAnimator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
+import org.rooms.messenger.databinding.ChatTabBinding;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
 import org.rooms.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.ui.Adapters.FiltersView;
+import org.telegram.ui.Charts.data.ChartData;
+import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.EllipsizeSpanAnimator;
 import org.telegram.ui.Components.FireworksEffect;
 import org.telegram.ui.Components.LayoutHelper;
@@ -124,6 +128,34 @@ public class ActionBar extends FrameLayout {
         });
     }
 
+    public ActionBar(Context context, ChatActivity.TaskChatClickListener listener) {
+        super(context);
+        setOnClickListener(v -> {
+            if (isSearchFieldVisible()) {
+                return;
+            }
+            if (titleActionRunnable != null) {
+                titleActionRunnable.run();
+            }
+        });
+    }
+
+    private ChatTabBinding taskChatLayout;
+
+    public void addTaskChatView(ChatTabBinding view) {
+        this.taskChatLayout = view;
+        taskChatLayout.chatActivityChat.setBackgroundDrawable(Theme.createSelectorDrawable(itemsBackgroundColor));
+        if (itemsColor != 0) {
+            taskChatLayout.chatActivityChat.setTextColor(itemsColor);
+        }
+        taskChatLayout.chatActivityTask.setBackgroundDrawable(Theme.createSelectorDrawable(itemsBackgroundColor));
+        if (itemsColor != 0) {
+            taskChatLayout.chatActivityTask.setTextColor(itemsColor);
+        }
+        addView(taskChatLayout.getRoot(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.LEFT | Gravity.BOTTOM));
+        invalidate();
+    }
+
     private void createBackButtonImage() {
         if (backButtonImageView != null) {
             return;
@@ -147,6 +179,7 @@ public class ActionBar extends FrameLayout {
             }
         });
         backButtonImageView.setContentDescription(LocaleController.getString("AccDescrGoBack", R.string.AccDescrGoBack));
+
     }
 
     public void setBackButtonDrawable(Drawable drawable) {
@@ -487,6 +520,9 @@ public class ActionBar extends FrameLayout {
     }
 
     public void showActionMode(boolean animated, View extraView, View showingView, View[] hidingViews, boolean[] hideView, View translationView, int translation) {
+        if (taskChatLayout != null) {
+            taskChatLayout.getRoot().setVisibility(GONE);
+        }
         if (actionMode == null || actionModeVisible) {
             return;
         }
@@ -638,6 +674,9 @@ public class ActionBar extends FrameLayout {
     }
 
     public void hideActionMode() {
+        if (taskChatLayout != null) {
+            taskChatLayout.getRoot().setVisibility(VISIBLE);
+        }
         if (actionMode == null || !actionModeVisible) {
             return;
         }
@@ -893,6 +932,9 @@ public class ActionBar extends FrameLayout {
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
         int actionBarHeight = getCurrentActionBarHeight();
+        if (taskChatLayout != null && taskChatLayout.getRoot().getVisibility() == VISIBLE) {
+            actionBarHeight += AndroidUtilities.dp(40);
+        }
         int actionBarHeightSpec = MeasureSpec.makeMeasureSpec(actionBarHeight, MeasureSpec.EXACTLY);
 
         ignoreLayoutRequest = true;
@@ -996,23 +1038,25 @@ public class ActionBar extends FrameLayout {
             menu.layout(menuLeft, additionalTop, menuLeft + menu.getMeasuredWidth(), additionalTop + menu.getMeasuredHeight());
         }
 
+        int currentActionBarHeight = getCurrentActionBarHeight();
+
         for (int i = 0; i < 2; i++) {
             if (titleTextView[i] != null && titleTextView[i].getVisibility() != GONE) {
                 int textTop;
                 if (((fromBottom && i == 0) || (!fromBottom && i == 1)) && overlayTitleAnimation && titleAnimationRunning) {
-                    textTop = (getCurrentActionBarHeight() - titleTextView[i].getTextHeight()) / 2;
+                    textTop = (-titleTextView[i].getTextHeight()) / 2;
                 } else {
                     if ((subtitleTextView != null && subtitleTextView.getVisibility() != GONE)) {
-                        textTop = (getCurrentActionBarHeight() / 2 - titleTextView[i].getTextHeight()) / 2 + AndroidUtilities.dp(!AndroidUtilities.isTablet() && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 2 : 3);
+                        textTop = (currentActionBarHeight / 2 - titleTextView[i].getTextHeight()) / 2 + AndroidUtilities.dp(!AndroidUtilities.isTablet() && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 2 : 3);
                     } else {
-                        textTop = (getCurrentActionBarHeight() - titleTextView[i].getTextHeight()) / 2;
+                        textTop = (currentActionBarHeight - titleTextView[i].getTextHeight()) / 2;
                     }
                 }
                 titleTextView[i].layout(textLeft, additionalTop + textTop, textLeft + titleTextView[i].getMeasuredWidth(), additionalTop + textTop + titleTextView[i].getTextHeight());
             }
         }
         if (subtitleTextView != null && subtitleTextView.getVisibility() != GONE) {
-            int textTop = getCurrentActionBarHeight() / 2 + (getCurrentActionBarHeight() / 2 - subtitleTextView.getTextHeight()) / 2 - AndroidUtilities.dp(!AndroidUtilities.isTablet() && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 1 : 1);
+            int textTop = currentActionBarHeight / 2 + (currentActionBarHeight / 2 - subtitleTextView.getTextHeight()) / 2 - AndroidUtilities.dp(!AndroidUtilities.isTablet() && getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE ? 1 : 1);
             subtitleTextView.layout(textLeft, additionalTop + textTop, textLeft + subtitleTextView.getMeasuredWidth(), additionalTop + textTop + subtitleTextView.getTextHeight());
         }
 
@@ -1231,7 +1275,7 @@ public class ActionBar extends FrameLayout {
                     Drawable drawable = backButtonImageView.getDrawable();
                     if (drawable instanceof BackDrawable) {
                         ((BackDrawable) drawable).setColor(color);
-                    } else if (drawable instanceof  MenuDrawable) {
+                    } else if (drawable instanceof MenuDrawable) {
                         ((MenuDrawable) drawable).setIconColor(color);
                     }
                 }
@@ -1270,7 +1314,7 @@ public class ActionBar extends FrameLayout {
             setTitle(title);
             return;
         }
-        boolean crossfade =  overlayTitleAnimation && !TextUtils.isEmpty(subtitleTextView.getText());
+        boolean crossfade = overlayTitleAnimation && !TextUtils.isEmpty(subtitleTextView.getText());
         if (crossfade) {
             if (subtitleTextView.getVisibility() != View.VISIBLE) {
                 subtitleTextView.setVisibility(View.VISIBLE);

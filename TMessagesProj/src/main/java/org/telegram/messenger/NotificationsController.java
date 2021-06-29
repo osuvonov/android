@@ -3714,7 +3714,7 @@ public class NotificationsController extends BaseController {
         }
     }
 
-    public void showTaskNotification(long taskId, int chatId, String title, String body, int color) {
+    public void showTaskNotification(long taskId, int chatId, int creatorId, String type, String chatType, String title, String body, int color) {
 
         Intent intent = new Intent(ApplicationLoader.applicationContext, LaunchActivity.class);
         intent.setAction("com.tmessages.openchat" + Math.random() + Integer.MAX_VALUE);
@@ -3723,29 +3723,41 @@ public class NotificationsController extends BaseController {
         intent.putExtra("currentAccount", currentAccount);
         intent.putExtra("chatId", chatId);
         intent.putExtra("task_id", taskId);
-        if (color==-1){
+        intent.putExtra("creator_id", creatorId);
+
+        if ("private".equals(chatType)) {
+            intent.putExtra("chatId", 0);
+
+            if (chatId == UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId()) {
+                intent.putExtra("userId", creatorId);
+            } else {
+                intent.putExtra("userId", chatId);
+            }
+        }
+
+        if (color == -1) {
             intent.putExtra("openDiscussion", true);
         }
 
         PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
         SpannableStringBuilder builder = new SpannableStringBuilder();
-        String channelId= channel;
+        String channelId = channel;
         SpannableString coloredTitle = new SpannableString(title);
         switch (color) {
             case -1:    // new message comment
-                channelId=taskChannel;
+                channelId = taskChannel;
                 createNotificationChannel(TASK_CHANNEL);
                 coloredTitle.setSpan(new ForegroundColorSpan(Color.parseColor("#ff348bc1")), 0, title.length(), 0);
 
                 break;
             case -2:    // reminder
                 createNotificationChannel(REMINDER_CHANNEL);
-                channelId=reminderChannel;
+                channelId = reminderChannel;
                 coloredTitle.setSpan(new ForegroundColorSpan(Color.parseColor("#fff28c48")), 0, title.length(), 0);
                 break;
             default:
-                channelId=taskChannel;
+                channelId = taskChannel;
                 createNotificationChannel(TASK_CHANNEL);
                 coloredTitle.setSpan(new ForegroundColorSpan(color), 0, title.length(), 0);
 

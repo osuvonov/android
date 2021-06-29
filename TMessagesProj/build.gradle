@@ -62,8 +62,8 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'io.socket:socket.io-client:1.0.0'
 
-        implementation "com.android.support:support-compat:28.0.0"
- 
+    implementation "com.android.support:support-compat:28.0.0"
+
     def room_version = "2.3.0"
 
     implementation "androidx.room:room-runtime:$room_version"
@@ -341,7 +341,7 @@ android {
         }
     }
 
-    defaultConfig.versionCode = 21847
+    defaultConfig.versionCode = 21852
 
     applicationVariants.all { variant ->
         variant.outputs.all { output ->
@@ -360,7 +360,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 29
-        versionName "7.4.327"
+        versionName "7.4.337"
 
         vectorDrawables.generatedDensities = ['mdpi', 'hdpi', 'xhdpi', 'xxhdpi']
 

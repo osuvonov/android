@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.ApplicationLoader;
@@ -43,6 +44,7 @@ import org.telegram.messenger.SecretChatHelper;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.ConnectionsManager;
+import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.LayoutHelper;
 
 import java.util.ArrayList;

@@ -3451,6 +3451,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             actionBar.setSearchFilter(filterData);
             searchItem.collapseSearchFilters();
         }
+  //TODO      MessagesController.getInstance(UserConfig.selectedAccount).addUserToChat(-1215269134,UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser(),0,"",null,null);
 
         return fragmentView;
     }

@@ -87,6 +87,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
+import com.google.android.exoplayer2.util.Log;
 
 import org.rooms.messenger.BuildConfig;
 import org.rooms.messenger.R;
@@ -773,10 +774,6 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
     private boolean scrollByTouch;
 
     private PinchToZoomHelper pinchToZoomHelper;
-    private ChatActionCell infoTopView1;
-    private LinearLayoutManager manager;
-    private int chatIndex;
-    private int migratedFromChatID;
     private ChatRecycleAdapter recycleAdapter;
 
     private ArrayList<TaskMessage> tempList = new ArrayList<>();
@@ -785,26 +782,11 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
         super(bundle);
     }
 
-    private void processRowElements() {
-        // compare dates and insert new rows if there is day diff
-        for (int i = 0; i < tempList.size() - 1; i++) {
-            try {
-                if (tempList.get(i).getDate() == null) {
-                    continue;
-                }
-                if (TaskUtil.diffDays(tempList.get(i).getDate(), tempList.get(i + 1).getDate()) > 0) {
-                    ++i;
-                    TaskMessage message = new TaskMessage();
-                    message.setIsDate(true);
-                    message.setId(-3);
-                    message.setDate(TaskUtil.getDay(tempList.get(i).getDate()));
-                    tempList.add(i, message);
-                }
+    private LaunchActivity activity;
 
-            } catch (Exception x) {
-                x.printStackTrace();
-            }
-        }
+    public ChatActivityDiscussion(Bundle bundle, LaunchActivity activity) {
+        super(bundle);
+        this.activity = activity;
     }
 
     public float getChatListViewPadding() {
@@ -1248,7 +1230,6 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
 
         tempList.add(0, taskMessage);
 
-        processRowElements();
         task_id = task.getId();
 
         isTaskDiscussion = arguments.getBoolean("isTaskDiscussion");
@@ -1438,7 +1419,6 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
             }
             if (chatMode == 0 && chatInfo != null && ChatObject.isChannel(currentChat) && chatInfo.migrated_from_chat_id != 0 && !isThreadChat()) {
                 mergeDialogId = -chatInfo.migrated_from_chat_id;
-                migratedFromChatID = chatInfo.migrated_from_chat_id;
                 maxMessageId[1] = chatInfo.migrated_from_max_id;
             }
             loadInfo = chatInfo == null;
@@ -1649,70 +1629,92 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
 
     private void loadTaskMessages(long task_id) {
         try {
-
-            Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
             TaskRunner commentRunner = new TaskRunner();
-            commentRunner.executeAsync(new Callable<Object>() {
-                @Override
-                public Object call() throws Exception {
-                    CommentRequestHistory history = repository.getLastTaskMessageRequest(task_id);
-                    if (history == null) {
-                        history = new CommentRequestHistory();
-                        Date date = new Date();
-                        date.setTime(1621340352);
-                        history.setLastRequest(TaskUtil.getISODate(date));
-                        history.setTaskId(task_id);
+            commentRunner.executeAsync(() -> {
+                // compare dates and insert new rows if there is day diff
+                for (int i = 0; i < tempList.size() - 1; i++) {
+                    try {
+                        if (tempList.get(i).getDate() == null) {
+                            continue;
+                        }
+                        if (TaskUtil.diffDays(tempList.get(i).getDate(), tempList.get(i + 1).getDate()) > 0) {
+                            ++i;
+                            TaskMessage message = new TaskMessage();
+                            message.setIsDate(true);
+                            message.setId(-3);
+                            message.setDate(TaskUtil.getDay(tempList.get(i).getDate()));
+                            tempList.add(i, message);
+                        }
+
+                    } catch (Exception x) {
+                        x.printStackTrace();
+                    }
+                }
+
+                tempList.addAll(repository.getTaskMessages(task_id));
+
+                updateList();
+
+                if (activity == null) {
+                    activity = (LaunchActivity) getParentActivity();
+                }
+                Socket socket = activity.getmSocket();
+                CommentRequestHistory history = repository.getLastTaskMessageRequest(task_id);
+                if (history == null) {
+                    history = new CommentRequestHistory();
+                    Date date = new Date();
+                    date.setTime(1621340352);
+                    history.setLastRequest(TaskUtil.getISODate(date));
+                    history.setTaskId(task_id);
+                }
+
+                GetMessagesRequest request = new GetMessagesRequest();
+                request.setTask_id(task_id);
+                String newDate = TaskUtil.getISODate(new Date());
+                request.setUpdated_since(history.getLastRequestDate());
+
+                CommentRequestHistory finalHistory = history;
+                IRoomsManager.getInstance().getTaskMessages(socket, request, new IRoomsManager.IRoomCallback<ArrayList<TaskMessage>>() {
+                    @Override
+                    public void onSuccess(ArrayList<TaskMessage> messageList) {
+                        try {
+                            repository.insertTaskMessages(messageList);
+                            finalHistory.setLastRequest(newDate);
+                            repository.insertTaskMessageHistory(finalHistory);
+                            if (tempList != null && messageList.size() != 0) {
+                                tempList.removeAll(messageList);
+                                tempList.addAll(messageList);
+                            }
+                            updateList();
+                        } catch (Exception x) {
+                            x.printStackTrace();
+                        }
                     }
 
-                    GetMessagesRequest request = new GetMessagesRequest();
-                    request.setTask_id(task_id);
-                    String newDate = TaskUtil.getISODate(new Date());
-                    request.setUpdated_since(history.getLastRequestDate());
+                    @Override
+                    public void onError(String error) {
+                    }
+                });
+                return null;
+            }, result -> {
 
-                    tempList.addAll((ArrayList<TaskMessage>) repository.getTaskMessages(task_id));
-                    updateTitle();
-                    AndroidUtilities.runOnUIThread(() -> {
-
-                        chatListView.getAdapter().notifyDataSetChanged();
-
-                    });
-                    CommentRequestHistory finalHistory = history;
-                    IRoomsManager.getInstance().getTaskMessages(socket, request, new IRoomsManager.IRoomCallback<ArrayList<TaskMessage>>() {
-                        @Override
-                        public void onSuccess(ArrayList<TaskMessage> messageList) {
-                            try {
-                                repository.insertTaskMessages(messageList);
-                                finalHistory.setLastRequest(newDate);
-                                repository.insertTaskMessageHistory(finalHistory);
-                                if (tempList != null) {
-                                    tempList.removeAll(messageList);
-                                    tempList.addAll(messageList);
-                                }
-                                updateTitle();
-                                AndroidUtilities.runOnUIThread(() -> {
-                                    chatListView.getAdapter().notifyDataSetChanged();
-                                });
-                            } catch (Exception x) {
-                                x.printStackTrace();
-                            }
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                        }
-                    });
-                    return null;
-                }
-            }, new TaskRunner.TaskCompletionListener<Object>() {
-                @Override
-                public void onComplete(Object result) {
-
-                }
             });
         } catch (Exception c) {
             c.printStackTrace();
         }
 
+    }
+
+    private void updateList() {
+        try {
+            updateTitle();
+
+            AndroidUtilities.runOnUIThread(() -> {
+                if (chatListView != null && chatListView.getAdapter() != null)
+                    chatListView.getAdapter().notifyDataSetChanged();
+            });
+        } catch (Exception x) {
+        }
     }
 
     @Override
@@ -5766,7 +5768,7 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
                     editRequest.setId(editingTaskMessage.getId());
                     editRequest.setText(text);
                     showFieldPanel(false, null, null, null, foundWebPage, true, 0, true, true);
-                    IRoomsManager.getInstance().editMessage(socket, editRequest, new IRoomsManager.IRoomCallback<TaskMessage>() {
+                    IRoomsManager.getInstance().editMessage(socket, activity, editRequest, new IRoomsManager.IRoomCallback<TaskMessage>() {
                         @Override
                         public void onSuccess(TaskMessage success) {
                             TaskMessage message = tempList.stream().filter(item -> item.getId() == success.getId()).findFirst().orElse(null);
@@ -5779,11 +5781,8 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
                                 message1.setEdit_date(success.getEdit_date());
                                 message1.setText(success.getText());
                             }
-                            updateTitle();
+                            updateList();
 
-                            AndroidUtilities.runOnUIThread(() -> {
-                                chatListView.getAdapter().notifyDataSetChanged();
-                            });
                             editingTaskMessage = null;
                         }
 
@@ -5794,10 +5793,10 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
                     });
                     return;
                 }
-                IRoomsManager.getInstance().sendMessage(socket, request, new IRoomsManager.IRoomCallback<TaskMessage>() {
+                IRoomsManager.getInstance().sendMessage(socket, activity, request, new IRoomsManager.IRoomCallback<TaskMessage>() {
                     @Override
                     public void onSuccess(TaskMessage success) {
-                         tempList.add(success);
+                        tempList.add(success);
                         updateTitle();
                         AndroidUtilities.runOnUIThread(() -> {
                             chatListView.getAdapter().notifyItemInserted(0);
@@ -14239,7 +14238,7 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
     }
 
     private void clearHistory(boolean overwrite) {
-         waitingForLoad.clear();
+        waitingForLoad.clear();
         messagesByDays.clear();
         groupedMessagesMap.clear();
         threadMessageAdded = false;

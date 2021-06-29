@@ -43,14 +43,14 @@ public abstract class TaskDao {
     @Query("select * from tbl_tasks ")
     public abstract List<Task> getTasks();
 
-    @Query("select * from tbl_tasks where company_id=:company_id and chat_id=:chatId")
-    public abstract List<Task> getTasksByChatIdAndCompanyId(int company_id, long chatId);
+    @Query("select * from tbl_tasks where chat_id=:chatId")
+    public abstract List<Task> getTasksByChatIdAndCompanyId(  long chatId);
 
     @Query("select * from tbl_tasks where chat_id in (:chatId) ")
     public abstract List<Task> getTasksByChatId(long[] chatId);
 
-    @Query("select * from tbl_tasks where (chat_id in (:chatId)) and (company_id in (:companyId)) ")
-    public abstract List<Task> getTasksByChatAndCompanyId(long chatId, int companyId);
+    @Query("select * from tbl_tasks where (chat_id in (:chatId)) ")
+    public abstract List<Task> getTasksByChatAndCompanyId(long chatId );
 
     @Query("select * from tbl_tasks where local_status in (1,2)")
     public abstract List<Task> getOfflineTasks();
@@ -67,8 +67,8 @@ public abstract class TaskDao {
     @Query("Select * from tbl_tasks where ((members like '%' || :chatId  || '%') or" +
             " (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or" +
             "(chat_id =:accountId and creator_id=:chatId) or" +
-            "(chat_id=:chatId and creator_id=:accountId) and company_id in (:companyId,0)) order by pId desc")
-    public abstract List<Task> getPrivateChatTasksTeam(int companyId, int accountId, int chatId);
+            "(chat_id=:chatId and creator_id=:accountId) ) order by pId desc")
+    public abstract List<Task> getPrivateChatTasksTeam(  int accountId, int chatId);
 
     @Query("Select * from tbl_tasks where (chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and creator_id=:accountId)")
     public abstract List<Task> getPrivateChatTasksNoTeam(int accountId, int chatId);
@@ -83,8 +83,8 @@ public abstract class TaskDao {
     @Query("Select * from tbl_tasks where ((members like '%' || :chatId  || '%') or" +
             " (members like '%' || :accountId  ||  '%' and creator_id=:chatId) or" +
             "(chat_id =:accountId and creator_id=:chatId) or" +
-            "(chat_id=:chatId and creator_id=:accountId)) and company_id in (:companyId) order by pId desc limit :limit offset :offset")
-    public abstract List<Task> getPrivateChatTasksTeam(int companyId, int accountId, int chatId, int limit, int offset);
+            "(chat_id=:chatId and creator_id=:accountId)) order by pId desc limit :limit offset :offset")
+    public abstract List<Task> getPrivateChatTasksTeam(int accountId, int chatId, int limit, int offset);
 
     @Query("Select * from tbl_tasks where (chat_id =:accountId and creator_id=:chatId) or(chat_id=:chatId and" +
             " creator_id=:accountId) order by pId desc limit :limit offset :offset")
@@ -93,8 +93,8 @@ public abstract class TaskDao {
     @Query("select * from tbl_tasks where chat_id in (:chatId) order by pId desc limit :limit offset :offset")
     public abstract List<Task> getTasksByChatId(long[] chatId, int limit, int offset);
 
-    @Query("select * from tbl_tasks where (chat_id in (:chatId)) and (company_id in (:companyId)) order by pId desc limit :limit offset :offset ")
-    public abstract List<Task> getTasksByChatAndCompanyId(long chatId, int companyId, int limit, int offset);
+    @Query("select * from tbl_tasks where (chat_id in (:chatId))  order by pId desc limit :limit offset :offset ")
+    public abstract List<Task> getTasksByChatAndCompanyId(long chatId,   int limit, int offset);
 
     @Query("update tbl_tasks set last_read_message_id=:lastReadId where id=:taskId")
     public abstract void updateLastReadMessageId(long taskId, long lastReadId);

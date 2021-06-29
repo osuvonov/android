@@ -45,6 +45,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|left"
                 android:ellipsize="end"
+                android:visibility="gone"
                 android:gravity="left|top"
                 android:textColor="@color/notification_blue_color"
                 android:textSize="8sp" />

@@ -1009,6 +1009,7 @@ public class LocaleController {
         englishRoomsMap.put("set_reminder","Set reminder");
         englishRoomsMap.put("reminder","Reminder");
         englishRoomsMap.put("enter_team","Enter team name");
+        englishRoomsMap.put("send_the_code_assms","Send the code as an sms?");
 
     }
 
@@ -1069,6 +1070,7 @@ public class LocaleController {
         uzbekRoomsMap.put("set_reminder","Eslatma qo'yish");
         uzbekRoomsMap.put("reminder","Eslatma");
         uzbekRoomsMap.put("enter_team","Jamoa nomini kiriting");
+        uzbekRoomsMap.put("send_the_code_assms","Kodni sms orqali jo'natilsinmi?");
 
     }
 
@@ -1128,6 +1130,7 @@ public class LocaleController {
         russianRoomsMap.put("set_reminder","Установить напоминание");
         russianRoomsMap.put("reminder","Напоминание");
         russianRoomsMap.put("enter_team","Введите название команды");
+        russianRoomsMap.put("send_the_code_assms","Отправить код через SMS?");
     }
 
     public String getRoomsString(String key) {

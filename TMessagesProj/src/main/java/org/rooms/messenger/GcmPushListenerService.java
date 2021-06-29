@@ -77,30 +77,32 @@ public class GcmPushListenerService extends FirebaseMessagingService {
                     long taskId = jsonObject.getLong("task_id");
 
                     int chatId = jsonObject.optInt("chat_id");
-
+                    int creatorId = jsonObject.optInt("creator_id");
                     String title = jsonObject.getString("title");
                     String body = jsonObject.getString("body");
                     String type = jsonObject.optString("type");
+                    String chat_type = jsonObject.optString("chat_type");
+
 
                     switch (type) {
                         case "taskReminder":
-                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId, title, body, -2);
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, -2);
                             break;
 
                         case "taskExpired":
-                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId, title, body, Utils.getColor(5));
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, Utils.getColor(5));
                             break;
 
                         case "taskDone":
-                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId, title, body, Utils.getColor(2));
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, Utils.getColor(2));
                             break;
 
                         case "newTask":
-                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId, title, body, Utils.getColor(0));
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, Utils.getColor(0));
                             break;
 
                         case "newMessage":
-                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId, title, body, -1);
+                            NotificationsController.getInstance(UserConfig.selectedAccount).showTaskNotification(taskId, chatId,creatorId,type,chat_type, title, body, -1);
                             break;
                     }
                     return;

@@ -99,10 +99,12 @@ import androidx.recyclerview.widget.GridLayoutManagerFixed;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScrollerCustom;
 import androidx.recyclerview.widget.RecyclerView;
+import io.socket.client.Ack;
 import io.socket.client.Socket;
 
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 
+import org.json.JSONObject;
 import org.rooms.messenger.BuildConfig;
 import org.rooms.messenger.R;
 import org.rooms.messenger.databinding.BottomTaskSortBinding;
@@ -782,6 +784,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private BottomSheet bottomSheetTask;
     private int migratedFromChatID;
     private ChatActivityDiscussion chatActivityDiscussion;
+    private ChatTabBinding chatTab;
 
     public float getChatListViewPadding() {
         return chatListViewPaddingTop;
@@ -1873,8 +1876,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }, timeout * 1000);
         }
         if (!isChannel()) {
-            topViewsStartOffset = 40;
-            topViewsStartOffsetDp = AndroidUtilities.dp(40);
+//            topViewsStartOffset = 40;
+//            topViewsStartOffsetDp = AndroidUtilities.dp(40);
         }
 
         return true;
@@ -2270,6 +2273,18 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
         });
 
+        try {
+            JSONObject postData = new JSONObject();
+            Socket socket = ((LaunchActivity) getParentActivity()).getmSocket();
+
+            postData.put("chat_id", Math.abs(dialog_id));
+            socket.emit("joinToGroup", postData, (Ack) args1 -> {
+
+            });
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 
 
@@ -5554,14 +5569,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             chatTab.chatActivityChat.setText(LocaleController.getInstance().getRoomsString("chat"));
             chatTab.chatActivityTask.setText(LocaleController.getInstance().getRoomsString("tasks"));
 
-            if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
-                chatTab.getRoot().setBackgroundResource(R.color.background_dark);
-                bottomTaskSort.bottomChatTabContainer.setBackgroundResource(R.color.background_dark);
-
-                chatTab.chatActivityChat.setBackgroundResource(R.drawable.btn_click2_dark);
-                chatTab.chatActivityTask.setBackgroundResource(R.drawable.btn_click2_dark);
-
-            }
+//            if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
+//                chatTab.getRoot().setBackgroundResource(R.color.background_dark);
+//                bottomTaskSort.bottomChatTabContainer.setBackgroundResource(R.color.background_dark);
+//
+//                chatTab.chatActivityChat.setBackgroundResource(R.drawable.btn_click2_dark);
+//                chatTab.chatActivityTask.setBackgroundResource(R.drawable.btn_click2_dark);
+//
+//            }
             chatTab.chatActivityChat.setOnClickListener(view -> {
 
                 if (!isChatMode) {
@@ -5656,7 +5671,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             bottomTaskSort.taskDone.setText(LocaleController.getInstance().getRoomsString("done"));
             bottomTaskSort.taskArchive.setText(LocaleController.getInstance().getRoomsString("archive"));
 
-            contentView.addView(chatTab.getRoot(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.TOP | Gravity.LEFT));
+            actionBar.addTaskChatView(chatTab);
+            //   contentView.addView(chatTab.getRoot(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.TOP | Gravity.LEFT));
             int selectedColor = getParentActivity().getResources().getColor(R.color.key_chat_emojiPanelStickerSetNameHighlight);
             if (IRoomsManager.getInstance().isDarkMode(getParentActivity())) {
                 selectedColor = getParentActivity().getResources().getColor(R.color.task_sort_bottom_tab_selected);
@@ -7998,6 +8014,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         return taskUserList;
     }
 
+    TaskChatClickListener taskChatClickListener;
+
+    public interface TaskChatClickListener {
+        void onTaskClick();
+
+        void onChatClick();
+    }
+
     private void showTaskCreator() {
         if (createTask && !isChannel()) {
             getParentLayout().removeFragmentFromStack(getParentLayout().fragmentsStack.size() - 2);
@@ -8048,11 +8072,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private void showTaskDialog(LaunchActivity activity, Task task) {
         AndroidUtilities.runOnUIThread(() -> {
             startTaskId = -1;
-          //  if (openDiscussion) {
-                presentDiscussionFragment(task);
-                openDiscussion = false;
-                return;
-        //    }
+            //  if (openDiscussion) {
+            Log.e("SHOW TASK DIALOG", task.getChat_id() + " creator " + task.getCreator_id());
+            presentDiscussionFragment(task);
+            openDiscussion = false;
+            return;
+            //    }
 //            bottomSheetTask = AlertsCreator.showTaskDialog(activity, ChatActivity.this, task, getTaskMemberList(), new TaskManagerListener() {
 //                @Override
 //                public void onCreate(Task task) {
@@ -8085,7 +8110,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 chatType = "group";
             }
             bottomSheetTask = AlertsCreator.createTaskEditorDialogBySocket(socket, getParentActivity(), selectedUser,
-                    text, getTaskMemberList(), chatId, chatType, new TaskManagerListener() {
+                    text, getTaskMemberList(), Math.abs(chatId), chatType, new TaskManagerListener() {
                         @Override
                         public void onCreate(Task task) {
                             // adding task to {taskList} in order to show task card view
@@ -23029,8 +23054,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         ArrayList<TLRPC.User> userList = getTaskMemberList();
 
-        ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
-        task.setReceivers(receiverIds);
+//        ArrayList<Integer> receiverIds = (ArrayList<Integer>) userList.stream().map(user -> user.id).collect(Collectors.toList());
+//        task.setReceivers(receiverIds);
         TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
         repository.updateLocalTask(task);
@@ -23041,7 +23066,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         bundle.putInt("chat_id", (int) Math.abs(dialog_id));
         bundle.putParcelable("task", task);
 
-        chatActivityDiscussion = new ChatActivityDiscussion(bundle);
+        chatActivityDiscussion = new ChatActivityDiscussion(bundle,(LaunchActivity) getParentActivity());
         presentFragment(chatActivityDiscussion, false);
     }
 
@@ -23965,21 +23990,21 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     taskItem.setMessageId(message.getId());
                                     RightTaskLayoutBinding layout = RightTaskLayoutBinding.bind(holder.itemView);
                                     CommentsLayoutBinding commentsLayout = layout.comments;
-                                    if (taskItem.getCompany_id() != 0) {
-                                        commentsLayout.getRoot().setVisibility(View.VISIBLE);
-                                        int size = taskItem.getComments_count();
+//                                    if (taskItem.getCompany_id() != 0) {
+                                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                                    int size = taskItem.getComments_count();
 
-                                        commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+                                    commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
 
-                                        commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                presentDiscussionFragment(finalTaskItem);
-                                            }
-                                        });
-                                    } else {
-                                        commentsLayout.getRoot().setVisibility(View.GONE);
-                                    }
+                                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            presentDiscussionFragment(finalTaskItem);
+                                        }
+                                    });
+//                                    } else {
+//                                        commentsLayout.getRoot().setVisibility(View.GONE);
+//                                    }
 
                                     if (!message.isSent() && ((LaunchActivity) getParentActivity()).getmSocket().connected()) {
                                         if (message.type == 0 || message.type == 20) {
@@ -24005,7 +24030,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         }
                                     }
 
-                                    layout.teamTitle.setText(teamName);
+//                                    layout.teamTitle.setText(teamName);
                                     String deadline = getDeadLine(taskItem.getExpires_at());
                                     layout.tlDeadline.setText(deadline);
                                     if (deadline.equals("")) {
@@ -24147,9 +24172,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 Task finalTaskItem1 = taskItem;
                                 CommentsLayoutBinding commentsLayout = layout.comments;
 
-                                if (taskItem.getCompany_id() != 0) {
-                                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
-                                    commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
+//                                if (taskItem.getCompany_id() != 0) {
+                                commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                                commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
 
 //                                    if (taskMessageList.containsKey(finalTaskItem.getId())) {
 //                                        if (taskMessageList.containsKey(finalTaskItem.getId())) {
@@ -24163,15 +24188,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 //                                    } else {
 //                                        loadTaskMessages(taskItem.getId());
 //                                    }
-                                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            presentDiscussionFragment(finalTaskItem);
-                                        }
-                                    });
-                                } else {
-                                    commentsLayout.getRoot().setVisibility(View.GONE);
-                                }
+                                commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        presentDiscussionFragment(finalTaskItem);
+                                    }
+                                });
+//                                } else {
+//                                    commentsLayout.getRoot().setVisibility(View.GONE);
+//                                }
                                 if (taskItem.getMembers().size() == 0) {
                                     layout.taskArrow.setVisibility(View.INVISIBLE);
                                 } else {
@@ -24192,7 +24217,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     }
                                 }
 
-                                layout.teamTitle.setText(teamName);
+//                                layout.teamTitle.setText(teamName);
                                 deadline = getDeadLine(taskItem.getExpires_at());
                                 layout.tlDeadline.setText(deadline);
                                 if (deadline.equals("")) {
@@ -24339,14 +24364,14 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         }
                                     }
 
-                                    layout.teamTitle.setText(teamName);
+                                    // layout.teamTitle.setText(teamName);
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     CommentsLayoutBinding commentsLayout = layout.comments;
 
-                                    if (taskItem.getCompany_id() != 0) {
-                                        commentsLayout.getRoot().setVisibility(View.VISIBLE);
-                                        commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
+//                                    if (taskItem.getCompany_id() != 0) {
+                                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                                    commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
 
 //                                        if (taskMessageList.containsKey(finalTaskItem.getId())) {
 //                                            if (taskMessageList.containsKey(finalTaskItem.getId())) {
@@ -24360,15 +24385,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 //                                        } else {
 //                                            loadTaskMessages(taskItem.getId());
 //                                        }
-                                        commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View v) {
-                                                presentDiscussionFragment(finalTaskItem);
-                                            }
-                                        });
-                                    } else {
-                                        commentsLayout.getRoot().setVisibility(View.GONE);
-                                    }
+                                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            presentDiscussionFragment(finalTaskItem);
+                                        }
+                                    });
+//                                    } else {
+//                                        commentsLayout.getRoot().setVisibility(View.GONE);
+//                                    }
                                     Company finalSelectedCompany = selectedCompany;
                                     layout.tlTaskedit.setOnClickListener(view -> {
                                         ArrayList userList = getTaskMemberList();
@@ -25234,7 +25259,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
                 }
 
-                layout.teamTitle.setText(teamName);
+//                layout.teamTitle.setText(teamName);
                 if (taskItem.getMembers().size() == 0) {
                     layout.taskArrow.setVisibility(View.INVISIBLE);
                 } else {
@@ -25338,9 +25363,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 });
 
                 CommentsLayoutBinding commentsLayout = layout.comments;
-                if (taskItem.getCompany_id() != 0) {
-                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
-                    int size = taskItem.getComments_count();
+//                if (taskItem.getCompany_id() != 0) {
+                commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                int size = taskItem.getComments_count();
 //                    if (taskMessageList.containsKey(taskItem.getId())) {
 //                        size = taskMessageList.get(taskItem.getId()).size();
 //
@@ -25350,17 +25375,17 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 //                    } else {
 //                        loadTaskMessages(taskItem.getId());
 //                    }
-                    commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+                commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
 
-                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            presentDiscussionFragment(taskItem);
-                        }
-                    });
-                } else {
-                    commentsLayout.getRoot().setVisibility(View.GONE);
-                }
+                commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        presentDiscussionFragment(taskItem);
+                    }
+                });
+//                } else {
+//                    commentsLayout.getRoot().setVisibility(View.GONE);
+//                }
 
             }
         }

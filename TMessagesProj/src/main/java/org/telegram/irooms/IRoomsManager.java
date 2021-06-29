@@ -472,27 +472,31 @@ public class IRoomsManager {
 
     public void performLogOut(Context context) {
         if (context != null) {
-            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
             long recordID = PreferenceManager.getDefaultSharedPreferences(context).getLong("record_id", -1);
             PreferenceManager.getDefaultSharedPreferences(context).edit().putLong("record_id", -1).commit();
-            String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + user.phone, "");
-            PreferenceManager.getDefaultSharedPreferences(context).edit().putString("token" + user.phone, "").commit();
 
-            SharedPreferences preferences = context.getSharedPreferences(user.phone, Context.MODE_PRIVATE);
-            preferences.edit().clear().apply();
-            APIClient.getInstance().deleteSubscription(context, token, recordID, new VolleyCallback() {
-                @Override
-                public void onSuccess(String response) {
+            TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
-                }
+            if (user != null) {
 
-                @Override
-                public void onError(String error) {
-                    Log.e("logout error", error);
-                }
-            });
+                String token = PreferenceManager.getDefaultSharedPreferences(context).getString("token" + user.phone, "");
+                PreferenceManager.getDefaultSharedPreferences(context).edit().putString("token" + user.phone, "").commit();
 
+                SharedPreferences preferences = context.getSharedPreferences(user.phone, Context.MODE_PRIVATE);
+                preferences.edit().clear().apply();
+                APIClient.getInstance().deleteSubscription(context, token, recordID, new VolleyCallback() {
+                    @Override
+                    public void onSuccess(String response) {
+
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e("logout error", error);
+                    }
+                });
+            }
         }
     }
 
@@ -511,20 +515,30 @@ public class IRoomsManager {
     }
 
     //-----------------Task Threading-----------------
-    public void sendMessage(Socket socket, SendMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
+    public void sendMessage(Socket socket, Context context, SendMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
         try {
             APIClient.getInstance().sendMessage(socket, request, new VolleyCallback() {
                 @Override
                 public void onSuccess(String response) {
-                    try {
-                        JSONObject msgResponse = new JSONObject(response);
-                        if (msgResponse.optBoolean("success")) {
-                            TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
 
-                            messageResponse.onSuccess(taskMessage);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    try {
+                        new TaskRunner().executeAsync(() -> {
+                            JSONObject msgResponse = new JSONObject(response);
+                            if (msgResponse.optBoolean("success")) {
+                                TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
+                                if (taskMessage != null) {
+                                    String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+                                    RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
+
+                                    roomsRepository.insertTaskMessage(taskMessage);
+                                }
+                                messageResponse.onSuccess(taskMessage);
+                            }
+                            return null;
+                        }, result -> {
+                        });
+                    } catch (Exception x) {
+                        x.printStackTrace();
                     }
                 }
 
@@ -538,21 +552,31 @@ public class IRoomsManager {
         }
     }
 
-    public void editMessage(Socket socket, EditMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
+    public void editMessage(Socket socket,Context context, EditMessageRequest request, final IRoomCallback<TaskMessage> messageResponse) {
         try {
             APIClient.getInstance().editMessage(socket, request, new VolleyCallback() {
                 @Override
                 public void onSuccess(String response) {
                     try {
-                        JSONObject msgResponse = new JSONObject(response);
-                        if (msgResponse.optBoolean("success")) {
-                            TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
+                        new TaskRunner().executeAsync(() -> {
+                            JSONObject msgResponse = new JSONObject(response);
+                            if (msgResponse.optBoolean("success")) {
+                                TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(response);
+                                if (taskMessage != null) {
+                                    String phone = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser().phone;
+                                    RoomsRepository roomsRepository = RoomsRepository.getInstance((Application) context.getApplicationContext(), phone);
 
-                            messageResponse.onSuccess(taskMessage);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                                    roomsRepository.insertTaskMessage(taskMessage);
+                                }
+                                messageResponse.onSuccess(taskMessage);
+                            }
+                            return null;
+                        }, result -> {
+                        });
+                    } catch (Exception x) {
+                        x.printStackTrace();
                     }
+
                 }
 
                 @Override
@@ -597,7 +621,7 @@ public class IRoomsManager {
                 @Override
                 public void onSuccess(String response) {
                     try {
-                        Log.e("get task...",response);
+                        Log.e("get task...", response);
                         JSONObject msgResponse = new JSONObject(response);
                         if (msgResponse.optBoolean("success")) {
                             Task task = IRoomJsonParser.getTask(response, false);

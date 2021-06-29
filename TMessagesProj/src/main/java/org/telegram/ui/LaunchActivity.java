@@ -548,7 +548,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     private void onNewTaskMessage(String json) {
         try {
             JSONObject data = new JSONObject(json);
-
             TaskMessage taskMessage = IRoomJsonParser.getTaskMessage(data.toString());
             TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
             if (taskDiscussionListener != null) {
@@ -1382,7 +1381,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     presentFragment(new ChatActivity(args));
                     drawerLayoutContainer.closeDrawer(false);
                 }
-                if (id == 13) {
+                if (id == 25) {
                     Bundle args = new Bundle();
 //                    args.putString("action", "delete");
                     args.putBoolean("create_company", true);
@@ -2079,7 +2078,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         int push_user_id = 0;
         int push_chat_id = 0;
         long push_task_id = 0;
-        boolean push_open_discussion=false;
+        boolean push_open_discussion = false;
         int push_enc_id = 0;
         int push_msg_id = 0;
         int open_settings = 0;
@@ -2908,7 +2907,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     int userId = intent.getIntExtra("userId", 0);
                     int encId = intent.getIntExtra("encId", 0);
                     long taskId = intent.getLongExtra("task_id", -1);
-                    boolean openDiscussion = intent.getBooleanExtra("openDiscussion",false);
+                    boolean openDiscussion = intent.getBooleanExtra("openDiscussion", false);
                     int widgetId = intent.getIntExtra("appWidgetId", 0);
                     if (widgetId != 0) {
                         open_settings = 6;
@@ -2921,11 +2920,14 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                         if (chatId != 0) {
                             NotificationCenter.getInstance(intentAccount[0]).postNotificationName(NotificationCenter.closeChats);
                             push_chat_id = chatId;
-                            push_task_id=taskId;
-                            push_open_discussion=openDiscussion;
+                            push_task_id = taskId;
+                            push_open_discussion = openDiscussion;
+                            push_user_id = userId;
                         } else if (userId != 0) {
                             NotificationCenter.getInstance(intentAccount[0]).postNotificationName(NotificationCenter.closeChats);
                             push_user_id = userId;
+                            push_task_id = taskId;
+                            push_open_discussion = openDiscussion;
                         } else if (encId != 0) {
                             NotificationCenter.getInstance(intentAccount[0]).postNotificationName(NotificationCenter.closeChats);
                             push_enc_id = encId;
@@ -2973,6 +2975,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 } else {
                     Bundle args = new Bundle();
                     args.putInt("user_id", push_user_id);
+                    args.putLong("task_id", push_task_id);
+                    args.putBoolean("openDiscussion", push_open_discussion);
+
                     if (push_msg_id != 0) {
                         args.putInt("message_id", push_msg_id);
                     }
@@ -2987,8 +2992,9 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             } else if (push_chat_id != 0) {
                 Bundle args = new Bundle();
                 args.putInt("chat_id", push_chat_id);
-                args.putLong("task_id",push_task_id );
-                args.putBoolean("openDiscussion",push_open_discussion);
+                args.putLong("task_id", push_task_id);
+                args.putBoolean("openDiscussion", push_open_discussion);
+                args.putInt("user_id", push_user_id);
                 if (push_msg_id != 0) {
                     args.putInt("message_id", push_msg_id);
                 }

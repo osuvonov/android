@@ -56,12 +56,12 @@ public class RoomsRepository {
 
     public ArrayList<Task> getChatAndCompanyRelatedTasks(long chatID, int companyID, int limit, int offset) {
 
-        return (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID, companyID, limit, offset);
+        return (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID,  limit, offset);
     }
 
     public ArrayList<Task> getPrivateChatTasks(int companyID, int selectedAccountUserId, int ownerId, int limit, int offset) {
         if (companyID != 0) {
-            return (ArrayList<Task>) taskDao.getPrivateChatTasksTeam(companyID, selectedAccountUserId, ownerId, limit, offset);
+            return (ArrayList<Task>) taskDao.getPrivateChatTasksTeam( selectedAccountUserId, ownerId, limit, offset);
         } else {
             return (ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId, limit, offset);
         }
@@ -81,14 +81,14 @@ public class RoomsRepository {
     }
 
     public void getChatAndCompanyRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback, int companyID) {
-        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID, companyID);
+        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID);
 
         arrayListIRoomCallback.onSuccess(list);
     }
 
     public void getPrivateChatTasks(int companyID, int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
         if (getCompanyList().size() > 0) {
-            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksTeam(companyID, selectedAccountUserId, ownerId));
+            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksTeam( selectedAccountUserId, ownerId));
         } else {
             arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId));
         }

@@ -509,7 +509,7 @@ public class APIClient {
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject();
-            jsonObject.put("company_id", query.getCompany_id());
+          //  jsonObject.put("company_id", query.getCompany_id());
             jsonObject.put("chat_id", query.getChat_id());
             jsonObject.put("limit", query.getLimit());
             jsonObject.put("offset", query.getOffset());
