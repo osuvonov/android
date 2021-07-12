@@ -8,15 +8,12 @@
 
 package org.rooms.messenger;
 
-import android.graphics.Color;
-import android.os.Environment;
 import android.os.SystemClock;
 
 import androidx.preference.PreferenceManager;
 
 import android.text.TextUtils;
 import android.util.Base64;
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -25,7 +22,6 @@ import com.google.firebase.messaging.RemoteMessage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.rooms.messenger.R;
 import org.telegram.irooms.Utils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -46,15 +42,10 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.NativeByteBuffer;
 import org.telegram.tgnet.TLRPC;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 public class GcmPushListenerService extends FirebaseMessagingService {
@@ -71,7 +62,6 @@ public class GcmPushListenerService extends FirebaseMessagingService {
             if (data.keySet().contains("task")) {
                 try {
                     String taskJson = (String) data.get("task");
-
                     JSONObject jsonObject = new JSONObject(taskJson);
 
                     long taskId = jsonObject.getLong("task_id");

@@ -266,72 +266,6 @@ public class APIClient {
         }
     }
 
-    public void getMyCompaniesBySocket(Context context, Socket socket, final VolleyCallback callback) {
-        makeSocketEmit(socket, "getUserCompanies", null, callback);
-    }
-
-    public void registerCompanyBySocket(Socket socket, String name, final VolleyCallback volleyCallback) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("name", name);
-            makeSocketEmit(socket, "registerCompany", jsonObject, volleyCallback);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    class AddMemberToCompanyObject {
-
-        private int company_id;
-
-        private ArrayList<Integer> members;
-
-        public int getCompany_id() {
-            return company_id;
-        }
-
-        public void setCompany_id(int company_id) {
-            this.company_id = company_id;
-        }
-
-        public ArrayList<Integer> getMembers() {
-            return members;
-        }
-
-        public void setMembers(ArrayList<Integer> members) {
-            this.members = members;
-        }
-    }
-
-    public void addMembersToCompanyBySocket(Context context, Socket socket, int companyId, ArrayList<Integer> members_, final VolleyCallback callback) {
-        AddMemberToCompanyObject company = new AddMemberToCompanyObject();
-        company.company_id = companyId;
-        company.members = members_;
-        JSONObject postData = null;
-        try {
-            String json = new Gson().toJson(company);
-            postData = new JSONObject(json);
-            makeSocketEmit(socket, "addCompanyMembers", postData, callback);
-        } catch (Exception x) {
-        }
-    }
-
-    public void deleteMembersFromCompanyBySocket(Context context, Socket socket, int companyId, ArrayList<Integer> members_, final VolleyCallback callback) {
-        AddMemberToCompanyObject company = new AddMemberToCompanyObject();
-        company.company_id = companyId;
-        company.members = members_;
-
-        JSONObject postData;
-        try {
-            String json = new Gson().toJson(company);
-            postData = new JSONObject(json);
-            makeSocketEmit(socket, "deleteCompanyMembers", postData, callback);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void handleError(Context context, VolleyError error) {
         try {
             if (error.networkResponse.statusCode != 200) {
@@ -509,7 +443,6 @@ public class APIClient {
         JSONObject jsonObject = null;
         try {
             jsonObject = new JSONObject();
-          //  jsonObject.put("company_id", query.getCompany_id());
             jsonObject.put("chat_id", query.getChat_id());
             jsonObject.put("limit", query.getLimit());
             jsonObject.put("offset", query.getOffset());

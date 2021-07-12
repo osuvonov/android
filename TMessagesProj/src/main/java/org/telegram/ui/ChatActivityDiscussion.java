@@ -24,7 +24,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -57,9 +56,7 @@ import android.text.style.CharacterStyle;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.URLSpan;
 import android.util.LongSparseArray;
-import android.util.Property;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
@@ -71,12 +68,9 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
-import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
-import android.view.animation.DecelerateInterpolator;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -87,7 +81,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
-import com.google.android.exoplayer2.util.Log;
 
 import org.rooms.messenger.BuildConfig;
 import org.rooms.messenger.R;
@@ -97,11 +90,9 @@ import org.rooms.messenger.databinding.RightMessageCellBinding;
 import org.rooms.messenger.databinding.RightReplyLayoutBinding;
 import org.rooms.messenger.databinding.TasklistTaskLayoutBinding;
 import org.telegram.PhoneFormat.PhoneFormat;
-import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
 import org.telegram.irooms.database.CommentRequestHistory;
-import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.models.EditMessageRequest;
 import org.telegram.irooms.models.GetMessagesRequest;
@@ -139,7 +130,6 @@ import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.browser.Browser;
-import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.messenger.voip.VoIPService;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
@@ -184,7 +174,6 @@ import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.ChatActivityEnterView;
 import org.telegram.ui.Components.ChatAttachAlert;
 import org.telegram.ui.Components.ChatAttachAlertDocumentLayout;
-import org.telegram.ui.Components.ChatAvatarContainer;
 import org.telegram.ui.Components.ChatBigEmptyView;
 import org.telegram.ui.Components.ChatGreetingsView;
 import org.telegram.ui.Components.ChecksHintView;
@@ -194,7 +183,6 @@ import org.telegram.ui.Components.CombinedDrawable;
 import org.telegram.ui.Components.CorrectlyMeasuringTextView;
 import org.telegram.ui.Components.CounterView;
 import org.telegram.ui.Components.CubicBezierInterpolator;
-import org.telegram.ui.Components.EditTextBoldCursor;
 import org.telegram.ui.Components.EditTextCaption;
 import org.telegram.ui.Components.EmbedBottomSheet;
 import org.telegram.ui.Components.EmojiView;
@@ -212,14 +200,12 @@ import org.telegram.ui.Components.NumberTextView;
 import org.telegram.ui.Components.PhonebookShareAlert;
 import org.telegram.ui.Components.PinnedLineView;
 import org.telegram.ui.Components.PipRoundVideoView;
-import org.telegram.ui.Components.PollVotesAlert;
 import org.telegram.ui.Components.RLottieDrawable;
 import org.telegram.ui.Components.RadialProgressView;
 import org.telegram.ui.Components.RecyclerAnimationScrollHelper;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.ReportAlert;
 import org.telegram.ui.Components.SearchCounterView;
-import org.telegram.ui.Components.ShareAlert;
 import org.telegram.ui.Components.Size;
 import org.telegram.ui.Components.SizeNotifierFrameLayout;
 import org.telegram.ui.Components.StickersAlert;
@@ -239,15 +225,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -256,8 +239,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.FileProvider;
 import androidx.core.graphics.ColorUtils;
-import androidx.core.widget.CompoundButtonCompat;
-import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.ChatListItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.GridLayoutManagerFixed;
@@ -20520,17 +20501,7 @@ public class ChatActivityDiscussion extends ChatActivity implements Notification
                 } else if (holder.getItemViewType() == taskLayout) {
                     Task taskItem = task;
                     TasklistTaskLayoutBinding layout = TasklistTaskLayoutBinding.bind(holder.itemView);
-                    String teamName = LocaleController.getInstance().getRoomsString("no_team");
-                    if (taskItem.getCompanyId() != 0) {
-                        for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
-                            if (company.getId() == taskItem.getCompany_id()) {
-                                teamName = company.getName();
-                                break;
-                            }
-                        }
-                    }
 
-                    layout.teamTitle.setText(teamName);
                     if (taskItem.getMembers().size() == 0) {
                         layout.taskArrow.setVisibility(View.INVISIBLE);
                     } else {

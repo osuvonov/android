@@ -15,15 +15,13 @@ import androidx.room.TypeConverters;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @TypeConverters(Converters.class)
-@Database(entities = {Task.class, Company.class, RequestHistory.class,
-        TaskMessage.class, CommentRequestHistory.class}, version = 29, exportSchema = false)
+@Database(entities = {Task.class,RequestHistory.class,
+        TaskMessage.class, CommentRequestHistory.class}, version = 31, exportSchema = false)
 public abstract class TaskDatabase extends RoomDatabase {
 
     private static String currentDb;
 
     public abstract TaskDao taskDao();
-
-    public abstract CompanyDao companyDao();
 
     public abstract RequestHistoryDao requestHistoryDao();
 
@@ -74,8 +72,6 @@ public abstract class TaskDatabase extends RoomDatabase {
                 // Populate the database in the background
                 TaskDao dao = INSTANCE.taskDao();
                 dao.deleteAll();
-                CompanyDao companyDao = INSTANCE.companyDao();
-                companyDao.deleteAll();
                 RequestHistoryDao requestHistory = INSTANCE.requestHistoryDao();
                 requestHistory.deleteAll();
                 TaskMessageDao taskMessageDao = INSTANCE.taskMessageDao();

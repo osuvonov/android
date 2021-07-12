@@ -972,7 +972,7 @@ public class LocaleController {
         englishRoomsMap.put("today", "Today");
         englishRoomsMap.put("tomorrow", "Tomorrow");
         englishRoomsMap.put("participants", " participants");
-        englishRoomsMap.put("you_got_task", "Вы получили новое задание@company_name. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
+        englishRoomsMap.put("you_got_task", "You have received a new task. To view, please download the application (iOS, Android) or follow the link irooms.io");
         englishRoomsMap.put("no_task_yet", "No tasks here yet");
         englishRoomsMap.put("choose_status", "Choose status");
         englishRoomsMap.put("choose_participants", "Choose participants");
@@ -1010,6 +1010,7 @@ public class LocaleController {
         englishRoomsMap.put("reminder","Reminder");
         englishRoomsMap.put("enter_team","Enter team name");
         englishRoomsMap.put("send_the_code_assms","Send the code as an sms?");
+        englishRoomsMap.put("rooms_features","Rooms features");
 
     }
 
@@ -1035,7 +1036,7 @@ public class LocaleController {
         uzbekRoomsMap.put("today", "Bugun");
         uzbekRoomsMap.put("tomorrow", "Ertaga");
         uzbekRoomsMap.put("participants", " ishtirokchilar");
-        uzbekRoomsMap.put("you_got_task", "Вы получили новое задание@company_name. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
+        uzbekRoomsMap.put("you_got_task", "Siz yangi topshiriq oldingiz. Ko'rish uchun, iltimos (iOS, Android) dasturni yuklab oling yoki irooms.io havolasiga o'ting");
         uzbekRoomsMap.put("no_task_yet", "Hali vazifalar yo'q");
         uzbekRoomsMap.put("choose_status", "Holatni tanlang");
         uzbekRoomsMap.put("choose_participants", "Ishtirokchilarni tanlang");
@@ -1071,6 +1072,7 @@ public class LocaleController {
         uzbekRoomsMap.put("reminder","Eslatma");
         uzbekRoomsMap.put("enter_team","Jamoa nomini kiriting");
         uzbekRoomsMap.put("send_the_code_assms","Kodni sms orqali jo'natilsinmi?");
+        uzbekRoomsMap.put("rooms_features","Rooms imkoniyatlari");
 
     }
 
@@ -1098,7 +1100,7 @@ public class LocaleController {
         russianRoomsMap.put("today", "Сегодня");
         russianRoomsMap.put("tomorrow", "Завтра");
         russianRoomsMap.put("participants", " участников");
-        russianRoomsMap.put("you_got_task", "Вы получили новое задание@company_name. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
+        russianRoomsMap.put("you_got_task", "Вы получили новое задание. Для просмотра, пожалуйста скачайте приложение (iOS, Android) или перейдите по ссылке irooms.io");
         russianRoomsMap.put("no_task_yet", "Нет задач");
         russianRoomsMap.put("choose_status", "Выберите статус");
         russianRoomsMap.put("choose_participants", "Выбрать участников");
@@ -1131,6 +1133,7 @@ public class LocaleController {
         russianRoomsMap.put("reminder","Напоминание");
         russianRoomsMap.put("enter_team","Введите название команды");
         russianRoomsMap.put("send_the_code_assms","Отправить код через SMS?");
+        russianRoomsMap.put("rooms_features","Возможности Rooms");
     }
 
     public String getRoomsString(String key) {

@@ -125,7 +125,6 @@ import org.telegram.messenger.AccountInstance;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
-import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.TaskUtil;
 import org.telegram.irooms.ui.avatar.AvatarAdapter2;
@@ -909,8 +908,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         int limit = 20;
                         boolean isFirstTime = true;
 
-                        int companyId = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
-
                         if (chatId == 0 && userId == selectedAccountUserId) {
 
                             ArrayList<Task> tempList = repository.getAccountTasks(userId, limit, taskList.size());
@@ -939,7 +936,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         } else if (chatId == 0) {
 
                             //private chat with someone
-                            ArrayList<Task> tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
+                            ArrayList<Task> tempList = repository.getPrivateChatTasks(selectedAccountUserId, userId, limit, taskList.size());
                             while (!onBackPressed && tempList.size() > 0) {
                                 taskList.addAll(tempList);
                                 if (isFirstTime) {
@@ -952,7 +949,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     }
                                 }
 
-                                tempList = repository.getPrivateChatTasks(companyId, selectedAccountUserId, userId, limit, taskList.size());
+                                tempList = repository.getPrivateChatTasks(selectedAccountUserId, userId, limit, taskList.size());
                             }
                             if (isChatMode && chatAdapter != null) {
                                 AndroidUtilities.runOnUIThread(() -> {
@@ -1875,10 +1872,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 showDialog(builder.create());
             }, timeout * 1000);
         }
-        if (!isChannel()) {
-//            topViewsStartOffset = 40;
-//            topViewsStartOffsetDp = AndroidUtilities.dp(40);
-        }
 
         return true;
     }
@@ -2101,8 +2094,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         }
     }
 
-    private Company selectedCompany;
-
     private void initTaskStuff() {
         Activity parentActivity = getParentActivity();
 
@@ -2118,7 +2109,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
         } catch (Exception x) {
         }
-        int selectedCompanyID = IRoomsManager.getInstance().getSelectedCompanyId(parentActivity);
         ((LaunchActivity) parentActivity).setBackendTaskListener(new LaunchActivity.BackendForOfflineTaskListener() {
             @Override
             public void onBackendTaskForLocalTaskCreated(Task task) {
@@ -2189,23 +2179,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 }
             }
         };
-
-        IRoomsManager.getInstance().getCompany(parentActivity, selectedCompanyID, new IRoomsManager.IRoomCallback<Company>() {
-            @Override
-            public void onSuccess(Company company) {
-                selectedCompany = company;
-
-                if (company == null) {
-                    selectedCompany = new Company();
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                if (parentActivity != null)
-                    Toast.makeText(parentActivity, error, Toast.LENGTH_SHORT).show();
-            }
-        });
 
         ((LaunchActivity) parentActivity).setTaskListener(taskListener);
 
@@ -5680,6 +5653,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
             int finalSelectedColor = selectedColor;
             bottomTaskSort.taskDone.setOnClickListener(view -> {
+                chatListView.stopScroll();
+
                 ((TaskAdapter) chatListView.getAdapter()).sort(2);
                 bottomTaskSort.taskDone.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
@@ -5689,6 +5664,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             });
 
             bottomTaskSort.taskArchive.setOnClickListener(view -> {
+                chatListView.stopScroll();
                 ((TaskAdapter) chatListView.getAdapter()).sort(3);
                 bottomTaskSort.taskArchive.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDoing.setBackgroundResource(R.drawable.btn_click);
@@ -5698,6 +5674,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 bottomTaskSort.getRoot().fullScroll(View.FOCUS_RIGHT);
             });
             bottomTaskSort.taskTodo.setOnClickListener(view -> {
+                chatListView.stopScroll();
                 ((TaskAdapter) chatListView.getAdapter()).sort(0);
                 bottomTaskSort.taskTodo.setBackgroundColor(finalSelectedColor);
                 bottomTaskSort.taskDone.setBackgroundResource(R.drawable.btn_click);
@@ -5707,6 +5684,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             });
 
             bottomTaskSort.taskDoing.setOnClickListener(view -> {
+                chatListView.stopScroll();
                 ((TaskAdapter) chatListView.getAdapter()).sort(1);
                 bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
                 bottomTaskSort.taskDoing.setBackgroundColor(finalSelectedColor);
@@ -5717,6 +5695,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
             bottomTaskSort.taskAll.setOnClickListener(view -> {
                 try {
+                    chatListView.stopScroll();
+
                     if (chatListView.getAdapter() instanceof TaskAdapter) {
                         ((TaskAdapter) chatListView.getAdapter()).sort(-1);
                         bottomTaskSort.taskTodo.setBackgroundResource(R.drawable.btn_click);
@@ -7969,18 +7949,19 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 topBottom[0] = chatListView.getTop() + chatListViewPaddingTop - AndroidUtilities.dp(4);
             }
         });
-
+        SharedPreferences prefs = MessagesController.getMainSettings(currentAccount);
+        if (!prefs.getBoolean("openedRoomsBM", false)) {
+            prefs.edit().putBoolean("openedRoomsBM", true).commit();
+        }
         return fragmentView;
     }
 
     /**
-     * if team selected members will be intersection of company members with chat members
-     * if no team, chat members will be in task member list selection
+     * Chat members will be in task member list selection
      */
     private ArrayList<TLRPC.User> getTaskMemberList() {
         ArrayList<TLRPC.User> taskUserList = new ArrayList<>();
 
-        //    if (taskUserList.size() == 0) {
         List<Integer> temp = new ArrayList<>();
         final int chatId = arguments.getInt("chat_id", 0);
         if (chatId == 0) {
@@ -8009,17 +7990,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     taskUserList.add(user);
                 }
             }
-//            }
         }
         return taskUserList;
-    }
-
-    TaskChatClickListener taskChatClickListener;
-
-    public interface TaskChatClickListener {
-        void onTaskClick();
-
-        void onChatClick();
     }
 
     private void showTaskCreator() {
@@ -8147,21 +8119,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         message.append(LocaleController.getInstance().getRoomsString("you_got_task"));
         ArrayList<TLRPC.MessageEntity> entities = new ArrayList<>();
         try {
-            int start = message.indexOf("@company_name");
-            int end = start + 13;
-            if (task.getCompanyId() != 0) {
-                Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
-                String teamName = team == null ? "" : " (" + team.getName() + ")";
-                message = message.replace(start, end, teamName);
-                TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
-                entityTeam.offset = start + 2;
-                entityTeam.length = teamName.length() - 1;
-
-                entities.add(entityTeam);
-            } else {
-                String teamName = "";
-                message = message.replace(start, end, teamName);
-            }
 
             TLRPC.MessageEntity entityIOS = new TLRPC.TL_messageEntityTextUrl();
             entityIOS.offset = message.indexOf("iOS");
@@ -8184,31 +8141,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             entityWeb.url = fullUrl;
 
             entities.add(entityWeb);
-//            message.append("\n");
-
-//            if (task.getMembers() != null) {
-//                int offset = message.length();
-//                for (int i = 0; i < task.getMembers().size(); i++) {
-//                    try {
-//                        TLRPC.TL_messageEntityMentionName entityUser = new TLRPC.TL_messageEntityMentionName();
-//                        entityUser.user_id = task.getMembers().get(i);
-//
-//                        TLRPC.User user = getMessagesController().getUser(task.getMembers().get(i));
-//                        if (user != null) {
-//                            String userName = user.username != null ? ("@" + user.username) : (user.first_name != null ? user.first_name : user.last_name);
-//                            if (userName == null || "".equals(userName)) {
-//                                continue;
-//                            }
-//                            message.append(userName).append(" ");
-//                            entityUser.offset = offset-1;
-//                            entityUser.length = userName.length();
-//                            offset = message.length();
-//                            entities.add(entityUser);
-//                        }
-//                    } catch (Exception x) {
-//                    }
-//                }
-//            }
         } catch (Exception x) {
         }
 
@@ -21700,37 +21632,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             }
             case 98:
             case 99:
-                if (selectedCompany == null) {
-                    int companyId = IRoomsManager.getInstance().getSelectedCompanyId(getParentActivity());
-                    IRoomsManager.getInstance().getCompany(getParentActivity(), companyId, new IRoomsManager.IRoomCallback<Company>() {
-                        @Override
-                        public void onSuccess(Company company) {
-                            try {
 
-                                selectedCompany = company;
-
-                                if (company == null) {
-                                    Toast.makeText(getParentActivity(), "Team null", Toast.LENGTH_SHORT).show();
-                                    selectedCompany = new Company();
-                                    // return;
-                                }
-
-                                final int messageId = selectedObject.getId();
-                                final int senderId = selectedObject.getSenderId();
-                                createTask(getSelectedUser(), selectedObject.messageText.toString(), selectedObject.getChatId() == 0 ? dialog_id : selectedObject.getChatId(), messageId, senderId);
-
-                            } catch (Exception x) {
-
-                            }
-                        }
-
-                        @Override
-                        public void onError(String error) {
-                            Toast.makeText(getParentActivity(), error, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                    return;
-                }
                 final int messageId = selectedObject.getId();
                 final int senderId = selectedObject.getSenderId();
                 createTask(getSelectedUser(), selectedObject.messageText.toString(), selectedObject.getChatId() == 0 ? dialog_id : selectedObject.getChatId(), messageId, senderId);
@@ -23066,7 +22968,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         bundle.putInt("chat_id", (int) Math.abs(dialog_id));
         bundle.putParcelable("task", task);
 
-        chatActivityDiscussion = new ChatActivityDiscussion(bundle,(LaunchActivity) getParentActivity());
+        chatActivityDiscussion = new ChatActivityDiscussion(bundle, (LaunchActivity) getParentActivity());
         presentFragment(chatActivityDiscussion, false);
     }
 
@@ -23990,7 +23892,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     taskItem.setMessageId(message.getId());
                                     RightTaskLayoutBinding layout = RightTaskLayoutBinding.bind(holder.itemView);
                                     CommentsLayoutBinding commentsLayout = layout.comments;
-//                                    if (taskItem.getCompany_id() != 0) {
                                     commentsLayout.getRoot().setVisibility(View.VISIBLE);
                                     int size = taskItem.getComments_count();
 
@@ -24018,19 +23919,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     } else {
                                         layout.msgUnsent.setVisibility(View.GONE);
                                     }
-                                    String teamName = LocaleController.getInstance().getRoomsString("no_team");
-                                    Company selectedCompany = null;
-                                    if (taskItem.getCompanyId() != 0) {
-                                        for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
-                                            if (company.getId() == taskItem.getCompany_id()) {
-                                                teamName = company.getName();
-                                                selectedCompany = company;
-                                                break;
-                                            }
-                                        }
-                                    }
 
-//                                    layout.teamTitle.setText(teamName);
                                     String deadline = getDeadLine(taskItem.getExpires_at());
                                     layout.tlDeadline.setText(deadline);
                                     if (deadline.equals("")) {
@@ -24045,18 +23934,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     }
                                     layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
 
-                                    Company finalSelectedCompany = selectedCompany;
                                     layout.tlTaskedit.setOnClickListener(view -> {
                                         ArrayList userList = getTaskMemberList();
-                                        if (finalSelectedCompany != null && finalSelectedCompany.getMembers() != null) {
-                                            userList.clear();
-                                            for (int i = 0; i < finalSelectedCompany.getMembers().size(); i++) {
-                                                TLRPC.User user = getMessagesController().getUser(finalSelectedCompany.getMembers().get(i));
-                                                if (user != null) {
-                                                    userList.add(user);
-                                                }
-                                            }
-                                        }
+
                                         bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
                                                 finalTaskItem1.getDescription(), userList, new TaskManagerListener() {
                                                     @Override
@@ -24172,22 +24052,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 Task finalTaskItem1 = taskItem;
                                 CommentsLayoutBinding commentsLayout = layout.comments;
 
-//                                if (taskItem.getCompany_id() != 0) {
                                 commentsLayout.getRoot().setVisibility(View.VISIBLE);
                                 commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
 
-//                                    if (taskMessageList.containsKey(finalTaskItem.getId())) {
-//                                        if (taskMessageList.containsKey(finalTaskItem.getId())) {
-//                                            int size = taskMessageList.get(finalTaskItem.getId()).size();
-//
-//                                            if (size != 0 && taskMessageList.get(finalTaskItem.getId()).get(0).isHasTask()) {
-//                                                size -= 1;
-//                                            }
-//                                            commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
-//                                        }
-//                                    } else {
-//                                        loadTaskMessages(taskItem.getId());
-//                                    }
                                 commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -24205,19 +24072,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
 
                                 taskItem.setMessageId(message.getId());
-                                String teamName = LocaleController.getInstance().getRoomsString("no_team");
-                                Company selectedCompany = null;
-                                if (taskItem.getCompanyId() != 0) {
-                                    for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
-                                        if (company.getId() == taskItem.getCompany_id()) {
-                                            teamName = company.getName();
-                                            selectedCompany = company;
-                                            break;
-                                        }
-                                    }
-                                }
 
-//                                layout.teamTitle.setText(teamName);
                                 deadline = getDeadLine(taskItem.getExpires_at());
                                 layout.tlDeadline.setText(deadline);
                                 if (deadline.equals("")) {
@@ -24226,18 +24081,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                     layout.iconDeadline.setVisibility(View.VISIBLE);
                                 }
 
-                                Company finalSelectedCompany = selectedCompany;
                                 layout.tlTaskedit.setOnClickListener(view -> {
                                     ArrayList userList = getTaskMemberList();
-                                    if (finalSelectedCompany != null && finalSelectedCompany.getMembers() != null) {
-                                        userList.clear();
-                                        for (int i = 0; i < finalSelectedCompany.getMembers().size(); i++) {
-                                            TLRPC.User user = getMessagesController().getUser(finalSelectedCompany.getMembers().get(i));
-                                            if (user != null) {
-                                                userList.add(user);
-                                            }
-                                        }
-                                    }
+
                                     bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
                                             finalTaskItem1.getDescription(), getTaskMemberList(), new TaskManagerListener() {
                                                 @Override
@@ -24352,60 +24198,23 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                         layout.taskArrow.setVisibility(View.VISIBLE);
                                     }
                                     layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
-                                    String teamName = LocaleController.getInstance().getRoomsString("no_team");
-                                    Company selectedCompany = null;
-                                    if (taskItem.getCompanyId() != 0) {
-                                        for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
-                                            if (company.getId() == taskItem.getCompany_id()) {
-                                                teamName = company.getName();
-                                                selectedCompany = company;
-                                                break;
-                                            }
-                                        }
-                                    }
 
-                                    // layout.teamTitle.setText(teamName);
                                     Task finalTaskItem = taskItem;
                                     Task finalTaskItem1 = taskItem;
                                     CommentsLayoutBinding commentsLayout = layout.comments;
 
-//                                    if (taskItem.getCompany_id() != 0) {
                                     commentsLayout.getRoot().setVisibility(View.VISIBLE);
                                     commentsLayout.leaveComment.setText(taskItem.getComments_count() + " " + LocaleController.getInstance().getRoomsString("comments"));
 
-//                                        if (taskMessageList.containsKey(finalTaskItem.getId())) {
-//                                            if (taskMessageList.containsKey(finalTaskItem.getId())) {
-//                                                int size = taskMessageList.get(finalTaskItem.getId()).size();
-//
-//                                                if (size != 0 && taskMessageList.get(finalTaskItem.getId()).get(0).isHasTask()) {
-//                                                    size -= 1;
-//                                                }
-//                                                commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
-//                                            }
-//                                        } else {
-//                                            loadTaskMessages(taskItem.getId());
-//                                        }
                                     commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View v) {
                                             presentDiscussionFragment(finalTaskItem);
                                         }
                                     });
-//                                    } else {
-//                                        commentsLayout.getRoot().setVisibility(View.GONE);
-//                                    }
-                                    Company finalSelectedCompany = selectedCompany;
                                     layout.tlTaskedit.setOnClickListener(view -> {
                                         ArrayList userList = getTaskMemberList();
-                                        if (finalSelectedCompany != null && finalSelectedCompany.getMembers() != null) {
-                                            userList.clear();
-                                            for (int i = 0; i < finalSelectedCompany.getMembers().size(); i++) {
-                                                TLRPC.User user = getMessagesController().getUser(finalSelectedCompany.getMembers().get(i));
-                                                if (user != null) {
-                                                    userList.add(user);
-                                                }
-                                            }
-                                        }
+
                                         bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), finalTaskItem,
                                                 finalTaskItem1.getDescription(), getTaskMemberList(), new TaskManagerListener() {
                                                     @Override
@@ -25154,7 +24963,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         private ArrayList<Task> sortedList = new ArrayList<>();
 
         public void sort(int i) {
-            sortedList.clear();
+            try{
+                   sortedList.clear();
             sortedList.addAll(taskList);
             currentSort = i;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -25169,6 +24979,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 sortedList = (ArrayList<Task>) sortedList.stream().filter(task -> task.getStatus_code() != 3).collect(Collectors.toList());
             }
             AndroidUtilities.runOnUIThread(this::notifyDataSetChanged);
+            }catch (Exception c){}
         }
 
         public void onTask(Task task, boolean updated) {
@@ -25244,150 +25055,120 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
         @Override
         public void onBindViewHolder(RecyclerListView.Holder holder, final int position) {
-            Task taskItem = sortedList.get(sortedList.size() - position - 1);
-            if (taskItem != null) {
+            try {
+                Task taskItem = sortedList.get(sortedList.size() - position - 1);
+                if (taskItem != null) {
 
-                TasklistTaskLayoutBinding layout = TasklistTaskLayoutBinding.bind(holder.itemView);
-                String teamName = LocaleController.getInstance().getRoomsString("no_team");
-                if (taskItem.getCompanyId() != 0) {
-                    for (Company company : ((LaunchActivity) getParentActivity()).getCompanyList()) {
-                        if (company.getId() == taskItem.getCompany_id()) {
-                            teamName = company.getName();
-                            selectedCompany = company;
-                            break;
+                    TasklistTaskLayoutBinding layout = TasklistTaskLayoutBinding.bind(holder.itemView);
+
+                    if (taskItem.getMembers().size() == 0) {
+                        layout.taskArrow.setVisibility(View.INVISIBLE);
+                    } else {
+                        layout.taskArrow.setVisibility(View.VISIBLE);
+                    }
+                    layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
+
+                    String deadline = getDeadLine(taskItem.getExpires_at());
+                    layout.tlDeadline.setText(deadline);
+                    if (deadline.equals("")) {
+                        layout.iconDeadline.setVisibility(View.INVISIBLE);
+                    } else {
+                        layout.iconDeadline.setVisibility(View.VISIBLE);
+                    }
+                    layout.tlTaskedit.setOnClickListener(view -> {
+
+                        if (taskItem.getLocal_id() == null || taskItem.getLocal_id().equals("")) {
+                            taskItem.setLocal_id(Utils.generateLocalId());
                         }
-                    }
-                }
+                        ArrayList userList = getTaskMemberList();
 
-//                layout.teamTitle.setText(teamName);
-                if (taskItem.getMembers().size() == 0) {
-                    layout.taskArrow.setVisibility(View.INVISIBLE);
-                } else {
-                    layout.taskArrow.setVisibility(View.VISIBLE);
-                }
-                layout.taskOwnerAvatar.setData(MessagesController.getInstance(currentAccount).getUser((int) taskItem.getCreatorId()), "", "", 0);
+                        bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), taskItem,
+                                taskItem.getDescription(), getTaskMemberList(), new TaskManagerListener() {
+                                    @Override
+                                    public void onCreate(Task task) {
 
-                String deadline = getDeadLine(taskItem.getExpires_at());
-                layout.tlDeadline.setText(deadline);
-                if (deadline.equals("")) {
-                    layout.iconDeadline.setVisibility(View.INVISIBLE);
-                } else {
-                    layout.iconDeadline.setVisibility(View.VISIBLE);
-                }
-                layout.tlTaskedit.setOnClickListener(view -> {
+                                    }
 
-                    if (taskItem.getLocal_id() == null || taskItem.getLocal_id().equals("")) {
-                        taskItem.setLocal_id(Utils.generateLocalId());
-                    }
-                    ArrayList userList = getTaskMemberList();
-                    if (selectedCompany != null && selectedCompany.getMembers() != null) {
-                        userList.clear();
-                        for (int i = 0; i < selectedCompany.getMembers().size(); i++) {
-                            TLRPC.User user = getMessagesController().getUser(selectedCompany.getMembers().get(i));
-                            if (user != null) {
-                                userList.add(user);
-                            }
-                        }
-                    }
-                    bottomSheetTask = AlertsCreator.editTaskDialogBySocket(getParentActivity(), taskItem,
-                            taskItem.getDescription(), getTaskMemberList(), new TaskManagerListener() {
-                                @Override
-                                public void onCreate(Task task) {
+                                    @Override
+                                    public void onUpdate(Task task) {
+                                        for (int i = 0; i < sortedList.size(); i++) {
+                                            if (sortedList.get(i).getLocal_id().equals(task.getLocal_id())) {
 
-                                }
-
-                                @Override
-                                public void onUpdate(Task task) {
-                                    for (int i = 0; i < sortedList.size(); i++) {
-                                        if (sortedList.get(i).getLocal_id().equals(task.getLocal_id())) {
-
-                                            sortedList.remove(i);
-                                            sortedList.add(i, task);
-                                            sort(currentSort);
-                                            break;
+                                                sortedList.remove(i);
+                                                sortedList.add(i, task);
+                                                sort(currentSort);
+                                                break;
+                                            }
                                         }
                                     }
-                                }
-                            }).create();
-                    bottomSheetTask.setFocusable(true);
-                    showDialog(bottomSheetTask);
-                });
-                String taskDescription = taskItem.getDescription().equals("") ? "" : taskItem.getDescription();
-                layout.tlDescription.setText(taskDescription);
-                ArrayList<TLRPC.User> users = new ArrayList<>();
-                for (int i : taskItem.getMembers()) {
-                    TLRPC.User user = getMessagesController().getUser(i);
-                    if (user != null)
-                        users.add(user);
+                                }).create();
+                        bottomSheetTask.setFocusable(true);
+                        showDialog(bottomSheetTask);
+                    });
+                    String taskDescription = taskItem.getDescription().equals("") ? "" : taskItem.getDescription();
+                    layout.tlDescription.setText(taskDescription);
+                    ArrayList<TLRPC.User> users = new ArrayList<>();
+                    for (int i : taskItem.getMembers()) {
+                        TLRPC.User user = getMessagesController().getUser(i);
+                        if (user != null)
+                            users.add(user);
+                    }
+                    AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
+                    LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
+                    manager.setOrientation(LinearLayoutManager.HORIZONTAL);
+                    layout.tlAvatars.setLayoutManager(manager);
+                    layout.tlAvatars.setAdapter(avatarAdapter);
+
+                    setStatus(taskItem.getStatus_code(), layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
+
+                    layout.tlStatus.setOnClickListener(v -> {
+                        showStatusSelectPopup(taskItem, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
+                    });
+                    layout.tlStatusCheckbox.setOnClickListener(v -> {
+                        boolean isChecked = layout.tlStatusCheckbox.isChecked();
+                        if (isChecked) {
+                            taskItem.setStatus_code(Constants.DONE);
+                            taskItem.setStatus(Utils.getStatuses()[Constants.DONE]);
+                            taskItem.setLocalStatus(2);
+                            setStatus(Constants.DONE, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
+                            updateLocalTask(taskItem);
+                            if (isChatMode) {
+                                chatAdapter.notifyDataSetChanged();
+                            } else {
+                                taskAdapter.notifyDataSetChanged();
+                            }
+                        } else {
+                            taskItem.setStatus_code(Constants.TODO);
+                            taskItem.setStatus(Utils.getStatuses()[Constants.TODO]);
+                            taskItem.setLocalStatus(2);
+                            setStatus(Constants.TODO, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
+                            updateLocalTask(taskItem);
+                            if (isChatMode) {
+                                chatAdapter.notifyDataSetChanged();
+                            } else {
+                                taskAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+
+                    layout.tlStatusArrow.setOnClickListener(v -> {
+                        showStatusSelectPopup(taskItem, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
+                    });
+
+                    CommentsLayoutBinding commentsLayout = layout.comments;
+                    commentsLayout.getRoot().setVisibility(View.VISIBLE);
+                    int size = taskItem.getComments_count();
+                    commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
+
+                    commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            presentDiscussionFragment(taskItem);
+                        }
+                    });
                 }
-                AvatarAdapter2 avatarAdapter = new AvatarAdapter2(getParentActivity(), users);
-                LinearLayoutManager manager = new LinearLayoutManager(getParentActivity());
-                manager.setOrientation(LinearLayoutManager.HORIZONTAL);
-                layout.tlAvatars.setLayoutManager(manager);
-                layout.tlAvatars.setAdapter(avatarAdapter);
+            } catch (   Exception exception ){}
 
-                setStatus(taskItem.getStatus_code(), layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-
-                layout.tlStatus.setOnClickListener(v -> {
-                    showStatusSelectPopup(taskItem, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-                });
-                layout.tlStatusCheckbox.setOnClickListener(v -> {
-                    boolean isChecked = layout.tlStatusCheckbox.isChecked();
-                    if (isChecked) {
-                        taskItem.setStatus_code(Constants.DONE);
-                        taskItem.setStatus(Utils.getStatuses()[Constants.DONE]);
-                        taskItem.setLocalStatus(2);
-                        setStatus(Constants.DONE, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-                        updateLocalTask(taskItem);
-                        if (isChatMode) {
-                            chatAdapter.notifyDataSetChanged();
-                        } else {
-                            taskAdapter.notifyDataSetChanged();
-                        }
-                    } else {
-                        taskItem.setStatus_code(Constants.TODO);
-                        taskItem.setStatus(Utils.getStatuses()[Constants.TODO]);
-                        taskItem.setLocalStatus(2);
-                        setStatus(Constants.TODO, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-                        updateLocalTask(taskItem);
-                        if (isChatMode) {
-                            chatAdapter.notifyDataSetChanged();
-                        } else {
-                            taskAdapter.notifyDataSetChanged();
-                        }
-                    }
-                });
-
-                layout.tlStatusArrow.setOnClickListener(v -> {
-                    showStatusSelectPopup(taskItem, layout.tlStatusCheckbox, layout.tlStatus, layout.tlStatusArrow);
-                });
-
-                CommentsLayoutBinding commentsLayout = layout.comments;
-//                if (taskItem.getCompany_id() != 0) {
-                commentsLayout.getRoot().setVisibility(View.VISIBLE);
-                int size = taskItem.getComments_count();
-//                    if (taskMessageList.containsKey(taskItem.getId())) {
-//                        size = taskMessageList.get(taskItem.getId()).size();
-//
-//                        if (size != 0 && taskMessageList.get(taskItem.getId()).get(0).isHasTask()) {
-//                            size -= 1;
-//                        }
-//                    } else {
-//                        loadTaskMessages(taskItem.getId());
-//                    }
-                commentsLayout.leaveComment.setText(size + " " + LocaleController.getInstance().getRoomsString("comments"));
-
-                commentsLayout.getRoot().setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        presentDiscussionFragment(taskItem);
-                    }
-                });
-//                } else {
-//                    commentsLayout.getRoot().setVisibility(View.GONE);
-//                }
-
-            }
         }
 
         // Return the size of your dataset (invoked by the layout manager)

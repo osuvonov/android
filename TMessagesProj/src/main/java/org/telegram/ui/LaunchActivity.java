@@ -93,12 +93,7 @@ import org.json.JSONObject;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
-import org.telegram.irooms.Utils;
-import org.telegram.irooms.company.AddMembersToCompanyActivity;
-import org.telegram.irooms.company.CompanyFragment;
-import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
-import org.telegram.irooms.models.SocketAuthObject;
 import org.telegram.irooms.models.TaskMessage;
 import org.telegram.irooms.models.ThreadInfo;
 import org.telegram.irooms.network.APIClient;
@@ -287,134 +282,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     }
 
-    public void fillCompanyList(Socket socket) {
-        IRoomsManager.getInstance().getMyCompanies(this, socket, new IRoomsManager.IRoomsCallback() {
-            @Override
-            public void onSuccess(String success) {
-                try {
-                    String name = IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this);
-
-                    JSONObject jsonObject = new JSONObject(success);
-
-                    ArrayList<Company> companies = IRoomJsonParser.getCompanies(jsonObject.toString());
-
-                    if ((name == null || name.equals("")) && companies.size() > 1) {
-
-                        AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-
-                        builder.setTitle(LocaleController.getInstance().getRoomsString("choose_team"));
-                        // add a list
-                        String[] names = new String[companies.size()];
-
-                        int i = 0;
-
-                        for (Company member : companies) {
-                            names[i] = member.getName();
-                            i++;
-                        }
-
-                        builder.setItems(names, (dialog, which) -> {
-                            IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
-                                    companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                            drawerLayoutAdapter.notifyDataSetChanged();
-
-                            dialog.dismiss();
-                        });
-
-                        // create and show the alert dialog
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-                    }
-
-                    drawerLayoutAdapter.notifyDataSetChanged();
-                } catch (Exception x) {
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-            }
-        });
-    }
-
     private Object taskListSynchronizer = new Object();
-
-    private void initCompanies(String json) {
-        TaskRunner runner = new TaskRunner();
-        runner.executeAsync(() -> {
-            String name = IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this);
-
-            try {
-                ArrayList<Company> companies = IRoomJsonParser.getCompaniesFromSocketAuth(json);
-                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-
-                // dynamic company list
-                setCompanyList(companies);
-
-                if (companies.size() > 0) {
-                    try {
-                        for (Company company : companies) {
-                            if (company.getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId) {
-                                IRoomsManager.getInstance().setHasCompany(LaunchActivity.this, true);
-                                if (IRoomsManager.getInstance().getSelectedCompanyId(LaunchActivity.this) == company.getId()) {
-                                    IRoomsManager.getInstance().setOwnerOfSelectedCompany(LaunchActivity.this, true);
-                                }
-                            }
-                            RoomsRepository.getInstance(getApplication(), user.phone).insert(company);
-                        }
-                    } catch (Exception x) {
-                    }
-                } else {
-                    IRoomsManager.getInstance().setHasCompany(LaunchActivity.this, false);
-                    IRoomsManager.getInstance().setOwnerOfSelectedCompany(LaunchActivity.this, false);
-                    IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, new Company(), false);
-                }
-
-                if (name.equals("") && companies.size() > 1) {
-
-                    if (!PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).getBoolean("do_not_show_company_list", false)) {
-                        runOnUiThread(() -> {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(LaunchActivity.this);
-
-                            builder.setTitle(LocaleController.getInstance().getRoomsString("choose_team"));
-                            // add a list
-                            String[] names = new String[companies.size()];
-
-                            int i = 0;
-
-                            for (Company member : companies) {
-                                names[i] = member.getName();
-                                i++;
-                            }
-
-                            builder.setItems(names, (dialog, which) -> {
-                                IRoomsManager.getInstance().setSelectedCompany(LaunchActivity.this, companies.get(which),
-                                        companies.get(which).getOwner_id() == UserConfig.getInstance(UserConfig.selectedAccount).clientUserId);
-                                drawerLayoutAdapter.notifyDataSetChanged();
-                                dialog.dismiss();
-                            });
-                            builder.setNegativeButton(LocaleController.getInstance().getRoomsString("do_not_show"), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    PreferenceManager.getDefaultSharedPreferences(LaunchActivity.this).edit().putBoolean("do_not_show_company_list", true).apply();
-                                }
-                            });
-
-                            // create and show the alert dialog
-                            AlertDialog dialog = builder.create();
-                            dialog.setCanceledOnTouchOutside(false);
-                            dialog.show();
-                        });
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            runOnUiThread(() -> drawerLayoutAdapter.notifyDataSetChanged());
-            return null;
-        }, result -> {
-        });
-    }
 
     volatile boolean authorized = false;
 
@@ -486,13 +354,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             String type = jsonObject.getString("@type");
             String data = jsonObject.getString("@data");
             switch (type) {
-                case "joinedToCompany":
-                    onJoinedToCompany(true, data);
-                    break;
-                case "disjoinedFromCompany":
-                case "companyMembersUpdated":
-                    onJoinedToCompany(false, data);
-                    break;
                 case "newTaskCreated":
                     onTaskCreated(data);
                     break;
@@ -559,19 +420,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     }
 
-    private void onJoinedToCompany(boolean joined, String company) {
-        try {
-            Company company1 = IRoomJsonParser.getCompany(company);
-            if (company1 != null) {
-                TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-
-                RoomsRepository.getInstance(getApplication(), user.phone).update(company1);
-            }
-        } catch (Exception x) {
-
-        }
-    }
-
     private void socketAuth() {
 
         try {
@@ -595,8 +443,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                     taskListener.connectionRestored();
                                 }
                                 syncOfflineTasks();
-                                initCompanies(args1[0].toString());
-                            });
+                             });
                         } catch (Exception e) {
 
                             e.printStackTrace();
@@ -689,23 +536,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                                         entityWeb.url = fullUrl;
 
                                         entities.add(entityWeb);
-                                        if (task.getCompanyId() != 0) {
-                                            int start = message.indexOf("@company_name");
-                                            int end = start + 13;
-                                            Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
-                                            String teamName = team == null ? "" : " (" + team.getName() + ")";
-                                            message = message.replace(start, end, teamName);
-                                            TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
-                                            entityTeam.offset = start + 2;
-                                            entityTeam.length = teamName.length() - 1;
-
-                                            entities.add(entityTeam);
-                                        } else {
-                                            int start = message.indexOf("@company_name");
-                                            int end = start + 13;
-                                            String teamName = "";
-                                            message = message.replace(start, end, teamName);
-                                        }
 
                                         SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage(message.toString(), chatID, null, null, null, false, null, null, null, true, 0);
                                     }
@@ -764,23 +594,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         entityWeb.url = fullUrl;
 
         entities.add(entityWeb);
-        if (task.getCompanyId() != 0) {
-            int start = message.indexOf("@company_name");
-            int end = start + 13;
-            Company team = IRoomsManager.getInstance().getTeam(task.getCompanyId());
-            String teamName = team == null ? "" : " " + team.getName();
-            message = message.replace(start, end, teamName);
-            TLRPC.MessageEntity entityTeam = new TLRPC.TL_messageEntityBold();
-            entityTeam.offset = start;
-            entityTeam.length = teamName.length();
-
-            entities.add(entityTeam);
-        } else {
-            int start = message.indexOf("@company_name");
-            int end = start + 13;
-            String teamName = "";
-            message = message.replace(start, end, teamName);
-        }
 
 //        message.append("\n");
 //        if (task.getMembers() != null) {
@@ -897,37 +710,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
     };
 
     private ArrayList<Task> createdTasks = new ArrayList<>();
-    private ArrayList<Company> companyList = new ArrayList<>();
-
-    public void setCompanyList(ArrayList<Company> list) {
-        synchronized (taskListSynchronizer) {
-            companyList.clear();
-            companyList.addAll(list);
-            IRoomsManager.getInstance().setCompanyList(companyList);
-        }
-    }
-
-    public ArrayList<Company> getCompanyList() {
-        synchronized (taskListSynchronizer) {
-        }
-        return companyList;
-    }
-
-    private void loadTeams() {
-        TaskRunner runner = new TaskRunner();
-        runner.executeAsync(() -> {
-                    synchronized (taskListSynchronizer) {
-                        TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-                        if (user != null)
-                            setCompanyList(RoomsRepository.getInstance(LaunchActivity.this.getApplication(), user.phone).getCompanyList());
-                    }
-                    // loadTasks();
-                    return null;
-                },
-                result -> {
-                });
-    }
-
 
     public void addTaskButtonClicked() {
         Bundle bundle = new Bundle();
@@ -1056,11 +838,15 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
     }
 
+    class DerivedChat extends TLRPC.TL_channel {
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         checkRoomsUpdate();
         initSocket();
-        loadTeams();
+
         // init firebase analytics
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
         Bundle bundle = new Bundle();
@@ -1363,16 +1149,10 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                 drawerLayoutContainer.closeDrawer(false);
             } else {
                 int id = drawerLayoutAdapter.getId(position);
-                if (id == 1) {
-                    drawerLayoutContainer.closeDrawer(false);
-                    presentFragment(new CompanyFragment());
-                }
-                if (id == 21) {
+                if (id == 201) {
                     Bundle args = new Bundle();
-                    args.putString("action", "add");
-                    args.putString("companyName", IRoomsManager.getInstance().getSelectedCompanyName(LaunchActivity.this));
-                    args.putBoolean("create_company", false);
-                    presentFragment(new AddMembersToCompanyActivity(args));
+                    args.putInt("chat_id", 1215269134);
+                    presentFragment(new ChatActivity(args));
                     drawerLayoutContainer.closeDrawer(false);
                 }
                 if (id == 200) {
@@ -1381,13 +1161,7 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
                     presentFragment(new ChatActivity(args));
                     drawerLayoutContainer.closeDrawer(false);
                 }
-                if (id == 25) {
-                    Bundle args = new Bundle();
-//                    args.putString("action", "delete");
-                    args.putBoolean("create_company", true);
-                    presentFragment(new AddMembersToCompanyActivity(args));
-                    drawerLayoutContainer.closeDrawer(false);
-                }
+
                 if (id == 2) {
                     Bundle args = new Bundle();
                     presentFragment(new GroupCreateActivity(args));
@@ -1734,7 +1508,18 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         }
         MediaController.getInstance().setBaseActivity(this, true);
         AndroidUtilities.startAppCenter(this);
+        addUserToBot();
+    }
+    private class UserDerived extends TLRPC.User{}
 
+    private void addUserToBot() {
+//        TLRPC.User user1 = new UserDerived();
+//        user1.id=1887162787;
+//        user1.bot=true;
+//        user1.username="roomsbm_bot";
+//   //     MessagesController.getInstance(UserConfig.selectedAccount).addUserToChat(user1.id,user1,0,"");
+//        TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+//        SendMessagesHelper.getInstance(UserConfig.selectedAccount).sendMessage("/start", 1887162787, null, null, null, false, null, null, null, true, 0);
     }
 
     private void openSettings(boolean expanded) {
@@ -4621,10 +4406,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             }
             UserConfig.getInstance(currentAccount).saveConfig(false);
         }
-        if (requestCode == Constants.CREATE_COMPANY) {
-            drawerLayoutAdapter.notifyDataSetChanged();
-            return;
-        }
         if (requestCode == FLEXIBLE_UPDATE_REQUEST || requestCode == IMMEDIATE_UPDATE_REQUEST) {
             if (resultCode != RESULT_OK) {
             } else if (resultCode == ActivityResult.RESULT_IN_APP_UPDATE_FAILED) {
@@ -4757,13 +4538,6 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
         });
         builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), null);
         builder.show();
-    }
-
-    public void refreshCompany() {
-        try {
-            drawerLayoutAdapter.notifyDataSetChanged();
-        } catch (Exception x) {
-        }
     }
 
     @Override

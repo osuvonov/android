@@ -2,14 +2,9 @@ package org.telegram.irooms.task;
 
 import android.app.Application;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.database.CommentHistoryDao;
 import org.telegram.irooms.database.CommentRequestHistory;
-import org.telegram.irooms.database.Company;
-import org.telegram.irooms.database.CompanyDao;
 import org.telegram.irooms.database.RequestHistory;
 import org.telegram.irooms.database.RequestHistoryDao;
 import org.telegram.irooms.database.Task;
@@ -54,17 +49,15 @@ public class RoomsRepository {
         return (ArrayList<Task>) taskDao.getTasksByChatId(chatID, limit, offset);
     }
 
-    public ArrayList<Task> getChatAndCompanyRelatedTasks(long chatID, int companyID, int limit, int offset) {
+    public ArrayList<Task> getChatRelatedTasks(long chatID, int limit, int offset) {
 
-        return (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID,  limit, offset);
+        return (ArrayList<Task>) taskDao.getTaskByChatId(chatID, limit, offset);
     }
 
-    public ArrayList<Task> getPrivateChatTasks(int companyID, int selectedAccountUserId, int ownerId, int limit, int offset) {
-        if (companyID != 0) {
-            return (ArrayList<Task>) taskDao.getPrivateChatTasksTeam( selectedAccountUserId, ownerId, limit, offset);
-        } else {
-            return (ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId, limit, offset);
-        }
+    public ArrayList<Task> getPrivateChatTasks(int selectedAccountUserId, int ownerId, int limit, int offset) {
+
+        return (ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId, limit, offset);
+
     }
 
     public ArrayList<Task> getAccountTasks(int ownerId, int limit, int offset) {
@@ -80,18 +73,15 @@ public class RoomsRepository {
         arrayListIRoomCallback.onSuccess(list);
     }
 
-    public void getChatAndCompanyRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback, int companyID) {
-        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTasksByChatAndCompanyId(chatID);
+    public void getChatRelatedTasks(long chatID, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+        ArrayList<Task> list = (ArrayList<Task>) taskDao.getTaskByChatId(chatID);
 
         arrayListIRoomCallback.onSuccess(list);
     }
 
-    public void getPrivateChatTasks(int companyID, int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
-        if (getCompanyList().size() > 0) {
-            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksTeam( selectedAccountUserId, ownerId));
-        } else {
-            arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId));
-        }
+    public void getPrivateChatTasks(int selectedAccountUserId, int ownerId, IRoomsManager.IRoomCallback<ArrayList<Task>> arrayListIRoomCallback) {
+
+        arrayListIRoomCallback.onSuccess((ArrayList<Task>) taskDao.getPrivateChatTasksNoTeam(selectedAccountUserId, ownerId));
 
     }
 
@@ -121,8 +111,6 @@ public class RoomsRepository {
 
     private CommentHistoryDao commentHistoryDao;
 
-    private CompanyDao companyDao;
-
     private static RoomsRepository instance;
     private static String currentDb;
 
@@ -148,14 +136,9 @@ public class RoomsRepository {
 
         TaskDatabase db = TaskDatabase.getDatabase(application, dbName);
         taskDao = db.taskDao();
-        companyDao = db.companyDao();
         requestHistoryDao = db.requestHistoryDao();
         taskMessageDao = db.taskMessageDao();
         commentHistoryDao = db.commentHistoryDao();
-    }
-
-    public Company getCompany(int id) {
-        return companyDao.getCompany(id);
     }
 
     public Task getTask(long id) {
@@ -224,66 +207,10 @@ public class RoomsRepository {
         taskDao.updateLastReadMessageId(taskId, lastReadId);
     }
 
-    public ArrayList<Company> getCompanyList() {
-        return (ArrayList<Company>) companyDao.getCompanyList();
-    }
-
-    public ArrayList<Company> getCurrentUserCompanyList(int id) {
-        return (ArrayList<Company>) companyDao.getCurrentUserCompanyList(id);
-    }
-
     // You must call this on a non-UI thread or your app will throw an exception. Room ensures
     // that you're not doing any long running operations on the main thread, blocking the UI.
     public void insert(Task task) {
         taskDao.createTask(task);
-    }
-
-    public void update(Company company) {
-        companyDao.updateCompany(company);
-    }
-
-    public void insert(Company company) {
-        companyDao.createCompany(company);
-    }
-
-    public void updateCompanyMembers(int companyId, String members, boolean addMembers) {
-        Company company = companyDao.getCompany(companyId);
-        if (company == null) {
-            return;
-        }
-        if (!addMembers) {
-            ArrayList<Long> membersToBeDeleted = new Gson().fromJson(members, new TypeToken<ArrayList<Long>>() {
-            }.getType());
-            for (int i = 0; i < company.getMembers().size(); i++) {
-                for (int j = 0; j < membersToBeDeleted.size(); j++) {
-                    if (company.getMembers().get(i).intValue() == membersToBeDeleted.get(j).intValue()) {
-                        company.getMembers().remove(i);
-                        i--;
-                    }
-                }
-            }
-            companyDao.updateCompany(company);
-        } else {
-            ArrayList<Integer> membersToBeAdded = new Gson().fromJson(members, new TypeToken<ArrayList<Integer>>() {
-            }.getType());
-            if (company.getMembers() == null || company.getMembers().size() == 0) {
-                company.setMembers(membersToBeAdded);
-            } else {
-                for (int j = 0; j < membersToBeAdded.size(); j++) {
-                    boolean found = false;
-                    for (int i = 0; i < company.getMembers().size(); i++) {
-                        if (company.getMembers().get(i).intValue() == membersToBeAdded.get(j).intValue()) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        company.getMembers().add(membersToBeAdded.get(j));
-                    }
-                }
-            }
-            companyDao.updateCompany(company);
-        }
     }
 
     //-------------------------- task messages(comments)-----------------

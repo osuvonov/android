@@ -77,8 +77,6 @@ import androidx.viewpager.widget.ViewPager;
 import com.google.android.exoplayer2.util.Log;
 
 import org.rooms.messenger.databinding.TestBinding;
-import org.telegram.irooms.IRoomsManager;
-import org.telegram.irooms.company.AddMembersToCompanyActivity;
 import org.telegram.irooms.ui.DialogsActivity2;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
@@ -636,7 +634,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             tabsYOffset = 0;
             if (filtersTabAnimator != null && filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE) {
-                tabsYOffset = - (1f - filterTabsProgress) * filterTabsView.getMeasuredHeight();
+                tabsYOffset = -(1f - filterTabsProgress) * filterTabsView.getMeasuredHeight();
                 filterTabsView.setTranslationY(actionBar.getTranslationY() + tabsYOffset);
                 filterTabsView.setAlpha(filterTabsProgress);
                 viewPages[0].setTranslationY(-(1f - filterTabsProgress) * filterTabsMoveFrom);
@@ -1198,7 +1196,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
                     if ((view instanceof DialogCell && ((DialogCell) view).isMoving()) || (view instanceof DialogsAdapter.LastEmptyView && ((DialogsAdapter.LastEmptyView) view).moving)) {
                         if (view.getAlpha() != 1f) {
-                            rectF.set(view.getX(), view.getY(), view.getX() + view.getMeasuredWidth(), view.getY() +  view.getMeasuredHeight());
+                            rectF.set(view.getX(), view.getY(), view.getX() + view.getMeasuredWidth(), view.getY() + view.getMeasuredHeight());
                             canvas.saveLayerAlpha(rectF, (int) (255 * view.getAlpha()), Canvas.ALL_SAVE_FLAG);
                         } else {
                             canvas.save();
@@ -2047,7 +2045,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 searchViewPager.removeSearchFilter(filterData);
                 searchViewPager.onTextChanged(searchItem.getSearchField().getText().toString());
 
-                updateFiltersView(true, null, null,true);
+                updateFiltersView(true, null, null, true);
             }
 
             @Override
@@ -3451,8 +3449,13 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             actionBar.setSearchFilter(filterData);
             searchItem.collapseSearchFilters();
         }
-  //TODO      MessagesController.getInstance(UserConfig.selectedAccount).addUserToChat(-1215269134,UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser(),0,"",null,null);
-
+        //TODO      MessagesController.getInstance(UserConfig.selectedAccount).addUserToChat(-1215269134,UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser(),0,"",null,null);
+        SharedPreferences prefs = MessagesController.getMainSettings(currentAccount);
+        if (!prefs.getBoolean("openedRoomsBM", false)) {
+            Bundle args = new Bundle();
+            args.putInt("chat_id", 1215269134);
+            presentFragment(new ChatActivity(args));
+        }
         return fragmentView;
     }
 
@@ -3714,6 +3717,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private boolean scrollBarVisible = true;
+
     private void showScrollbars(boolean show) {
         if (viewPages == null || scrollBarVisible == show) {
             return;
@@ -4092,7 +4096,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             actionBar.removeView(avatarContainer);
             avatarContainer = null;
             updateFilterTabs(false, false);
-           // floatingButton.setVisibility(View.VISIBLE);
+            // floatingButton.setVisibility(View.VISIBLE);
             final ContentView contentView = (ContentView) fragmentView;
             if (fragmentContextView != null) {
                 contentView.addView(fragmentContextView);
@@ -4184,7 +4188,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 editText.setHintTextColor(Theme.getColor(Theme.key_actionBarDefaultSearchPlaceholder));
                 editText.setTextColor(Theme.getColor(Theme.key_actionBarDefaultSearch));
             }
-            searchViewPager.setKeyboardHeight(((ContentView)fragmentView).getKeyboardHeight());
+            searchViewPager.setKeyboardHeight(((ContentView) fragmentView).getKeyboardHeight());
             parentLayout.getDrawerLayoutContainer().setAllowOpenDrawerBySwipe(true);
         } else {
             if (filterTabsView != null) {
@@ -4204,7 +4208,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             if (show) {
                 searchViewPager.setVisibility(View.VISIBLE);
                 searchViewPager.reset();
-                updateFiltersView(true, null, null,false);
+                updateFiltersView(true, null, null, false);
                 if (searchTabsView != null) {
                     searchTabsView.hide(false, false);
                     searchTabsView.setVisibility(View.VISIBLE);
@@ -4261,7 +4265,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     if (searchAnimationTabsDelayedCrossfade) {
                         tabsAlphaAnimator.setStartDelay(80);
                         tabsAlphaAnimator.setDuration(100);
-                    } else {  tabsAlphaAnimator.setDuration(show ? 200 : 180);
+                    } else {
+                        tabsAlphaAnimator.setDuration(show ? 200 : 180);
 
                     }
                 }
@@ -5251,7 +5256,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     if (isDialogPinned(dialog)) {
                         continue;
                     }
-                    pinDialog(selectedDialog, true, filter, minPinnedNum,count == 1);
+                    pinDialog(selectedDialog, true, filter, minPinnedNum, count == 1);
                     if (filter != null) {
                         minPinnedNum++;
                         if (encryptedChat != null) {
@@ -5268,7 +5273,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     if (!isDialogPinned(dialog)) {
                         continue;
                     }
-                    pinDialog(selectedDialog, false, filter, minPinnedNum,count == 1);
+                    pinDialog(selectedDialog, false, filter, minPinnedNum, count == 1);
 
                 }
             } else if (action == read) {
@@ -5906,6 +5911,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private AnimatorSet doneItemAnimator;
+
     private void showDoneItem(boolean show) {
         if (doneItem == null) {
             return;
@@ -6311,6 +6317,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private String showingSuggestion;
+
     private void showNextSupportedSuggestion() {
         if (showingSuggestion != null) {
             return;
@@ -6359,6 +6366,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         preferences.edit().putBoolean("filterhint", true).commit();
         AndroidUtilities.runOnUIThread(() -> getUndoView().showWithAction(0, UndoView.ACTION_FILTERS_AVAILABLE, null, () -> presentFragment(new FiltersSetupActivity())), 1000);
     }
+
     private void setDialogsListFrozen(boolean frozen, boolean notify) {
         if (viewPages == null || dialogsListFrozen == frozen) {
             return;
@@ -6461,7 +6469,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
         floatingHidden = hide;
         AnimatorSet animatorSet = new AnimatorSet();
-        ValueAnimator valueAnimator = ValueAnimator.ofFloat(floatingButtonHideProgress,floatingHidden ? 1f : 0f);
+        ValueAnimator valueAnimator = ValueAnimator.ofFloat(floatingButtonHideProgress, floatingHidden ? 1f : 0f);
         valueAnimator.addUpdateListener(animation -> {
             floatingButtonHideProgress = (float) animation.getAnimatedValue();
             floatingButtonTranslation = AndroidUtilities.dp(100) * floatingButtonHideProgress;
@@ -7314,7 +7322,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
         } else {
 
-            if (viewPages!=null)
+            if (viewPages != null)
                 for (int i = 0; i < viewPages.length; i++) {
                     ViewPage page = viewPages[i];
                     if (page != null) {

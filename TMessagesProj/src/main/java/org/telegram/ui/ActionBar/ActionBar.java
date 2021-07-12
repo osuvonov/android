@@ -127,19 +127,6 @@ public class ActionBar extends FrameLayout {
             }
         });
     }
-
-    public ActionBar(Context context, ChatActivity.TaskChatClickListener listener) {
-        super(context);
-        setOnClickListener(v -> {
-            if (isSearchFieldVisible()) {
-                return;
-            }
-            if (titleActionRunnable != null) {
-                titleActionRunnable.run();
-            }
-        });
-    }
-
     private ChatTabBinding taskChatLayout;
 
     public void addTaskChatView(ChatTabBinding view) {

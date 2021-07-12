@@ -14,11 +14,10 @@ import androidx.room.TypeConverters;
 // Task status localCreated=1,localUpdated=2, online=3
 @Entity(tableName = "tbl_tasks")
 public class Task implements Parcelable {
-    public Task(long id, long company_id) {
+    public Task(long id) {
         this.id = id;
         this.platform = "android";
         this.message_id = -1;
-        this.company_id = company_id;
         this.local_id = "";
     }
 
@@ -31,9 +30,6 @@ public class Task implements Parcelable {
 
     @ColumnInfo(name = "status_code")
     private int status_code;
-
-    @ColumnInfo(name = "company_id")
-    private long company_id;
 
     @ColumnInfo(name = "chat_id")
     private long chat_id;
@@ -99,8 +95,7 @@ public class Task implements Parcelable {
         pId = in.readLong();
         id = in.readLong();
         status_code = in.readInt();
-        company_id = in.readLong();
-        chat_id = in.readLong();
+         chat_id = in.readLong();
         message_id = in.readLong();
         description = in.readString();
         status = in.readString();
@@ -205,13 +200,6 @@ public class Task implements Parcelable {
         this.status_code = status_code;
     }
 
-    public long getCompany_id() {
-        return company_id;
-    }
-
-    public void setCompany_id(long company_id) {
-        this.company_id = company_id;
-    }
 
     public long getChat_id() {
         return chat_id;
@@ -333,14 +321,6 @@ public class Task implements Parcelable {
         this.creator_id = creatorId;
     }
 
-    public long getCompanyId() {
-        return company_id;
-    }
-
-    public void setCompanyId(long companyId) {
-        this.company_id = companyId;
-    }
-
     public String getTag() {
         return tag;
     }
@@ -407,7 +387,6 @@ public class Task implements Parcelable {
         dest.writeLong(pId);
         dest.writeLong(id);
         dest.writeInt(status_code);
-        dest.writeLong(company_id);
         dest.writeLong(chat_id);
         dest.writeLong(message_id);
         dest.writeString(description);

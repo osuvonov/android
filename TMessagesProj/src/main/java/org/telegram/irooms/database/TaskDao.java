@@ -43,24 +43,17 @@ public abstract class TaskDao {
     @Query("select * from tbl_tasks ")
     public abstract List<Task> getTasks();
 
-    @Query("select * from tbl_tasks where chat_id=:chatId")
-    public abstract List<Task> getTasksByChatIdAndCompanyId(  long chatId);
-
     @Query("select * from tbl_tasks where chat_id in (:chatId) ")
     public abstract List<Task> getTasksByChatId(long[] chatId);
 
     @Query("select * from tbl_tasks where (chat_id in (:chatId)) ")
-    public abstract List<Task> getTasksByChatAndCompanyId(long chatId );
+    public abstract List<Task> getTaskByChatId(long chatId );
 
     @Query("select * from tbl_tasks where local_status in (1,2)")
     public abstract List<Task> getOfflineTasks();
 
-    @Query("delete from tbl_tasks where local_status not in (1,2) and company_id=:companyId")
-    public abstract void deleteCompanyOnlineTasks(int companyId);
-
     @Transaction
-    public void deleteAndInsertAll(int companyId, ArrayList<Task> list) {
-        deleteCompanyOnlineTasks(companyId);
+    public void deleteAndInsertAll(  ArrayList<Task> list) {
         insertAll(list);
     }
 
@@ -94,7 +87,7 @@ public abstract class TaskDao {
     public abstract List<Task> getTasksByChatId(long[] chatId, int limit, int offset);
 
     @Query("select * from tbl_tasks where (chat_id in (:chatId))  order by pId desc limit :limit offset :offset ")
-    public abstract List<Task> getTasksByChatAndCompanyId(long chatId,   int limit, int offset);
+    public abstract List<Task> getTaskByChatId(long chatId, int limit, int offset);
 
     @Query("update tbl_tasks set last_read_message_id=:lastReadId where id=:taskId")
     public abstract void updateLastReadMessageId(long taskId, long lastReadId);

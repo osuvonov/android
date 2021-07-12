@@ -14,7 +14,6 @@ import android.app.Application;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -31,8 +30,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
-
-import androidx.preference.PreferenceManager;
 
 import android.provider.Settings;
 import android.text.Editable;
@@ -54,11 +51,9 @@ import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -66,18 +61,13 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.google.android.exoplayer2.C;
-
 import org.rooms.messenger.databinding.AddTaskBottomSheetBinding;
-import org.telegram.irooms.Constants;
 import org.telegram.irooms.IRoomsManager;
 import org.telegram.irooms.Utils;
-import org.telegram.irooms.database.Company;
 import org.telegram.irooms.database.Task;
 import org.telegram.irooms.task.TaskManagerListener;
 import org.telegram.irooms.task.RoomsRepository;
@@ -89,7 +79,6 @@ import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.FileLog;
-import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
@@ -139,7 +128,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
 
 import androidx.annotation.RequiresApi;
 import io.socket.client.Socket;
@@ -152,75 +140,7 @@ public class AlertsCreator {
             return null;
         }
         AddTaskBottomSheetBinding bottomSheet = AddTaskBottomSheetBinding.inflate(LayoutInflater.from(context));
-
-//        final int[] selectedTeamPositionInList = {-1};
-//
-//        final int[] companyId = {IRoomsManager.getInstance().getSelectedCompanyId(context)};
-
-//        ArrayList<Company> companies = new ArrayList<>(((LaunchActivity) context).getCompanyList());
-
-//        Company noTeam = new Company(0, LocaleController.getInstance().getRoomsString("no_team"));
-//        companies.add(noTeam);
-        TLRPC.User currentUser = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-
-//        if (companyId[0] != 0) {
-//            boolean found = false;
-//            for (Company company : companies) {
-//                if (company.getId() == companyId[0]) {
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if (found) {
-////                bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
-////                bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
-//            } else {
-//                companyId[0] = 0;// no team id
-//                selectedTeamPositionInList[0] = companies.size() - 1;//no team as selected
-//            }
-//        }
-//        ArrayList<Company> teamList = new ArrayList<>();
-//        ArrayList<String> teamList2 = new ArrayList<>();
-//
-//        teamList.add(noTeam);
-//
-//        teamList2.add(LocaleController.getInstance().getRoomsString("no_team"));
-
-//        if (userList.size() == 2 && selectedUser != null) {
-//            boolean selectedCompanyFound = false;
-//            for (Company company : companies) {
-//                if (company.getMembers() != null && company.getMembers().contains(selectedUser.id) && company.getMembers().contains(currentUser.id)) {
-//                    teamList.add(company);
-//                    selectedCompanyFound = true;
-//                    teamList2.add(company.getName());
-//                }
-//            }
-//            if (!selectedCompanyFound) {
-//                companyId[0] = 0;
-//            }
-//        } else {
-//            boolean selectedCompanyFound = false;
-//
-//            for (Company company : companies) {
-//                if (company.getMembers() != null && company.getMembers().contains(currentUser.id)) {
-//                    teamList.add(company);
-//                    selectedCompanyFound = true;
-//                    teamList2.add(company.getName());
-//                }
-//            }
-//            if (!selectedCompanyFound) {
-//                companyId[0] = 0;
-//            }
-//        }
-//        if (teamList.size() == 1) {
-//            companyId[0] = 0;
-//        }
-//        for (int i = 0; i < teamList.size(); i++) {
-//            if (companyId[0] == teamList.get(i).getId()) {
-//                selectedTeamPositionInList[0] = i;
-//                break;
-//            }
-//        }
+  TLRPC.User currentUser = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
 
         int textColor = context.getResources().getColor(android.R.color.black);
         if (IRoomsManager.getInstance().isDarkMode(context)) {
@@ -342,45 +262,6 @@ public class AlertsCreator {
                         bottomSheet.tvSelectMembers.setText(selectedUsers);
                     }
 
-//                    teamList.clear();
-//                    teamList2.clear();
-//                    for (Company company : companies) {
-//                        if (company != null) {
-//                            boolean add = true;//should we add this company to selectable team list
-//                            for (int c = 0; c < selectedMembers.size(); c++) {
-//                                if (company.getId() != 0 && company.getMembers() != null && !company.getMembers().contains(selectedMembers.get(c))) {
-//                                    add = false;
-//                                    break;
-//                                }
-//                            }
-//                            if (add) {
-//                                teamList2.add(company.getName());
-//                                teamList.add(company);
-//                            }
-//                        }
-//                    }
-//                    //   spinnerAdapter.notifyDataSetChanged();
-//                    boolean teamFound = false;
-//                    for (int j = 0; j < teamList.size(); j++) {
-//                        if (teamList.get(j).getId() == companyId[0]) {
-//                            teamFound = true;
-//                            selectedTeamPositionInList[0] = j;
-//                            break;
-//                        }
-//                    }
-//                    if (!teamFound) {
-//                        companyId[0] = teamList.get(0).getId();
-//                        selectedTeamPositionInList[0] = 0;
-//                    }
-//                    bottomSheet.teamSpinner.setText(teamList.get(selectedTeamPositionInList[0]).getName());
-//                    companyId[0] = teamList.get(selectedTeamPositionInList[0]).getId();
-//                    if (companyId[0] == 0) {
-//                        bottomSheet.tvLabelReminder.setVisibility(View.GONE);
-//                        bottomSheet.llTaskReminder.setVisibility(View.GONE);
-//                    } else {
-//                        bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
-//                        bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
-//                    }
                 }
             });
             builder12.setPositiveButton(LocaleController.getInstance().getRoomsString("ok"), (dialogInterface, j) -> {
@@ -399,35 +280,6 @@ public class AlertsCreator {
             bottomSheet.tvSelectMembers.setText(userName);
         }
 
-        //------ team
-//        if (companyId[0] <= 0) {
-//            bottomSheet.tvLabelReminder.setVisibility(View.GONE);
-//            bottomSheet.llTaskReminder.setVisibility(View.GONE);
-//        }
-//        bottomSheet.teamSpinner.setText(teamList2.get(selectedTeamPositionInList[0] == -1 ? 0 : selectedTeamPositionInList[0]));
-//        bottomSheet.teamSpinner.setTextColor(textColor);
-//        bottomSheet.teamSpinner.setOnClickListener(view -> {
-//            AlertDialog.Builder builder1 = new AlertDialog.Builder(context);
-//            builder1.setTitle(LocaleController.getInstance().getRoomsString("team"));
-//
-//            builder1.setItems(teamList2.toArray(new CharSequence[teamList2.size()]), (dialog, which) -> {
-//                selectedTeamPositionInList[0] = which;
-//                companyId[0] = teamList.get(which).getId();
-////                if (companyId[0] == 0) {
-////                    bottomSheet.tvLabelReminder.setVisibility(View.GONE);
-////                    bottomSheet.llTaskReminder.setVisibility(View.GONE);
-////                } else {
-////                    bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
-////                    bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
-////                }
-//                bottomSheet.teamSpinner.setText(teamList2.get(which));
-//                dialog.dismiss();
-//            });
-//
-//            // create and show the alert dialog
-//            AlertDialog dialog = builder1.create();
-//            dialog.show();
-//        });
         bottomSheet.teamSpinner.setVisibility(View.GONE);
 
         bottomSheet.tvTeamEmptyRow.setVisibility(View.GONE);
@@ -488,7 +340,7 @@ public class AlertsCreator {
         bottomSheet.btnTaskSave.setText(LocaleController.getInstance().getRoomsString("save"));
         bottomSheet.btnTaskSave.setOnClickListener(saveBtn -> {
             bottomSheet.btnTaskSave.setEnabled(false);
-            Task task = new Task(-1,0);
+            Task task = new Task(-1);
             String description = bottomSheet.etTaskDescription.getText().toString();
             if ("".equals(description)) {
                 bottomSheet.btnTaskSave.setEnabled(true);
@@ -501,7 +353,6 @@ public class AlertsCreator {
             task.setStatus(Utils.getStatuses()[selectedState[0]]);
             task.setStatus_code(selectedState[0]);
             task.setChatId(chatId);
-           // task.setCompanyId(0);
             task.setLocal_id(Utils.generateLocalId());
             task.setLocalStatus(1);
             task.setReminders(reminders);
@@ -888,10 +739,6 @@ public class AlertsCreator {
         });
         //-----------------------reminder------------------
 
-//        if (task.getCompany_id() > 0) {
-//            bottomSheet.tvLabelReminder.setVisibility(View.VISIBLE);
-//            bottomSheet.llTaskReminder.setVisibility(View.VISIBLE);
-//        }
         bottomSheet.btnTaskReminderAdd.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
         bottomSheet.btnTaskReminderDelete.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_recordedVoiceDot), PorterDuff.Mode.MULTIPLY));
         bottomSheet.btnTaskReminderAdd.setOnClickListener(new View.OnClickListener() {
